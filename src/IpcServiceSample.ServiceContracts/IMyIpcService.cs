@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
 
-namespace IpcServiceSample
+namespace IpcServiceSample.ServiceContracts
 {
     public interface IMyIpcService
     {

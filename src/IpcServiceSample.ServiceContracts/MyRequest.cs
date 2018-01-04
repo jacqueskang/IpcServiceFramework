@@ -1,4 +1,4 @@
-﻿namespace IpcServiceSample
+﻿namespace IpcServiceSample.ServiceContracts
 {
     public class MyRequest
     {

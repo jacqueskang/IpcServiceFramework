@@ -1,5 +1,5 @@
-﻿using JKang.IpcServiceFramework;
-using Microsoft.Extensions.Configuration;
+﻿using IpcServiceSample.ServiceContracts;
+using JKang.IpcServiceFramework;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
@@ -8,14 +8,8 @@ namespace IpcServiceSample.ConsoleServer
 {
     class Program
     {
-        public static IConfigurationRoot Configuration { get; private set; }
-
         static void Main(string[] args)
         {
-            // build configuration
-            IConfigurationBuilder builder = new ConfigurationBuilder();
-            Configuration = builder.Build();
-
             // build service provider
             IServiceCollection services = ConfigureServices(new ServiceCollection());
             ServiceProvider serviceProvider = services.BuildServiceProvider();

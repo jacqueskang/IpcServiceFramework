@@ -1,5 +1,5 @@
-﻿using JKang.IpcServiceFramework;
-using System;
+﻿using IpcServiceSample.ServiceContracts;
+using JKang.IpcServiceFramework;
 using System.Threading.Tasks;
 
 namespace IpcServiceSample.ConsoleClient

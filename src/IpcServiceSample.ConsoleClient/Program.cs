@@ -1,4 +1,5 @@
-﻿using System;
+﻿using IpcServiceSample.ServiceContracts;
+using System;
 using System.Threading.Tasks;
 
 namespace IpcServiceSample.ConsoleClient

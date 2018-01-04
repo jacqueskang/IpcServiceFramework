@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using IpcServiceSample.ServiceContracts;
+using Microsoft.Extensions.Logging;
 using System.Threading.Tasks;
 
 namespace IpcServiceSample.ConsoleServer
