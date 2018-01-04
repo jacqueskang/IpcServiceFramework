@@ -12,14 +12,12 @@ namespace IpcServiceSample.ConsoleClient
 
         private static async Task MainAsync()
         {
-            var client = new MyClient("testpipe");
-            var request = new MyRequest
+            Console.WriteLine("Invoking IpcService...");
+            var client = new MyClient("pipeName");
+            MyResponse response = await client.GetDataAsync(new MyRequest
             {
                 Message = "Hello"
-            };
-
-            Console.WriteLine("Invoking IpcService...");
-            MyResponse response = await client.GetDataAsync(request, true);
+            }, iAmHandsome: true);
 
             Console.WriteLine($"Received response: {response.Message}");
         }

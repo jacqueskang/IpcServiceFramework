@@ -25,8 +25,8 @@ namespace IpcServiceSample.ConsoleServer
                 .AddConsole(LogLevel.Debug);
 
             // TODO start IPC service host
-            IpcServiceHost
-                .Buid(serviceProvider as IServiceProvider)
+            IpcServiceHostBuilder
+                .Buid("pipeName", serviceProvider as IServiceProvider)
                 .Start();
 
         }

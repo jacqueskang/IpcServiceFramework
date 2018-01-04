@@ -13,7 +13,7 @@ namespace IpcServiceSample.ConsoleClient
 
         public Task<MyResponse> GetDataAsync(MyRequest request, bool iAmHandsome)
         {
-            throw new NotImplementedException();
+            return InvokeAsync<MyResponse>(nameof(GetDataAsync), request, iAmHandsome);
         }
     }
 }
