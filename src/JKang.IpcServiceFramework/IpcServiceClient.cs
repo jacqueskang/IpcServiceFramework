@@ -43,6 +43,7 @@ namespace JKang.IpcServiceFramework
                 IpcResponse response = JsonConvert.DeserializeObject<IpcResponse>(responseJson);
                 if (response.Succeed)
                 {
+                    // TODO: handle primitive types
                     return ((JObject)response.Data).ToObject<TResult>();
                 }
                 else
