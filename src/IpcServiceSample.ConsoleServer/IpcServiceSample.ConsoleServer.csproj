@@ -8,7 +8,6 @@
   <ItemGroup>
     <ProjectReference Include="..\IpcServiceSample.ServiceContracts\IpcServiceSample.ServiceContracts.csproj" />
     <ProjectReference Include="..\JKang.IpcServiceFramework.Server\JKang.IpcServiceFramework.Server.csproj" />
-    <ProjectReference Include="..\JKang.IpcServiceFramework\JKang.IpcServiceFramework.csproj" />
   </ItemGroup>
 
   <ItemGroup>
