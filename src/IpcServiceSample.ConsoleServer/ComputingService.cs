@@ -23,5 +23,8 @@ namespace IpcServiceSample.ConsoleServer
             _logger.LogInformation($"{nameof(AddFloat)} called.");
             return x + y;
         }
+
+        public void DoNothing()
+        { }
     }
 }

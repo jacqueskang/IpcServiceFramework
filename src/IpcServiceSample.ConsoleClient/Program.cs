@@ -21,6 +21,7 @@ namespace IpcServiceSample.ConsoleClient
                 float result1 = client.AddFloat(1.23f, 4.56f);
                 Console.WriteLine($"sum of 2 floating number is: {result1}");
 
+                client.DoNothing();
                 ComplexNumber result2 = client.AddComplexNumber(
                     new ComplexNumber(0.1f, 0.3f),
                     new ComplexNumber(0.2f, 0.6f));

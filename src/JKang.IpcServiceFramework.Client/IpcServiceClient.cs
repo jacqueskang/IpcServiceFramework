@@ -14,11 +14,11 @@ namespace JKang.IpcServiceFramework
         private readonly IIpcMessageSerializer _serializer;
         private readonly IValueConverter _converter;
 
-        public IpcServiceClient(string pipeName)
+        protected IpcServiceClient(string pipeName)
             : this(pipeName, new DefaultIpcMessageSerializer(), new DefaultValueConverter())
         { }
 
-        public IpcServiceClient(string pipeName,
+        protected IpcServiceClient(string pipeName,
             IIpcMessageSerializer serializer,
             IValueConverter converter)
         {
@@ -27,12 +27,50 @@ namespace JKang.IpcServiceFramework
             _converter = converter;
         }
 
-        public TResult Invoke<TResult>(string method, params object[] args)
+        protected TResult Invoke<TResult>(string method, params object[] args)
         {
-            return InvokeAsync<TResult>(method, args).Result;
+            IpcRequest request = CreateRequest(method, args);
+            IpcResponse response = GetResponseAsync(request).Result;
+
+            if (response.Succeed)
+            {
+                if (_converter.TryConvert(response.Data, typeof(TResult), out object @return))
+                {
+                    return (TResult)@return;
+                }
+                else
+                {
+                    throw new InvalidOperationException($"Unable to convert returned value to '{typeof(TResult).Name}'.");
+                }
+            }
+            else
+            {
+                throw new InvalidOperationException(response.Failure);
+            }
         }
 
-        public async Task<TResult> InvokeAsync<TResult>(string method, params object[] args)
+        protected void Invoke(string method, params object[] args)
+        {
+            IpcRequest request = CreateRequest(method, args);
+            IpcResponse response = GetResponseAsync(request).Result;
+
+            if (!response.Succeed)
+            {
+                throw new InvalidOperationException(response.Failure);
+            }
+        }
+
+        private static IpcRequest CreateRequest(string method, object[] args)
+        {
+            return new IpcRequest
+            {
+                InterfaceName = typeof(TInterface).AssemblyQualifiedName,
+                MethodName = method,
+                Parameters = args,
+            };
+        }
+
+        private async Task<IpcResponse> GetResponseAsync(IpcRequest request)
         {
             using (var client = new NamedPipeClientStream(".", _pipeName, PipeDirection.InOut, PipeOptions.None))
             using (var writer = new IpcWriter(client, _serializer))
@@ -41,30 +79,10 @@ namespace JKang.IpcServiceFramework
                 await client.ConnectAsync();
 
                 // send request
-                writer.Write(new IpcRequest
-                {
-                    InterfaceName = typeof(TInterface).AssemblyQualifiedName,
-                    MethodName = method,
-                    Parameters = args,
-                });
+                writer.Write(request);
 
                 // receive response
-                IpcResponse response = reader.ReadIpcResponse();
-                if (response.Succeed)
-                {
-                    if (_converter.TryConvert(response.Data, typeof(TResult), out object @return))
-                    {
-                        return (TResult)@return;
-                    }
-                    else
-                    {
-                        throw new InvalidOperationException($"Unable to convert returned value to '{typeof(TResult).Name}'.");
-                    }
-                }
-                else
-                {
-                    throw new InvalidOperationException(response.Failure);
-                }
+                return reader.ReadIpcResponse();
             }
         }
     }

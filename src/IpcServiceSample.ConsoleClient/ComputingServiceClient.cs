@@ -9,14 +9,13 @@ namespace IpcServiceSample.ConsoleClient
             : base(pipeName)
         { }
 
-        public ComplexNumber AddComplexNumber(ComplexNumber x, ComplexNumber y)
-        {
-            return Invoke<ComplexNumber>(nameof(AddComplexNumber), x, y);
-        }
+        public ComplexNumber AddComplexNumber(ComplexNumber x, ComplexNumber y) 
+            => Invoke<ComplexNumber>(nameof(AddComplexNumber), x, y);
 
         public float AddFloat(float x, float y)
-        {
-            return Invoke<float>(nameof(AddFloat), x, y);
-        }
+            => Invoke<float>(nameof(AddFloat), x, y);
+
+        public void DoNothing()
+            => Invoke(nameof(DoNothing));
     }
 }

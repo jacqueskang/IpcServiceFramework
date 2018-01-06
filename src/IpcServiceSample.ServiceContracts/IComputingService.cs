@@ -5,6 +5,8 @@
         float AddFloat(float x, float y);
 
         ComplexNumber AddComplexNumber(ComplexNumber x, ComplexNumber y);
+
+        void DoNothing();
     }
 
     public class ComplexNumber
