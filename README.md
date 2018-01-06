@@ -119,9 +119,15 @@ namespace IpcServiceSample.ConsoleServer
 
         private static IServiceCollection ConfigureServices(IServiceCollection services)
         {
-            return services
-                .AddScoped<IMyIpcService, MyIpcService>() // IoC registeration
+            services
+                .AddLogging();
+
+            services
+                .AddIpc()
+                .AddService<IMyIpcService, MyIpcService>()
                 ;
+
+            return services;
         }
     }
 }
