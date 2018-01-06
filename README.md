@@ -13,96 +13,52 @@ A .NET Core lightweight inter-process communication framework allowing invoking 
 
 1. Service contract
 ```csharp
-using System.Threading.Tasks;
-
-namespace IpcServiceSample.Contracts
-{
-    public interface IMyIpcService
+    public interface IComputingService
     {
-        Task<MyResponse> GetDataAsync(MyRequest request, bool iAmHandsome);
+        float Add(float x, float y);
     }
-
-    public class MyRequest
-    {
-        public string Message { get; set; }
-    }
-
-    public class MyResponse
-    {
-        public string Message { get; set; }
-    }
-}
 ```
 
 2. Client side
 
 ```csharp
-using IpcServiceSample.Contracts;
-using JKang.IpcServiceFramework;
-using System;
-using System.Threading.Tasks;
-
-namespace IpcServiceSample.ConsoleClient
-{
-    // implement proxy
-    class MyClient : IpcServiceClient<IMyIpcService>, IMyIpcService
+    class ComputingServiceClient : IpcServiceClient<IComputingService>, IComputingService
     {
-        public MyClient(string pipeName)
+        public ComputingServiceClient(string pipeName)
             : base(pipeName)
         { }
 
-        public Task<MyResponse> GetDataAsync(MyRequest request, bool iAmHandsome)
+        public float Add(float x, float y)
         {
-            return InvokeAsync<MyResponse>(nameof(GetDataAsync), request, iAmHandsome);
+            return Invoke<float>(nameof(Add), x, y);
         }
     }
-
-    class Program
-    {
-        static void Main(string[] args)
-        {
-            MainAsync().Wait();
-        }
-
-        private static async Task MainAsync()
-        {
-            Console.WriteLine("Invoking IpcService...");
-            var client = new MyClient("pipeName");
-            MyResponse response = await client.GetDataAsync(new MyRequest
-            {
-                Message = "Hello"
-            }, iAmHandsome: true);
-
-            Console.WriteLine($"Received response: '{response.Message}'");
-        }
-    }
-}
 ```
 
 3. Server side
 
 ```csharp
-using IpcServiceSample.Contracts;
-using JKang.IpcServiceFramework;
-using Microsoft.Extensions.DependencyInjection;
-using System;
-
-namespace IpcServiceSample.ConsoleServer
-{
-    // service implementation
-    public class MyIpcService : IMyIpcService
+	// service implementation
+    public class ComputingService : IComputingService
     {
-        public Task<MyResponse> GetDataAsync(MyRequest request, bool iAmHandsome)
+        private readonly ILogger<ComputingService> _logger;
+
+        public ComputingService(ILogger<ComputingService> logger)
         {
-            var response = new MyResponse
-            {
-                Message = $"What you said '{request.Message}' is {(iAmHandsome ? "correct." : "wrong")}"
-            };
-            return Task.FromResult(response);
+            _logger = logger;
+        }
+
+        public float Add(float x, float y)
+        {
+            _logger.LogInformation($"{nameof(Add)} called.");
+            return x + y;
         }
     }
+```
 
-    class Program
+```csharp
+	// hosting in Console application
+   class Program
     {
         static void Main(string[] args)
         {
@@ -110,7 +66,11 @@ namespace IpcServiceSample.ConsoleServer
             IServiceCollection services = ConfigureServices(new ServiceCollection());
             ServiceProvider serviceProvider = services.BuildServiceProvider();
 
-            // start IPC service host
+            // configure console logging
+            serviceProvider.GetRequiredService<ILoggerFactory>()
+                .AddConsole(LogLevel.Debug);
+
+            // TODO start IPC service host
             IpcServiceHostBuilder
                 .Buid("pipeName", serviceProvider as IServiceProvider)
                 .Start();
@@ -124,13 +84,12 @@ namespace IpcServiceSample.ConsoleServer
 
             services
                 .AddIpc()
-                .AddService<IMyIpcService, MyIpcService>()
+                .AddService<IComputingService, ComputingService>()
                 ;
 
             return services;
         }
     }
-}
 ```
 
 I'll publish a NuGet package soon.

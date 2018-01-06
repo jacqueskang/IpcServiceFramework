@@ -32,7 +32,7 @@ namespace IpcServiceSample.ConsoleServer
 
             services
                 .AddIpc()
-                .AddService<IMyIpcService, MyIpcService>()
+                .AddService<IComputingService, ComputingService>()
                 ;
 
             return services;

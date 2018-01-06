@@ -13,14 +13,19 @@ namespace IpcServiceSample.ConsoleClient
 
         private static async Task MainAsync()
         {
-            Console.WriteLine("Invoking IpcService...");
-            var client = new MyClient("pipeName");
-            MyResponse response = await client.GetDataAsync(new MyRequest
+            try
             {
-                Message = "Hello"
-            }, iAmHandsome: true);
+                Console.WriteLine("Invoking IpcService...");
+                var client = new ComputingServiceClient("pipeName");
+                float x = 1.23f, y = 4.56f;
+                float sum = client.Add(x, y);
 
-            Console.WriteLine($"Received response: {response.Message}");
+                Console.WriteLine($"{x} + {y} = {sum}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+            }
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using JKang.IpcServiceFramework.IO;
+using JKang.IpcServiceFramework.Services;
 using Newtonsoft.Json.Linq;
 using System;
 using System.IO;
@@ -11,15 +12,24 @@ namespace JKang.IpcServiceFramework
     {
         private readonly string _pipeName;
         private readonly IIpcMessageSerializer _serializer;
+        private readonly IValueConverter _converter;
 
         public IpcServiceClient(string pipeName)
-            : this(pipeName, new DefaultIpcMessageSerializer())
+            : this(pipeName, new DefaultIpcMessageSerializer(), new DefaultValueConverter())
         { }
 
-        public IpcServiceClient(string pipeName, IIpcMessageSerializer requestSerializer)
+        public IpcServiceClient(string pipeName,
+            IIpcMessageSerializer serializer,
+            IValueConverter converter)
         {
             _pipeName = pipeName;
-            _serializer = requestSerializer;
+            _serializer = serializer;
+            _converter = converter;
+        }
+
+        public TResult Invoke<TResult>(string method, params object[] args)
+        {
+            return InvokeAsync<TResult>(method, args).Result;
         }
 
         public async Task<TResult> InvokeAsync<TResult>(string method, params object[] args)
@@ -42,8 +52,14 @@ namespace JKang.IpcServiceFramework
                 IpcResponse response = reader.ReadIpcResponse();
                 if (response.Succeed)
                 {
-                    // TODO: handle primitive types
-                    return ((JObject)response.Data).ToObject<TResult>();
+                    if (_converter.TryConvert(response.Data, typeof(TResult), out object @return))
+                    {
+                        return (TResult)@return;
+                    }
+                    else
+                    {
+                        throw new InvalidOperationException($"Unable to convert returned value to '{typeof(TResult).Name}'.");
+                    }
                 }
                 else
                 {

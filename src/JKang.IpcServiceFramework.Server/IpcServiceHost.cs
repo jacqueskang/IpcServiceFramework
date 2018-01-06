@@ -1,10 +1,12 @@
 ﻿using JKang.IpcServiceFramework.IO;
+using JKang.IpcServiceFramework.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
 using System;
 using System.IO.Pipes;
 using System.Reflection;
+using System.Threading.Tasks;
 
 namespace JKang.IpcServiceFramework
 {
@@ -14,6 +16,7 @@ namespace JKang.IpcServiceFramework
         private readonly IServiceProvider _serviceProvider;
         private readonly ILogger<IpcServiceHost> _logger;
         private readonly IIpcMessageSerializer _serializer;
+        private readonly IValueConverter _converter;
 
         public IpcServiceHost(string pipeName, IServiceProvider serviceProvider)
         {
@@ -21,6 +24,7 @@ namespace JKang.IpcServiceFramework
             _serviceProvider = serviceProvider;
             _logger = _serviceProvider.GetService<ILogger<IpcServiceHost>>();
             _serializer = _serviceProvider.GetRequiredService<IIpcMessageSerializer>();
+            _converter = _serviceProvider.GetRequiredService<IValueConverter>();
         }
 
         public void Start()
@@ -62,7 +66,7 @@ namespace JKang.IpcServiceFramework
             }
         }
 
-        private static IpcResponse GetReponse(IpcRequest request, IServiceScope scope)
+        private IpcResponse GetReponse(IpcRequest request, IServiceScope scope)
         {
             var @interface = Type.GetType(request.InterfaceName);
             if (@interface == null)
@@ -91,28 +95,33 @@ namespace JKang.IpcServiceFramework
             object[] args = new object[paramInfos.Length];
             for (int i = 0; i < args.Length; i++)
             {
-                if (request.Parameters[i].GetType() == paramInfos[i].ParameterType)
+                object origValue = request.Parameters[i];
+                Type destType = paramInfos[i].ParameterType;
+                if (_converter.TryConvert(origValue, destType, out object arg))
                 {
-                    args[i] = request.Parameters[i];
-                }
-                else if (request.Parameters[i] is JObject jObj)
-                {
-                    args[i] = jObj.ToObject(paramInfos[i].ParameterType);
+                    args[i] = arg;
                 }
                 else
                 {
-                    return IpcResponse.Fail($"Cannot convert value of parameter '{paramInfos[i].Name}'");
+                    return IpcResponse.Fail($"Cannot convert value of parameter '{paramInfos[i].Name}' ({origValue}) from {origValue.GetType().Name} to {destType.Name}.");
                 }
             }
 
             try
             {
-                dynamic @return = (dynamic)method.Invoke(service, args);
-                return IpcResponse.Success(@return.Result); // TODO: handle non-waitable method
+                object @return = method.Invoke(service, args);
+                if (@return is Task)
+                {
+                    throw new NotImplementedException();
+                }
+                else
+                {
+                    return IpcResponse.Success(@return); 
+                }
             }
-            catch
+            catch (Exception ex)
             {
-                return IpcResponse.Fail("Internal server error");
+                return IpcResponse.Fail($"Internal server error: {ex.Message}");
             }
         }
     }

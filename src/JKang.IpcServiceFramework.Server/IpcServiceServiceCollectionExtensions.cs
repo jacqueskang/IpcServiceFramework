@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using JKang.IpcServiceFramework.Services;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace JKang.IpcServiceFramework
 {
@@ -7,7 +8,9 @@ namespace JKang.IpcServiceFramework
         public static IIpcServiceCollection AddIpc(this IServiceCollection services)
         {
             services
-                .AddScoped<IIpcMessageSerializer, DefaultIpcMessageSerializer>();
+                .AddScoped<IValueConverter, DefaultValueConverter>()
+                .AddScoped<IIpcMessageSerializer, DefaultIpcMessageSerializer>()
+                ;
 
             return new IpcServiceCollection(services);
         }
