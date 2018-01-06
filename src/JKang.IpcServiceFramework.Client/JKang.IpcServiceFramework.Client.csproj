@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <RootNamespace>JKang.IpcServiceFramework</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\JKang.IpcServiceFramework.Core\JKang.IpcServiceFramework.Core.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -3,7 +3,7 @@ using System.Text;
 
 namespace JKang.IpcServiceFramework
 {
-    internal class DefaultIpcMessageSerializer : IIpcMessageSerializer
+    public class DefaultIpcMessageSerializer : IIpcMessageSerializer
     {
         private static readonly JsonSerializerSettings _settings = new JsonSerializerSettings
         {
