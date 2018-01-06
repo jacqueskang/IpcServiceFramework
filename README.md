@@ -2,6 +2,8 @@
 
 A .NET Core lightweight inter-process communication framework allowing invoking a service via named pipeline (in a similar way as WCF, which is currently unavailable for .NET Core).
 
+Support using primitive or complexe types in service contract.
+
 [ASP.NET Core Dependency Injection framework](https://docs.microsoft.com/en-us/aspnet/core/fundamentals/dependency-injection) friendly.
 
 ## Usage
@@ -15,24 +17,38 @@ A .NET Core lightweight inter-process communication framework allowing invoking 
 ```csharp
     public interface IComputingService
     {
-        float Add(float x, float y);
+        ComplexNumber AddComplexNumber(ComplexNumber x, ComplexNumber y);
+        float AddFloat(float x, float y);
     }
 ```
 
 2. Client side
 
 ```csharp
+	// implement proxy
     class ComputingServiceClient : IpcServiceClient<IComputingService>, IComputingService
     {
         public ComputingServiceClient(string pipeName)
             : base(pipeName)
         { }
 
-        public float Add(float x, float y)
+        public ComplexNumber AddComplexNumber(ComplexNumber x, ComplexNumber y)
         {
-            return Invoke<float>(nameof(Add), x, y);
+            return Invoke<ComplexNumber>(nameof(AddComplexNumber), x, y);
+        }
+
+        public float AddFloat(float x, float y)
+        {
+            return Invoke<float>(nameof(AddFloat), x, y);
         }
     }
+```
+
+```csharp
+	// invoke IPC service
+    var client = new ComputingServiceClient("pipeName");
+    float result1 = client.AddFloat(1.23f, 4.56f);
+    ComplexNumber result2 = client.AddComplexNumber(new ComplexNumber(0.1f, 0.3f), new ComplexNumber(0.2f, 0.6f));
 ```
 
 3. Server side
@@ -43,14 +59,20 @@ A .NET Core lightweight inter-process communication framework allowing invoking 
     {
         private readonly ILogger<ComputingService> _logger;
 
-        public ComputingService(ILogger<ComputingService> logger)
+        public ComputingService(ILogger<ComputingService> logger) // inject dependencies in constructor
         {
             _logger = logger;
         }
 
-        public float Add(float x, float y)
+        public ComplexNumber AddComplexNumber(ComplexNumber x, ComplexNumber y)
         {
-            _logger.LogInformation($"{nameof(Add)} called.");
+            _logger.LogInformation($"{nameof(AddComplexNumber)} called.");
+            return new ComplexNumber(x.A + y.A, x.B + y.B);
+        }
+
+        public float AddFloat(float x, float y)
+        {
+            _logger.LogInformation($"{nameof(AddFloat)} called.");
             return x + y;
         }
     }

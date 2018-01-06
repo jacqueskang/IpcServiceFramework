@@ -2,6 +2,20 @@
 {
     public interface IComputingService
     {
-        float Add(float x, float y);
+        float AddFloat(float x, float y);
+
+        ComplexNumber AddComplexNumber(ComplexNumber x, ComplexNumber y);
+    }
+
+    public class ComplexNumber
+    {
+        public float A { get; set; }
+        public float B { get; set; }
+
+        public ComplexNumber(float a, float b)
+        {
+            A = a;
+            B = b;
+        }
     }
 }
