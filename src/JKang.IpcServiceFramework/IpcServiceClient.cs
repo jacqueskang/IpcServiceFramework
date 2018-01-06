@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using JKang.IpcServiceFramework.IO;
+using Newtonsoft.Json.Linq;
 using System;
 using System.IO;
 using System.IO.Pipes;
@@ -24,27 +25,21 @@ namespace JKang.IpcServiceFramework
         public async Task<TResult> InvokeAsync<TResult>(string method, params object[] args)
         {
             using (var client = new NamedPipeClientStream(".", _pipeName, PipeDirection.InOut, PipeOptions.None))
+            using (var writer = new IpcWriter(client, _serializer))
+            using (var reader = new IpcReader(client, _serializer))
             {
                 await client.ConnectAsync();
 
                 // send request
-                var request = new IpcRequest
+                writer.Write(new IpcRequest
                 {
                     InterfaceName = typeof(TInterface).AssemblyQualifiedName,
                     MethodName = method,
                     Parameters = args,
-                };
-                byte[] requestBin = _serializer.SerializeRequest(request);
-                var writer = new BinaryWriter(client);
-                writer.Write(requestBin.Length);
-                writer.Write(requestBin);
-                await client.FlushAsync();
+                });
 
                 // receive response
-                var reader = new BinaryReader(client);
-                int responseLength = reader.ReadInt32();
-                byte[] responseBin = reader.ReadBytes(responseLength);
-                IpcResponse response = _serializer.DeserializeResponse(responseBin);
+                IpcResponse response = reader.ReadIpcResponse();
                 if (response.Succeed)
                 {
                     // TODO: handle primitive types
