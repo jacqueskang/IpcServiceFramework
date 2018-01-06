@@ -1,6 +1,6 @@
 ﻿namespace JKang.IpcServiceFramework
 {
-    internal class IpcRequest
+    public class IpcRequest
     {
         public string InterfaceName { get; set; }
         public string MethodName { get; set; }

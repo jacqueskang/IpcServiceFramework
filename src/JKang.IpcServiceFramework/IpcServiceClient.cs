@@ -1,9 +1,7 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+﻿using Newtonsoft.Json.Linq;
 using System;
 using System.IO;
 using System.IO.Pipes;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace JKang.IpcServiceFramework
@@ -11,10 +9,16 @@ namespace JKang.IpcServiceFramework
     public abstract class IpcServiceClient<TInterface>
     {
         private readonly string _pipeName;
+        private readonly IIpcMessageSerializer _serializer;
 
         public IpcServiceClient(string pipeName)
+            : this(pipeName, new DefaultIpcMessageSerializer())
+        { }
+
+        public IpcServiceClient(string pipeName, IIpcMessageSerializer requestSerializer)
         {
             _pipeName = pipeName;
+            _serializer = requestSerializer;
         }
 
         public async Task<TResult> InvokeAsync<TResult>(string method, params object[] args)
@@ -30,17 +34,17 @@ namespace JKang.IpcServiceFramework
                     MethodName = method,
                     Parameters = args,
                 };
-                string json = JsonConvert.SerializeObject(request);
-                byte[] bytes = Encoding.UTF8.GetBytes(json);
+                byte[] requestBin = _serializer.SerializeRequest(request);
                 var writer = new BinaryWriter(client);
-                writer.Write(bytes.Length);
-                writer.Write(bytes);
+                writer.Write(requestBin.Length);
+                writer.Write(requestBin);
                 await client.FlushAsync();
 
                 // receive response
-                var reader = new StreamReader(client);
-                string responseJson = await reader.ReadToEndAsync();
-                IpcResponse response = JsonConvert.DeserializeObject<IpcResponse>(responseJson);
+                var reader = new BinaryReader(client);
+                int responseLength = reader.ReadInt32();
+                byte[] responseBin = reader.ReadBytes(responseLength);
+                IpcResponse response = _serializer.DeserializeResponse(responseBin);
                 if (response.Succeed)
                 {
                     // TODO: handle primitive types

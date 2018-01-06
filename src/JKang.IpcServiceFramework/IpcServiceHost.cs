@@ -29,34 +29,36 @@ namespace JKang.IpcServiceFramework
         {
             using (var server = new NamedPipeServerStream(_pipeName, PipeDirection.InOut, 1))
             using (var reader = new BinaryReader(server))
-            using (var writer = new StreamWriter(server))
+            using (var writer = new BinaryWriter(server))
             {
                 while (true)
                 {
                     _logger.LogInformation("IPC service started. Waiting for connection");
                     server.WaitForConnection();
 
+                    _logger.LogDebug("client connected");
                     try
                     {
-                        _logger.LogDebug("client connected");
-
-                        int length = reader.ReadInt32();
-                        byte[] bytes = reader.ReadBytes(length);
-                        string json = Encoding.UTF8.GetString(bytes);
-                        IpcRequest request = JsonConvert.DeserializeObject<IpcRequest>(json);
-
-                        _logger.LogDebug("request received, invoking corresponding method...");
-                        IpcResponse response;
                         using (IServiceScope scope = _serviceProvider.CreateScope())
                         {
-                            response = GetReponse(request, scope);
-                        }
+                            IIpcMessageSerializer serializer = scope.ServiceProvider.GetRequiredService<IIpcMessageSerializer>();
 
-                        _logger.LogDebug("sending response...");
-                        string resultJson = JsonConvert.SerializeObject(response);
-                        writer.Write(resultJson);
-                        writer.Flush();
-                        server.Disconnect();
+                            int requestLength = reader.ReadInt32();
+                            byte[] requestBin = reader.ReadBytes(requestLength);
+                            IpcRequest request = serializer.DeserializeRequest(requestBin);
+
+                            _logger.LogDebug("request received, invoking corresponding method...");
+                            IpcResponse response = GetReponse(request, scope);
+
+                            _logger.LogDebug("sending response...");
+                            byte[] responseBin = serializer.SerializeResponse(response);
+                            writer.Write(responseBin.Length);
+                            writer.Write(responseBin);
+                            writer.Flush();
+
+                            // disconnect client
+                            server.Disconnect();
+                        }
                     }
                     catch (Exception ex)
                     {

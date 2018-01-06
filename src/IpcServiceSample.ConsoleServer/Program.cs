@@ -27,10 +27,15 @@ namespace IpcServiceSample.ConsoleServer
 
         private static IServiceCollection ConfigureServices(IServiceCollection services)
         {
-            return services
-                .AddLogging()
-                .AddScoped<IMyIpcService, MyIpcService>()
+            services
+                .AddLogging();
+
+            services
+                .AddIpc()
+                .AddService<IMyIpcService, MyIpcService>()
                 ;
+
+            return services;
         }
     }
 }
