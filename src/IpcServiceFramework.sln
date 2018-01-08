@@ -25,6 +25,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JKang.IpcServiceFramework.S
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JKang.IpcServiceFramework.Core.Tests", "JKang.IpcServiceFramework.Core.Tests\JKang.IpcServiceFramework.Core.Tests.csproj", "{1EC81913-883B-487C-A3FD-98A80EDE3225}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IpcServiceSample.WebServer", "IpcServiceSample.WebServer\IpcServiceSample.WebServer.csproj", "{D57727B9-81F1-439A-AD17-0DB26C8F0523}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -59,6 +61,10 @@ Global
 		{1EC81913-883B-487C-A3FD-98A80EDE3225}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1EC81913-883B-487C-A3FD-98A80EDE3225}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1EC81913-883B-487C-A3FD-98A80EDE3225}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D57727B9-81F1-439A-AD17-0DB26C8F0523}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D57727B9-81F1-439A-AD17-0DB26C8F0523}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D57727B9-81F1-439A-AD17-0DB26C8F0523}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D57727B9-81F1-439A-AD17-0DB26C8F0523}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -67,6 +73,7 @@ Global
 		{D1ADB92C-B4FB-40DD-911E-46360A23381B} = {03210BFB-17B1-4775-A8A2-D302ECBF2F46}
 		{24A3C4D2-95A2-48D9-86F2-648879EC74F4} = {03210BFB-17B1-4775-A8A2-D302ECBF2F46}
 		{8D54E62A-ECFF-4FFF-B9D1-DB343D456451} = {03210BFB-17B1-4775-A8A2-D302ECBF2F46}
+		{D57727B9-81F1-439A-AD17-0DB26C8F0523} = {03210BFB-17B1-4775-A8A2-D302ECBF2F46}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {F87E0D46-F461-4E41-9A3B-64710A6DFB2F}

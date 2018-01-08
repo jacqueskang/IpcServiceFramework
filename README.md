@@ -8,8 +8,9 @@ Support using primitive or complexe types in service contract.
 
 ## Usage
  1. Create an interface as service contract (ideally package in a shared assembly)
- 2. On client side, implement a proxy with help of abstract class provided by framework
- 3. On server side, implement the service and register in IoC container
+ 2. Implement a client proxy with help of abstract class provided by framework
+ 3. Implement the service and register in IoC container
+ 4. Host the service in an console or web applciation
 
 ## Sample:
 
@@ -78,6 +79,8 @@ Support using primitive or complexe types in service contract.
     }
 ```
 
+4. Hosting in Console application
+
 ```csharp
 	// hosting in Console application
    class Program
@@ -110,6 +113,63 @@ Support using primitive or complexe types in service contract.
                 ;
 
             return services;
+        }
+    }
+```
+
+5. Hosting in Web application
+
+```csharp
+    public class Program
+    {
+        public static void Main(string[] args)
+        {
+            IWebHost webHost = BuildWebHost(args);
+
+            ThreadPool.QueueUserWorkItem(StartIpcService,
+                webHost.Services.CreateScope().ServiceProvider);
+
+            webHost.Run();
+        }
+
+        private static void StartIpcService(object state)
+        {
+            var serviceProvider = state as IServiceProvider;
+            IpcServiceHostBuilder
+                .Buid("pipeName", serviceProvider as IServiceProvider)
+                .Start();
+        }
+
+        public static IWebHost BuildWebHost(string[] args) =>
+            WebHost.CreateDefaultBuilder(args)
+                .UseStartup<Startup>()
+                .Build();
+    }
+```
+
+
+```csharp
+    public class Startup
+    {
+        public void ConfigureServices(IServiceCollection services)
+        {
+            services
+                .AddIpc()
+                .AddService<IComputingService, ComputingService>()
+                ;
+        }
+
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        {
+            if (env.IsDevelopment())
+            {
+                app.UseDeveloperExceptionPage();
+            }
+
+            app.Run(async (context) =>
+            {
+                await context.Response.WriteAsync("Hello World!");
+            });
         }
     }
 ```
