@@ -2,7 +2,6 @@
 using JKang.IpcServiceFramework.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json.Linq;
 using System;
 using System.IO.Pipes;
 using System.Reflection;
