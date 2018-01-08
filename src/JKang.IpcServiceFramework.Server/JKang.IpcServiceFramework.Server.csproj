@@ -3,6 +3,17 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <RootNamespace>JKang.IpcServiceFramework</RootNamespace>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <Authors>Jacques Kang</Authors>
+    <Company />
+    <Description>A lightweight .NET Core inter-process communication framework allowing invoking a service via named pipeline in a similar way as WCF.
+This package is for server hosting.</Description>
+    <Copyright>Jacques Kang</Copyright>
+    <PackageLicenseUrl>https://github.com/jacqueskang/IpcServiceFramework/blob/develop/LICENSE</PackageLicenseUrl>
+    <PackageProjectUrl></PackageProjectUrl>
+    <RepositoryUrl>https://github.com/jacqueskang/IpcServiceFramework</RepositoryUrl>
+    <PackageTags>dotnetcore,named-pipes,interprocess-communication</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>

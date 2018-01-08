@@ -3,6 +3,13 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <RootNamespace>JKang.IpcServiceFramework</RootNamespace>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Authors>Jacques Kang</Authors>
+    <Company />
+    <Copyright>Jacques Kang</Copyright>
+    <PackageLicenseUrl>https://github.com/jacqueskang/IpcServiceFramework/blob/develop/LICENSE</PackageLicenseUrl>
+    <RepositoryUrl>https://github.com/jacqueskang/IpcServiceFramework</RepositoryUrl>
+    <PackageTags>dotnetcore,named-pipes,interprocess-communication</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>
