@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.IO.Pipes;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace JKang.IpcServiceFramework
@@ -14,6 +15,7 @@ namespace JKang.IpcServiceFramework
         private readonly string _pipeName;
         private readonly IServiceProvider _serviceProvider;
         private readonly ILogger<IpcServiceHost> _logger;
+        private readonly IpcServiceOptions _options;
         private readonly IIpcMessageSerializer _serializer;
         private readonly IValueConverter _converter;
 
@@ -22,45 +24,68 @@ namespace JKang.IpcServiceFramework
             _pipeName = pipeName;
             _serviceProvider = serviceProvider;
             _logger = _serviceProvider.GetService<ILogger<IpcServiceHost>>();
+            _options = _serviceProvider.GetRequiredService<IpcServiceOptions>();
             _serializer = _serviceProvider.GetRequiredService<IIpcMessageSerializer>();
             _converter = _serviceProvider.GetRequiredService<IValueConverter>();
         }
 
         public void Start()
         {
-            using (var server = new NamedPipeServerStream(_pipeName, PipeDirection.InOut, 1))
+            Thread[] threads = new Thread[_options.ThreadCount];
+            for (int i = 0; i < threads.Length; i++)
+            {
+                threads[i] = new Thread(StartServerThread);
+                threads[i].Start();
+            }
+            _logger?.LogInformation("IPC server started.");
+
+            while (true)
+            {
+                Thread.Sleep(100);
+                for (int i = 0; i < threads.Length; i++)
+                {
+                    if (threads[i].Join(250))
+                    {
+                        // thread is finished, starting a new thread
+                        threads[i] = new Thread(StartServerThread);
+                        threads[i].Start();
+                    }
+                }
+            }
+        }
+
+        private void StartServerThread(object obj)
+        {
+            using (var server = new NamedPipeServerStream(_pipeName, PipeDirection.InOut, _options.ThreadCount))
             using (var writer = new IpcWriter(server, _serializer))
             using (var reader = new IpcReader(server, _serializer))
             {
-                _logger?.LogInformation("IPC server started.");
-                while (true)
+                server.WaitForConnection();
+
+                try
                 {
-                    _logger?.LogDebug("Waiting for connection...");
-                    server.WaitForConnection();
+                    _logger?.LogDebug($"[thread {Thread.CurrentThread.ManagedThreadId}] client connected, reading request...");
+                    IpcRequest request = reader.ReadIpcRequest();
 
-                    try
+                    _logger?.LogDebug($"[thread {Thread.CurrentThread.ManagedThreadId}] request received, invoking corresponding method...");
+                    IpcResponse response;
+                    using (IServiceScope scope = _serviceProvider.CreateScope())
                     {
-                        _logger?.LogDebug("client connected, reading request...");
-                        IpcRequest request = reader.ReadIpcRequest();
-
-                        _logger?.LogDebug("request received, invoking corresponding method...");
-                        IpcResponse response;
-                        using (IServiceScope scope = _serviceProvider.CreateScope())
-                        {
-                            response = GetReponse(request, scope);
-                        }
-
-                        _logger?.LogDebug("sending response...");
-                        writer.Write(response);
-
-                        // disconnect client
-                        server.Disconnect();
+                        response = GetReponse(request, scope);
                     }
-                    catch (Exception ex)
-                    {
-                        _logger?.LogError(ex, ex.Message);
-                        server.Disconnect();
-                    }
+
+                    _logger?.LogDebug($"[thread {Thread.CurrentThread.ManagedThreadId}] sending response...");
+                    writer.Write(response);
+
+                    _logger?.LogDebug($"[thread {Thread.CurrentThread.ManagedThreadId}] done.");
+                }
+                catch (Exception ex)
+                {
+                    _logger?.LogError(ex, ex.Message);
+                }
+                finally
+                {
+                    server.Close();
                 }
             }
         }
@@ -115,7 +140,7 @@ namespace JKang.IpcServiceFramework
                 }
                 else
                 {
-                    return IpcResponse.Success(@return); 
+                    return IpcResponse.Success(@return);
                 }
             }
             catch (Exception ex)

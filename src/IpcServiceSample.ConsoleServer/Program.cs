@@ -14,10 +14,6 @@ namespace IpcServiceSample.ConsoleServer
             IServiceCollection services = ConfigureServices(new ServiceCollection());
             ServiceProvider serviceProvider = services.BuildServiceProvider();
 
-            // configure console logging
-            serviceProvider.GetRequiredService<ILoggerFactory>()
-                .AddConsole(LogLevel.Debug);
-
             // TODO start IPC service host
             IpcServiceHostBuilder
                 .Buid("pipeName", serviceProvider as IServiceProvider)
@@ -28,10 +24,17 @@ namespace IpcServiceSample.ConsoleServer
         private static IServiceCollection ConfigureServices(IServiceCollection services)
         {
             services
-                .AddLogging();
+                .AddLogging(builder =>
+                {
+                    builder.AddConsole();
+                    builder.SetMinimumLevel(LogLevel.Debug);
+                });
 
             services
-                .AddIpc()
+                .AddIpc(options =>
+                {
+                    options.ThreadCount = 2;
+                })
                 .AddService<IComputingService, ComputingService>()
                 ;
 
