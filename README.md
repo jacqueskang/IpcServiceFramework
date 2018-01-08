@@ -5,6 +5,7 @@
 A .NET Core lightweight inter-process communication framework allowing invoking a service via named pipeline (in a similar way as WCF, which is currently unavailable for .NET Core).
 
 Support using primitive or complexe types in service contract.
+Support multi-threading on server side with configurable number of threads.
 
 [ASP.NET Core Dependency Injection framework](https://docs.microsoft.com/en-us/aspnet/core/fundamentals/dependency-injection) friendly.
 
@@ -109,7 +110,10 @@ Support using primitive or complexe types in service contract.
                 .AddLogging();
 
             services
-                .AddIpc()
+                .AddIpc(options =>
+                {
+                    options.ThreadCount = 4;
+                })
                 .AddService<IComputingService, ComputingService>()
                 ;
 
