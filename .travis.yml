@@ -7,5 +7,5 @@ sudo: required
 script:
  - cd ./src
  - dotnet restore
- - dotnet build
+ - dotnet build --configuration Release
  - dotnet test JKang.IpcServiceFramework.Core.Tests
