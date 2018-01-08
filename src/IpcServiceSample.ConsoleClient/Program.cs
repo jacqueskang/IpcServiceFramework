@@ -1,17 +1,11 @@
 ﻿using IpcServiceSample.ServiceContracts;
 using System;
-using System.Threading.Tasks;
 
 namespace IpcServiceSample.ConsoleClient
 {
     class Program
     {
         static void Main(string[] args)
-        {
-            MainAsync().Wait();
-        }
-
-        private static async Task MainAsync()
         {
             try
             {

@@ -101,7 +101,6 @@ Support using primitive or complexe types in service contract.
             IpcServiceHostBuilder
                 .Buid("pipeName", serviceProvider as IServiceProvider)
                 .Start();
-
         }
 
         private static IServiceCollection ConfigureServices(IServiceCollection services)
