@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <RootNamespace>JKang.IpcServiceFramework</RootNamespace>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Authors>Jacques Kang</Authors>
+    <Company />
+    <Description>A lightweight .NET Core inter-process communication framework allowing invoking a service via named pipeline in a similar way as WCF.</Description>
+    <Copyright>Jacques Kang</Copyright>
+    <PackageLicenseUrl>https://github.com/jacqueskang/IpcServiceFramework/blob/develop/LICENSE</PackageLicenseUrl>
+    <RepositoryUrl>https://github.com/jacqueskang/IpcServiceFramework</RepositoryUrl>
+    <PackageTags>dotnetcore,named-pipes,interprocess-communication</PackageTags>
+    <PackageProjectUrl>https://github.com/jacqueskang/IpcServiceFramework</PackageProjectUrl>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
+  </ItemGroup>
+
+</Project>
