@@ -15,9 +15,17 @@ Support multi-threading on server side with configurable number of threads.
  2. Implement the service and host it in an console or web applciation
  3. Invoke the service with framework provided proxy client
 
-## Sample:
+## Downloads
 
- - Service contract
+IpcServiceFramework is available via NuGet:
+
+ - [JKang.IpcServiceFramework.Core](https://www.nuget.org/packages/JKang.IpcServiceFramework.Core/)
+ - [JKang.IpcServiceFramework.Server](https://www.nuget.org/packages/JKang.IpcServiceFramework.Server/)
+ - [JKang.IpcServiceFramework.Client](https://www.nuget.org/packages/JKang.IpcServiceFramework.Client/)
+
+## Quick Start:
+
+### Step 1 - Create service contract
 ```csharp
     public interface IComputingService
     {
@@ -25,7 +33,7 @@ Support multi-threading on server side with configurable number of threads.
     }
 ```
 
- - Service implementation
+### Step 2: Implement the service
 
 ```csharp
     class ComputingService : IComputingService
@@ -37,14 +45,7 @@ Support multi-threading on server side with configurable number of threads.
     }
 ```
 
- - Invoke the service from client process
-
-```csharp
-    var proxy = new IpcServiceClient<IComputingService>("pipeName");
-    float result = await proxy.InvokeAsync(x => x.AddFloat(1.23f, 4.56f));
-```
-
- - Host the service (Console application)
+### Step 3 - Host the service in Console application
 
 ```csharp
    class Program
@@ -71,64 +72,13 @@ Support multi-threading on server side with configurable number of threads.
         }
     }
 ```
+It's possible to host IPC service in web application, please check out the sample project *IpcServiceSample.WebServer*
 
- - Host the service (Web application)
-
-```csharp
-    public class Program
-    {
-        public static void Main(string[] args)
-        {
-            IWebHost webHost = BuildWebHost(args);
-
-            // run the IPC service host in a separated thread because it's blocking
-            ThreadPool.QueueUserWorkItem(StartIpcService,
-                webHost.Services.CreateScope().ServiceProvider);
-
-            webHost.Run();
-        }
-
-        private static void StartIpcService(object state)
-        {
-            var serviceProvider = state as IServiceProvider;
-            IpcServiceHostBuilder
-                .Buid("pipeName", serviceProvider as IServiceProvider)
-                .Run();
-        }
-
-        public static IWebHost BuildWebHost(string[] args) =>
-            WebHost.CreateDefaultBuilder(args)
-                .UseStartup<Startup>()
-                .Build();
-    }
-```
-
+### Step 4 - Invoke the service from client process
 
 ```csharp
-    public class Startup
-    {
-        public void ConfigureServices(IServiceCollection services)
-        {
-            services
-                .AddIpc(options =>
-                {
-                    options.ThreadCount = 4;
-                })
-                .AddService<IComputingService, ComputingService>()
-                ;
-        }
-
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
-        {
-            app.Run(async (context) =>
-            {
-                await context.Response.WriteAsync("Hello World!");
-            });
-        }
-    }
+    var proxy = new IpcServiceClient<IComputingService>("pipeName");
+    float result = await proxy.InvokeAsync(x => x.AddFloat(1.23f, 4.56f));
 ```
 
-I'll publish NuGet packages later.
-
-Any contributions or comments are welcome!
-
+__Please feel free to download, fork and/or provide any feedback!__
