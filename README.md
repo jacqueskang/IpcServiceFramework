@@ -5,124 +5,74 @@
 A .NET Core lightweight inter-process communication framework allowing invoking a service via named pipeline (in a similar way as WCF, which is currently unavailable for .NET Core).
 
 Support using primitive or complexe types in service contract.
+
 Support multi-threading on server side with configurable number of threads.
 
 [ASP.NET Core Dependency Injection framework](https://docs.microsoft.com/en-us/aspnet/core/fundamentals/dependency-injection) friendly.
 
 ## Usage
- 1. Create an interface as service contract (ideally package in a shared assembly)
- 2. Implement a client proxy with help of abstract class provided by framework
- 3. Implement the service and register in IoC container
- 4. Host the service in an console or web applciation
+ 1. Create an interface as service contract and package it in an assembly to be shared between server and client.
+ 2. Implement the service and host it in an console or web applciation
+ 3. Invoke the service with framework provided proxy client
 
 ## Sample:
 
-1. Service contract
+ - Service contract
 ```csharp
     public interface IComputingService
     {
-        ComplexNumber AddComplexNumber(ComplexNumber x, ComplexNumber y);
         float AddFloat(float x, float y);
     }
 ```
 
-2. Client side
+ - Service implementation
 
 ```csharp
-	// implement proxy
-    class ComputingServiceClient : IpcServiceClient<IComputingService>, IComputingService
+    class ComputingService : IComputingService
     {
-        public ComputingServiceClient(string pipeName)
-            : base(pipeName)
-        { }
-
-        public ComplexNumber AddComplexNumber(ComplexNumber x, ComplexNumber y)
-        {
-            return Invoke<ComplexNumber>(nameof(AddComplexNumber), x, y);
-        }
-
         public float AddFloat(float x, float y)
         {
-            return Invoke<float>(nameof(AddFloat), x, y);
-        }
-    }
-```
-
-```csharp
-	// invoke IPC service
-    var client = new ComputingServiceClient("pipeName");
-    float result1 = client.AddFloat(1.23f, 4.56f);
-    ComplexNumber result2 = client.AddComplexNumber(new ComplexNumber(0.1f, 0.3f), new ComplexNumber(0.2f, 0.6f));
-```
-
-3. Server side
-
-```csharp
-	// service implementation
-    public class ComputingService : IComputingService
-    {
-        private readonly ILogger<ComputingService> _logger;
-
-        public ComputingService(ILogger<ComputingService> logger) // inject dependencies in constructor
-        {
-            _logger = logger;
-        }
-
-        public ComplexNumber AddComplexNumber(ComplexNumber x, ComplexNumber y)
-        {
-            _logger.LogInformation($"{nameof(AddComplexNumber)} called.");
-            return new ComplexNumber(x.A + y.A, x.B + y.B);
-        }
-
-        public float AddFloat(float x, float y)
-        {
-            _logger.LogInformation($"{nameof(AddFloat)} called.");
             return x + y;
         }
     }
 ```
 
-4. Hosting in Console application
+ - Invoke the service from client process
 
 ```csharp
-	// hosting in Console application
+    var proxy = new IpcServiceClient<IComputingService>("pipeName");
+    float result = await proxy.InvokeAsync(x => x.AddFloat(1.23f, 4.56f));
+```
+
+ - Host the service (Console application)
+
+```csharp
    class Program
     {
         static void Main(string[] args)
         {
-            // build service provider
+            // configure DI
             IServiceCollection services = ConfigureServices(new ServiceCollection());
-            ServiceProvider serviceProvider = services.BuildServiceProvider();
 
-            // configure console logging
-            serviceProvider.GetRequiredService<ILoggerFactory>()
-                .AddConsole(LogLevel.Debug);
-
-            // TODO start IPC service host
+            // run IPC service host
             IpcServiceHostBuilder
-                .Buid("pipeName", serviceProvider as IServiceProvider)
-                .Start();
+                .Buid("pipeName", services.BuildServiceProvider())
+                .Run();
         }
 
         private static IServiceCollection ConfigureServices(IServiceCollection services)
         {
-            services
-                .AddLogging();
-
-            services
+            return services
                 .AddIpc(options =>
                 {
                     options.ThreadCount = 4;
                 })
-                .AddService<IComputingService, ComputingService>()
-                ;
-
-            return services;
+                .AddService<IComputingService, ComputingService>();
         }
     }
 ```
 
-5. Hosting in Web application
+ - Host the service (Web application)
 
 ```csharp
     public class Program
@@ -131,6 +81,7 @@ Support multi-threading on server side with configurable number of threads.
         {
             IWebHost webHost = BuildWebHost(args);
 
+            // run the IPC service host in a separated thread because it's blocking
             ThreadPool.QueueUserWorkItem(StartIpcService,
                 webHost.Services.CreateScope().ServiceProvider);
 
@@ -142,7 +93,7 @@ Support multi-threading on server side with configurable number of threads.
             var serviceProvider = state as IServiceProvider;
             IpcServiceHostBuilder
                 .Buid("pipeName", serviceProvider as IServiceProvider)
-                .Start();
+                .Run();
         }
 
         public static IWebHost BuildWebHost(string[] args) =>
@@ -159,18 +110,16 @@ Support multi-threading on server side with configurable number of threads.
         public void ConfigureServices(IServiceCollection services)
         {
             services
-                .AddIpc()
+                .AddIpc(options =>
+                {
+                    options.ThreadCount = 4;
+                })
                 .AddService<IComputingService, ComputingService>()
                 ;
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
-            if (env.IsDevelopment())
-            {
-                app.UseDeveloperExceptionPage();
-            }
-
             app.Run(async (context) =>
             {
                 await context.Response.WriteAsync("Hello World!");
@@ -179,7 +128,7 @@ Support multi-threading on server side with configurable number of threads.
     }
 ```
 
-I'll publish a NuGet package soon.
+I'll publish NuGet packages later.
 
 Any contributions or comments are welcome!
 

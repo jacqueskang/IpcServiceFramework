@@ -29,7 +29,7 @@ namespace JKang.IpcServiceFramework
             _converter = _serviceProvider.GetRequiredService<IValueConverter>();
         }
 
-        public void Start()
+        public void Run()
         {
             Thread[] threads = new Thread[_options.ThreadCount];
             for (int i = 0; i < threads.Length; i++)

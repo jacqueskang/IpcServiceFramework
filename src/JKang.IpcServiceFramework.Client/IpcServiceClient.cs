@@ -1,22 +1,25 @@
-﻿using JKang.IpcServiceFramework.IO;
+﻿using Castle.DynamicProxy;
+using JKang.IpcServiceFramework.IO;
 using JKang.IpcServiceFramework.Services;
 using System;
 using System.IO.Pipes;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 
 namespace JKang.IpcServiceFramework
 {
-    public abstract class IpcServiceClient<TInterface>
+    public class IpcServiceClient<TInterface>
+        where TInterface : class
     {
         private readonly string _pipeName;
         private readonly IIpcMessageSerializer _serializer;
         private readonly IValueConverter _converter;
 
-        protected IpcServiceClient(string pipeName)
+        public IpcServiceClient(string pipeName)
             : this(pipeName, new DefaultIpcMessageSerializer(), new DefaultValueConverter())
         { }
 
-        protected IpcServiceClient(string pipeName,
+        internal IpcServiceClient(string pipeName,
             IIpcMessageSerializer serializer,
             IValueConverter converter)
         {
@@ -25,10 +28,25 @@ namespace JKang.IpcServiceFramework
             _converter = converter;
         }
 
-        protected TResult Invoke<TResult>(string method, params object[] args)
+        public async Task InvokeAsync(Expression<Action<TInterface>> exp)
         {
-            IpcRequest request = CreateRequest(method, args);
-            IpcResponse response = GetResponseAsync(request).Result;
+            IpcRequest request = GetRequest(exp, new MyInterceptor());
+            IpcResponse response = await GetResponseAsync(request);
+
+            if (response.Succeed)
+            {
+                return;
+            }
+            else
+            {
+                throw new InvalidOperationException(response.Failure);
+            }
+        }
+
+        public async Task<TResult> InvokeAsync<TResult>(Expression<Func<TInterface, TResult>> exp)
+        {
+            IpcRequest request = GetRequest(exp, new MyInterceptor<TResult>());
+            IpcResponse response = await GetResponseAsync(request);
 
             if (response.Succeed)
             {
@@ -47,24 +65,28 @@ namespace JKang.IpcServiceFramework
             }
         }
 
-        protected void Invoke(string method, params object[] args)
+        private static IpcRequest GetRequest(Expression exp, MyInterceptor interceptor)
         {
-            IpcRequest request = CreateRequest(method, args);
-            IpcResponse response = GetResponseAsync(request).Result;
-
-            if (!response.Succeed)
+            if (!(exp is LambdaExpression lamdaExp))
             {
-                throw new InvalidOperationException(response.Failure);
+                throw new ArgumentException("Only support lamda expresion, ex: x => x.GetData(a, b)");
             }
-        }
 
-        private static IpcRequest CreateRequest(string method, object[] args)
-        {
+            if (!(lamdaExp.Body is MethodCallExpression methodCallExp))
+            {
+                throw new ArgumentException("Only support calling method, ex: x => x.GetData(a, b)");
+            }
+
+            var proxyGenerator = new ProxyGenerator();
+            TInterface proxy = proxyGenerator.CreateInterfaceProxyWithoutTarget<TInterface>(interceptor);
+            Delegate @delegate = lamdaExp.Compile();
+            @delegate.DynamicInvoke(proxy);
+
             return new IpcRequest
             {
                 InterfaceName = typeof(TInterface).AssemblyQualifiedName,
-                MethodName = method,
-                Parameters = args,
+                MethodName = interceptor.LastInvocation.Method.Name,
+                Parameters = interceptor.LastInvocation.Arguments,
             };
         }
 
@@ -81,6 +103,25 @@ namespace JKang.IpcServiceFramework
 
                 // receive response
                 return reader.ReadIpcResponse();
+            }
+        }
+
+        private class MyInterceptor : IInterceptor
+        {
+            public IInvocation LastInvocation { get; private set; }
+
+            public virtual void Intercept(IInvocation invocation)
+            {
+                LastInvocation = invocation;
+            }
+        }
+
+        private class MyInterceptor<TResult> : MyInterceptor
+        {
+            public override void Intercept(IInvocation invocation)
+            {
+                base.Intercept(invocation);
+                invocation.ReturnValue = default(TResult);
             }
         }
     }

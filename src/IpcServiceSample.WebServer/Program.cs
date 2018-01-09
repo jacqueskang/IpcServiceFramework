@@ -24,7 +24,7 @@ namespace IpcServiceSample.WebServer
             var serviceProvider = state as IServiceProvider;
             IpcServiceHostBuilder
                 .Buid("pipeName", serviceProvider as IServiceProvider)
-                .Start();
+                .Run();
         }
 
         public static IWebHost BuildWebHost(string[] args) =>
