@@ -11,7 +11,7 @@
 This package is for server hosting.</Description>
     <Copyright>Jacques Kang</Copyright>
     <PackageLicenseUrl>https://github.com/jacqueskang/IpcServiceFramework/blob/develop/LICENSE</PackageLicenseUrl>
-    <PackageProjectUrl></PackageProjectUrl>
+    <PackageProjectUrl>https://github.com/jacqueskang/IpcServiceFramework</PackageProjectUrl>
     <RepositoryUrl>https://github.com/jacqueskang/IpcServiceFramework</RepositoryUrl>
     <PackageTags>dotnetcore,named-pipes,interprocess-communication</PackageTags>
   </PropertyGroup>
