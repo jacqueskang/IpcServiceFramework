@@ -22,6 +22,12 @@ namespace JKang.IpcServiceFramework.Services
                 return true;
             }
 
+            if (origValue is JArray jArray)
+            {
+                destValue = jArray.ToObject(destType);
+                return true;
+            }
+
             try
             {
                 destValue = Convert.ChangeType(origValue, destType);

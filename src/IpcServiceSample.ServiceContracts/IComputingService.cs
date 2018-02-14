@@ -1,9 +1,12 @@
-﻿namespace IpcServiceSample.ServiceContracts
+﻿using System.Collections.Generic;
+
+namespace IpcServiceSample.ServiceContracts
 {
     public interface IComputingService
     {
         float AddFloat(float x, float y);
         ComplexNumber AddComplexNumber(ComplexNumber x, ComplexNumber y);
+        ComplexNumber AddComplexNumbers(IEnumerable<ComplexNumber> numbers);
         void DoNothing();
     }
 
