@@ -22,13 +22,22 @@ namespace IpcServiceSample.ConsoleClient
                 float result1 = await client.InvokeAsync(x => x.AddFloat(1.23f, 4.56f));
                 Console.WriteLine($"sum of 2 floating number is: {result1}");
 
-                // test 1: call IPC service method with complex types
+                // test 2: call IPC service method with complex types
                 ComplexNumber result2 = await client.InvokeAsync(x => x.AddComplexNumber(
                     new ComplexNumber(0.1f, 0.3f),
                     new ComplexNumber(0.2f, 0.6f)));
                 Console.WriteLine($"sum of 2 complexe number is: {result2.A}+{result2.B}i");
 
-                // test 3: call IPC service method without parameter or return
+                // test 3: call IPC service method with an array of complex types
+                ComplexNumber result3 = await client.InvokeAsync(x => x.AddComplexNumbers(new[]
+                {
+                    new ComplexNumber(0.5f, 0.4f),
+                    new ComplexNumber(0.2f, 0.1f),
+                    new ComplexNumber(0.3f, 0.5f),
+                }));
+                Console.WriteLine($"sum of 3 complexe number is: {result3.A}+{result3.B}i");
+
+                // test 4: call IPC service method without parameter or return
                 await client.InvokeAsync(x => x.DoNothing());
                 Console.WriteLine($"invoked DoNothing()");
             }

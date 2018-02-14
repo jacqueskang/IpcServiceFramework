@@ -11,6 +11,9 @@
     <RepositoryUrl>https://github.com/jacqueskang/IpcServiceFramework</RepositoryUrl>
     <PackageTags>dotnetcore,named-pipes,interprocess-communication</PackageTags>
     <PackageProjectUrl>https://github.com/jacqueskang/IpcServiceFramework</PackageProjectUrl>
+    <PackageReleaseNotes>1.0.1
+ - support passing array parameters</PackageReleaseNotes>
+    <Version>1.0.1</Version>
   </PropertyGroup>
 
   <ItemGroup>
