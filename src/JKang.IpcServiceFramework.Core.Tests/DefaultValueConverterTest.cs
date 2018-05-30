@@ -131,7 +131,22 @@ namespace JKang.IpcServiceFramework.Core.Tests
             }
         }
 
-        class ComplexType
+        [TestMethod]
+        public void TryConvert_DerivedTypeToBaseType()
+        {
+            bool succeed = _sut.TryConvert(new ComplexType(), typeof(IComplexType), out object actual);
+
+            Assert.IsTrue(succeed);
+            Assert.IsInstanceOfType(actual, typeof(ComplexType));
+        }
+
+        interface IComplexType
+        {
+            int Int32Value { get; }
+            string StringValue { get; }
+        }
+
+        class ComplexType : IComplexType
         {
             public int Int32Value { get; set; }
             public string StringValue { get; set; }
