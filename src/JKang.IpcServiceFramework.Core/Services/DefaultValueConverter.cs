@@ -7,9 +7,9 @@ namespace JKang.IpcServiceFramework.Services
     {
         public bool TryConvert(object origValue, Type destType, out object destValue)
         {
-            if (origValue.GetType() == destType)
+            if (destType.IsAssignableFrom(origValue.GetType()))
             {
-                // copy value directly if type matches
+                // copy value directly if it can be assigned to destType
                 destValue = origValue;
                 return true;
             }
