@@ -57,8 +57,8 @@ namespace JKang.IpcServiceFramework
         private void StartServerThread(object obj)
         {
             using (var server = new NamedPipeServerStream(_pipeName, PipeDirection.InOut, _options.ThreadCount))
-            using (var writer = new IpcWriter(server, _serializer))
-            using (var reader = new IpcReader(server, _serializer))
+            using (var writer = new IpcWriter(server, _serializer, leaveOpen: true))
+            using (var reader = new IpcReader(server, _serializer, leaveOpen: true))
             {
                 server.WaitForConnection();
 
@@ -82,10 +82,6 @@ namespace JKang.IpcServiceFramework
                 catch (Exception ex)
                 {
                     _logger?.LogError(ex, ex.Message);
-                }
-                finally
-                {
-                    server.Close();
                 }
             }
         }

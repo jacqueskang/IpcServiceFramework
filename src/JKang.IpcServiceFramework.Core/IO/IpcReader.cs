@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Text;
 
 namespace JKang.IpcServiceFramework.IO
 {
@@ -9,8 +10,12 @@ namespace JKang.IpcServiceFramework.IO
         private readonly IIpcMessageSerializer _serializer;
 
         public IpcReader(Stream stream, IIpcMessageSerializer serializer)
+            : this(stream, serializer, leaveOpen: false)
+        { }
+
+        public IpcReader(Stream stream, IIpcMessageSerializer serializer, bool leaveOpen)
         {
-            _reader = new BinaryReader(stream);
+            _reader = new BinaryReader(stream, Encoding.UTF8, leaveOpen);
             _serializer = serializer;
         }
 
