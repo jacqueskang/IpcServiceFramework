@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 
 namespace JKang.IpcServiceFramework.Services
@@ -66,11 +67,19 @@ namespace JKang.IpcServiceFramework.Services
                 destValue = Convert.ChangeType(origValue, destType);
                 return true;
             }
-            catch (Exception)
+            catch
+            { }
+
+            try
             {
-                destValue = null;
-                return false;
+                destValue = JsonConvert.DeserializeObject(JsonConvert.SerializeObject(origValue), destType);
+                return true;
             }
+            catch
+            { }
+
+            destValue = null;
+            return false;
         }
     }
 }
