@@ -38,6 +38,15 @@ namespace JKang.IpcServiceFramework.Services
                 }
             }
 
+            if (origValue is string str2 && destType == typeof(Guid))
+            {
+                if (Guid.TryParse(str2, out Guid result))
+                {
+                    destValue = result;
+                    return true;
+                }
+            }
+
             if (origValue is JObject jObj)
             {
                 // rely on JSON.Net to convert complexe type

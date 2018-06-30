@@ -164,6 +164,18 @@ namespace JKang.IpcServiceFramework.Core.Tests
             Assert.AreEqual(expected, actual);
         }
 
+        [TestMethod]
+        public void TryConvert_StringToGuid()
+        {
+            var expected = Guid.NewGuid();
+
+            bool succeed = _sut.TryConvert(expected.ToString(), typeof(Guid), out object actual);
+
+            Assert.IsTrue(succeed);
+            Assert.IsInstanceOfType(actual, typeof(Guid));
+            Assert.AreEqual(expected, actual);
+        }
+
         interface IComplexType
         {
             int Int32Value { get; }

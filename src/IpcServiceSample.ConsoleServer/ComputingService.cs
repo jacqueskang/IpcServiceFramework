@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using IpcServiceSample.ServiceContracts;
 using Microsoft.Extensions.Logging;
@@ -52,5 +53,10 @@ namespace IpcServiceSample.ConsoleServer
 
         public void DoNothing()
         { }
+
+        public Guid GenerateId()
+        {
+            return Guid.NewGuid();
+        }
     }
 }
