@@ -40,6 +40,10 @@ namespace IpcServiceSample.ConsoleClient
                 // test 4: call IPC service method without parameter or return
                 await client.InvokeAsync(x => x.DoNothing());
                 Console.WriteLine($"invoked DoNothing()");
+
+                // test 5: call IPC service method with enum parameter
+                string text = await client.InvokeAsync(x => x.ConvertText("hEllO woRd!", TextStyle.Upper));
+                Console.WriteLine(text);
             }
             catch (Exception ex)
             {

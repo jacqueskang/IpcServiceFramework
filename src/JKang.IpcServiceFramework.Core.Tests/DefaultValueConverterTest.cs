@@ -140,6 +140,30 @@ namespace JKang.IpcServiceFramework.Core.Tests
             Assert.IsInstanceOfType(actual, typeof(ComplexType));
         }
 
+        [TestMethod]
+        public void TryConvert_StringToEnum()
+        {
+            EnumType expected = EnumType.SecondOption;
+
+            bool succeed = _sut.TryConvert(expected.ToString(), typeof(EnumType), out object actual);
+
+            Assert.IsTrue(succeed);
+            Assert.IsInstanceOfType(actual, typeof(EnumType));
+            Assert.AreEqual(expected, actual);
+        }
+
+        [TestMethod]
+        public void TryConvert_Int32ToEnum()
+        {
+            EnumType expected = EnumType.SecondOption;
+
+            bool succeed = _sut.TryConvert((int)expected, typeof(EnumType), out object actual);
+
+            Assert.IsTrue(succeed);
+            Assert.IsInstanceOfType(actual, typeof(EnumType));
+            Assert.AreEqual(expected, actual);
+        }
+
         interface IComplexType
         {
             int Int32Value { get; }
@@ -150,6 +174,12 @@ namespace JKang.IpcServiceFramework.Core.Tests
         {
             public int Int32Value { get; set; }
             public string StringValue { get; set; }
+        }
+
+        enum EnumType
+        {
+            FirstOption,
+            SecondOption
         }
     }
 }

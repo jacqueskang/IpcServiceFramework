@@ -8,6 +8,7 @@ namespace IpcServiceSample.ServiceContracts
         ComplexNumber AddComplexNumber(ComplexNumber x, ComplexNumber y);
         ComplexNumber AddComplexNumbers(IEnumerable<ComplexNumber> numbers);
         void DoNothing();
+        string ConvertText(string text, TextStyle style);
     }
 
     public class ComplexNumber
@@ -20,5 +21,11 @@ namespace IpcServiceSample.ServiceContracts
             A = a;
             B = b;
         }
+    }
+
+    public enum TextStyle
+    {
+        TitleCase,
+        Upper
     }
 }

@@ -14,6 +14,30 @@ namespace JKang.IpcServiceFramework.Services
                 return true;
             }
 
+            if (destType.IsEnum)
+            {
+                if (origValue is string str)
+                {
+                    try
+                    {
+                        destValue = Enum.Parse(destType, str, ignoreCase: true);
+                        return true;
+                    }
+                    catch
+                    { }
+                }
+                else
+                {
+                    try
+                    {
+                        destValue = Enum.ToObject(destType, origValue);
+                        return true;
+                    }
+                    catch
+                    { }
+                }
+            }
+
             if (origValue is JObject jObj)
             {
                 // rely on JSON.Net to convert complexe type
