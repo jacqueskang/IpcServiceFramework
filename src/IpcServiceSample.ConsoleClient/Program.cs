@@ -44,6 +44,10 @@ namespace IpcServiceSample.ConsoleClient
                 // test 5: call IPC service method with enum parameter
                 string text = await client.InvokeAsync(x => x.ConvertText("hEllO woRd!", TextStyle.Upper));
                 Console.WriteLine(text);
+
+                // test 6: call IPC service method returning GUID
+                Guid generatedId = await client.InvokeAsync(x => x.GenerateId());
+                Console.WriteLine($"generated ID is: {generatedId}");
             }
             catch (Exception ex)
             {

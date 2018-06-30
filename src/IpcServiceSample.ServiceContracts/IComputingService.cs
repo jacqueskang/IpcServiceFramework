@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace IpcServiceSample.ServiceContracts
 {
@@ -9,6 +10,7 @@ namespace IpcServiceSample.ServiceContracts
         ComplexNumber AddComplexNumbers(IEnumerable<ComplexNumber> numbers);
         void DoNothing();
         string ConvertText(string text, TextStyle style);
+        Guid GenerateId();
     }
 
     public class ComplexNumber
