@@ -1,16 +1,21 @@
 ﻿using System;
 using System.IO;
+using System.Text;
 
 namespace JKang.IpcServiceFramework.IO
 {
-    public class IpcWriter: IDisposable
+    public class IpcWriter : IDisposable
     {
         private readonly BinaryWriter _writer;
         private readonly IIpcMessageSerializer _serializer;
 
         public IpcWriter(Stream stream, IIpcMessageSerializer serializer)
+            : this(stream, serializer, leaveOpen: false)
+        { }
+
+        public IpcWriter(Stream stream, IIpcMessageSerializer serializer, bool leaveOpen)
         {
-            _writer = new BinaryWriter(stream);
+            _writer = new BinaryWriter(stream, Encoding.UTF8, leaveOpen);
             _serializer = serializer;
         }
 
