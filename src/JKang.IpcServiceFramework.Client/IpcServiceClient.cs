@@ -93,8 +93,8 @@ namespace JKang.IpcServiceFramework
         private async Task<IpcResponse> GetResponseAsync(IpcRequest request)
         {
             using (var client = new NamedPipeClientStream(".", _pipeName, PipeDirection.InOut, PipeOptions.None))
-            using (var writer = new IpcWriter(client, _serializer))
-            using (var reader = new IpcReader(client, _serializer))
+            using (var writer = new IpcWriter(client, _serializer, leaveOpen: true))
+            using (var reader = new IpcReader(client, _serializer, leaveOpen: true))
             {
                 await client.ConnectAsync();
 
