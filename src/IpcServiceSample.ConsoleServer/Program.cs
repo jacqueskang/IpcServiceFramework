@@ -2,7 +2,6 @@
 using JKang.IpcServiceFramework;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using System;
 
 namespace IpcServiceSample.ConsoleServer
 {
@@ -15,8 +14,9 @@ namespace IpcServiceSample.ConsoleServer
             ServiceProvider serviceProvider = services.BuildServiceProvider();
 
             // TODO start IPC service host
-            IpcServiceHostBuilder
-                .Buid("pipeName", serviceProvider as IServiceProvider)
+            new IpcServiceHostBuilder(serviceProvider)
+                .AddNamedPipeEndpoint("endpoint1", "pipeName")
+                .Build()
                 .Run();
 
         }
@@ -35,6 +35,7 @@ namespace IpcServiceSample.ConsoleServer
                 {
                     options.ThreadCount = 2;
                 })
+                .AddNamedPipe()
                 .AddService<IComputingService, ComputingService>()
                 ;
 

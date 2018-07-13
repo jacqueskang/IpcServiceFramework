@@ -6,27 +6,29 @@ namespace JKang.IpcServiceFramework
 {
     public static class IpcServiceServiceCollectionExtensions
     {
-        public static IIpcServiceCollection AddIpc(this IServiceCollection services)
+        public static IIpcServiceBuilder AddIpc(this IServiceCollection services)
         {
-            return services.AddIpc(new IpcServiceOptions());
+            services
+                .AddScoped<IValueConverter, DefaultValueConverter>()
+                .AddScoped<IIpcMessageSerializer, DefaultIpcMessageSerializer>();
+
+            return new IpcServiceBuilder(services);
         }
 
-        public static IIpcServiceCollection AddIpc(this IServiceCollection services, Action<IpcServiceOptions> configure)
+        [Obsolete("Use AddIpc().AddNamedPipe(configure) instead")]
+        public static IIpcServiceBuilder AddIpc(this IServiceCollection services, Action<IpcServiceOptions> configure)
         {
             var options = new IpcServiceOptions();
             configure?.Invoke(options);
+
             return services.AddIpc(options);
         }
 
-        public static IIpcServiceCollection AddIpc(this IServiceCollection services, IpcServiceOptions options)
+        [Obsolete("Use AddIpc().AddNamedPipe(configure) instead")]
+        public static IIpcServiceBuilder AddIpc(this IServiceCollection services, IpcServiceOptions options)
         {
-            services
-                .AddSingleton(options)
-                .AddScoped<IValueConverter, DefaultValueConverter>()
-                .AddScoped<IIpcMessageSerializer, DefaultIpcMessageSerializer>()
-                ;
-
-            return new IpcServiceCollection(services);
+            return AddIpc(services)
+                .AddNamedPipe(o => o.ThreadCount = options.ThreadCount);
         }
     }
 }
