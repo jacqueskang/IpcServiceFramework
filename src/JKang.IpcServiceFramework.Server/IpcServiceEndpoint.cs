@@ -3,7 +3,7 @@ using JKang.IpcServiceFramework.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
-using System.IO.Pipes;
+using System.IO;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
@@ -28,7 +28,7 @@ namespace JKang.IpcServiceFramework
 
         public abstract void Listen();
 
-        protected void Process(NamedPipeServerStream server, ILogger logger)
+        protected void Process(Stream server, ILogger logger)
         {
             using (var writer = new IpcWriter(server, _serializer, leaveOpen: true))
             using (var reader = new IpcReader(server, _serializer, leaveOpen: true))
