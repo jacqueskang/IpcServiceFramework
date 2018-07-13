@@ -13,9 +13,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\IpcServiceSample.ConsoleServer\IpcServiceSample.ConsoleServer.csproj" />
+    <ProjectReference Include="..\IpcServiceSample.ConsoleServer.Pipe\IpcServiceSample.ConsoleServer.Pipe.csproj" />
     <ProjectReference Include="..\IpcServiceSample.ServiceContracts\IpcServiceSample.ServiceContracts.csproj" />
     <ProjectReference Include="..\JKang.IpcServiceFramework.Server\JKang.IpcServiceFramework.Server.csproj" />
+    <ProjectReference Include="..\JKang.IpcServiceFramework.Server.Pipe\JKang.IpcServiceFramework.Server.Pipe.csproj" />
   </ItemGroup>
 
 </Project>

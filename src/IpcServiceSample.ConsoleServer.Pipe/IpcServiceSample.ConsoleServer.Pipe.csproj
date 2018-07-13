@@ -8,6 +8,7 @@
   <ItemGroup>
     <ProjectReference Include="..\IpcServiceSample.ServiceContracts\IpcServiceSample.ServiceContracts.csproj" />
     <ProjectReference Include="..\JKang.IpcServiceFramework.Server\JKang.IpcServiceFramework.Server.csproj" />
+    <ProjectReference Include="..\JKang.IpcServiceFramework.Server.Pipe\JKang.IpcServiceFramework.Server.Pipe.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -16,5 +17,5 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="2.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="2.0.0" />
   </ItemGroup>
-  
+
 </Project>

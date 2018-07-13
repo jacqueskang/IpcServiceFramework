@@ -3,6 +3,7 @@ using JKang.IpcServiceFramework;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Net;
 
 namespace IpcServiceSample.ConsoleServer
 {
@@ -15,8 +16,8 @@ namespace IpcServiceSample.ConsoleServer
             ServiceProvider serviceProvider = services.BuildServiceProvider();
 
             // TODO start IPC service host
-            IpcServiceHostBuilder
-                .Buid("pipeName", serviceProvider as IServiceProvider)
+            TcpIpcServiceHostBuilder
+                .Build(IPAddress.Loopback, 4578, serviceProvider as IServiceProvider)
                 .Run();
 
         }
