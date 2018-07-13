@@ -11,6 +11,7 @@ namespace IpcServiceSample.ServiceContracts
         void DoNothing();
         string ConvertText(string text, TextStyle style);
         Guid GenerateId();
+        byte[] ReverseBytes(byte[] input);
     }
 
     public class ComplexNumber
