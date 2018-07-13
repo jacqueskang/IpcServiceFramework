@@ -1,27 +1,24 @@
-﻿using JKang.IpcServiceFramework.IO;
-using JKang.IpcServiceFramework.Services;
+﻿using JKang.IpcServiceFramework.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
-using System.IO.Pipes;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using JKang.IpcServiceFramework.IO;
 
 namespace JKang.IpcServiceFramework
 {
-    public class IpcServiceHost : IIpcServiceHost
+    public abstract class IpcServiceHost : IIpcServiceHost
     {
-        private readonly string _pipeName;
         private readonly IServiceProvider _serviceProvider;
         private readonly ILogger<IpcServiceHost> _logger;
         private readonly IpcServiceOptions _options;
         private readonly IIpcMessageSerializer _serializer;
         private readonly IValueConverter _converter;
 
-        public IpcServiceHost(string pipeName, IServiceProvider serviceProvider)
+        protected IpcServiceHost(IServiceProvider serviceProvider)
         {
-            _pipeName = pipeName;
             _serviceProvider = serviceProvider;
             _logger = _serviceProvider.GetService<ILogger<IpcServiceHost>>();
             _options = _serviceProvider.GetRequiredService<IpcServiceOptions>();
@@ -29,15 +26,21 @@ namespace JKang.IpcServiceFramework
             _converter = _serviceProvider.GetRequiredService<IValueConverter>();
         }
 
-        public void Run()
+        protected IServiceProvider ServiceProvider => _serviceProvider;
+        protected IpcServiceOptions Options => _options;
+        protected IIpcMessageSerializer Serializer => _serializer;
+        protected IValueConverter Converter => _converter;
+
+        public virtual void Run()
         {
-            Thread[] threads = new Thread[_options.ThreadCount];
+            Thread[] threads = new Thread[Options.ThreadCount];
             for (int i = 0; i < threads.Length; i++)
             {
                 threads[i] = new Thread(StartServerThread);
                 threads[i].Start();
             }
-            _logger?.LogInformation("IPC server started.");
+
+            _logger?.LogInformation("Pipe IPC server started.");
 
             while (true)
             {
@@ -54,39 +57,35 @@ namespace JKang.IpcServiceFramework
             }
         }
 
-        private void StartServerThread(object obj)
+        protected abstract void StartServerThread(object obj);
+
+        protected void ProcessRequest(IpcReader reader, IpcWriter writer)
         {
-            using (var server = new NamedPipeServerStream(_pipeName, PipeDirection.InOut, _options.ThreadCount))
-            using (var writer = new IpcWriter(server, _serializer, leaveOpen: true))
-            using (var reader = new IpcReader(server, _serializer, leaveOpen: true))
+            try
             {
-                server.WaitForConnection();
+                _logger?.LogDebug($"[thread {Thread.CurrentThread.ManagedThreadId}] client connected, reading request...");
+                IpcRequest request = reader.ReadIpcRequest();
 
-                try
+                _logger?.LogDebug($"[thread {Thread.CurrentThread.ManagedThreadId}] request received, invoking corresponding method...");
+                IpcResponse response;
+                using (IServiceScope scope = ServiceProvider.CreateScope())
                 {
-                    _logger?.LogDebug($"[thread {Thread.CurrentThread.ManagedThreadId}] client connected, reading request...");
-                    IpcRequest request = reader.ReadIpcRequest();
-
-                    _logger?.LogDebug($"[thread {Thread.CurrentThread.ManagedThreadId}] request received, invoking corresponding method...");
-                    IpcResponse response;
-                    using (IServiceScope scope = _serviceProvider.CreateScope())
-                    {
-                        response = GetReponse(request, scope);
-                    }
-
-                    _logger?.LogDebug($"[thread {Thread.CurrentThread.ManagedThreadId}] sending response...");
-                    writer.Write(response);
-
-                    _logger?.LogDebug($"[thread {Thread.CurrentThread.ManagedThreadId}] done.");
+                    response = GetReponse(request, scope);
                 }
-                catch (Exception ex)
-                {
-                    _logger?.LogError(ex, ex.Message);
-                }
+
+                _logger?.LogDebug($"[thread {Thread.CurrentThread.ManagedThreadId}] sending response...");
+                writer.Write(response);
+
+                _logger?.LogDebug($"[thread {Thread.CurrentThread.ManagedThreadId}] done.");
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, ex.Message);
+                throw ex;
             }
         }
 
-        private IpcResponse GetReponse(IpcRequest request, IServiceScope scope)
+        protected IpcResponse GetReponse(IpcRequest request, IServiceScope scope)
         {
             var @interface = Type.GetType(request.InterfaceName);
             if (@interface == null)
