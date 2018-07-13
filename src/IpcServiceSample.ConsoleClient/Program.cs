@@ -17,7 +17,9 @@ namespace IpcServiceSample.ConsoleClient
         {
             try
             {
-                var client = new IpcServiceClient<IComputingService>("pipeName");
+                IpcServiceClient<IComputingService> client = new IpcServiceClientBuilder<IComputingService>()
+                    .UseNamedPipe("pipeName")
+                    .Build();
 
                 // test 1: call IPC service method with primitive types
                 float result1 = await client.InvokeAsync(x => x.AddFloat(1.23f, 4.56f));
