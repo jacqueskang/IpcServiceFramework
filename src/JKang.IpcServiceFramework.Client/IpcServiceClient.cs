@@ -11,6 +11,7 @@ namespace JKang.IpcServiceFramework
     public class IpcServiceClient<TInterface>
         where TInterface : class
     {
+        private static readonly ProxyGenerator _proxyGenerator = new ProxyGenerator();
         private readonly string _pipeName;
         private readonly IIpcMessageSerializer _serializer;
         private readonly IValueConverter _converter;
@@ -77,8 +78,7 @@ namespace JKang.IpcServiceFramework
                 throw new ArgumentException("Only support calling method, ex: x => x.GetData(a, b)");
             }
 
-            var proxyGenerator = new ProxyGenerator();
-            TInterface proxy = proxyGenerator.CreateInterfaceProxyWithoutTarget<TInterface>(interceptor);
+            TInterface proxy = _proxyGenerator.CreateInterfaceProxyWithoutTarget<TInterface>(interceptor);
             Delegate @delegate = lamdaExp.Compile();
             @delegate.DynamicInvoke(proxy);
 
