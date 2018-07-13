@@ -91,7 +91,7 @@ namespace JKang.IpcServiceFramework
             var @interface = Type.GetType(request.InterfaceName);
             if (@interface == null)
             {
-                return IpcResponse.Fail($"Interface '{@interface}' not found.");
+                return IpcResponse.Fail($"Interface '{request.InterfaceName}' not found.");
             }
 
             object service = scope.ServiceProvider.GetService(@interface);

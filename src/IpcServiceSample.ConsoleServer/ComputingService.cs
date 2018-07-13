@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using IpcServiceSample.ServiceContracts;
 using Microsoft.Extensions.Logging;
 
@@ -57,6 +58,11 @@ namespace IpcServiceSample.ConsoleServer
         public Guid GenerateId()
         {
             return Guid.NewGuid();
+        }
+
+        public byte[] ReverseBytes(byte[] input)
+        {
+            return input.Reverse().ToArray();
         }
     }
 }
