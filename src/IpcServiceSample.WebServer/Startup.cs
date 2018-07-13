@@ -14,6 +14,7 @@ namespace IpcServiceSample.WebServer
         {
             services
                 .AddIpc()
+                .AddNamedPipe()
                 .AddService<IComputingService, ComputingService>()
                 ;
         }
