@@ -1,21 +1,9 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <RootNamespace>JKang.IpcServiceFramework</RootNamespace>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Authors>Jacques Kang</Authors>
-    <Company />
-    <Copyright>Jacques Kang</Copyright>
-    <PackageLicenseUrl>https://github.com/jacqueskang/IpcServiceFramework/blob/develop/LICENSE</PackageLicenseUrl>
-    <RepositoryUrl>https://github.com/jacqueskang/IpcServiceFramework</RepositoryUrl>
-    <PackageTags>dotnetcore,named-pipes,interprocess-communication</PackageTags>
-    <PackageProjectUrl>https://github.com/jacqueskang/IpcServiceFramework</PackageProjectUrl>
-    <PackageReleaseNotes>1.0.2
- - support implicitly converting input parameters from derived type to base type
-1.0.1
- - support passing array parameters</PackageReleaseNotes>
-    <Version>1.0.2</Version>
   </PropertyGroup>
 
   <ItemGroup>

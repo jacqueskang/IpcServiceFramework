@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 
 namespace JKang.IpcServiceFramework.Services
@@ -12,6 +13,39 @@ namespace JKang.IpcServiceFramework.Services
                 // copy value directly if it can be assigned to destType
                 destValue = origValue;
                 return true;
+            }
+
+            if (destType.IsEnum)
+            {
+                if (origValue is string str)
+                {
+                    try
+                    {
+                        destValue = Enum.Parse(destType, str, ignoreCase: true);
+                        return true;
+                    }
+                    catch
+                    { }
+                }
+                else
+                {
+                    try
+                    {
+                        destValue = Enum.ToObject(destType, origValue);
+                        return true;
+                    }
+                    catch
+                    { }
+                }
+            }
+
+            if (origValue is string str2 && destType == typeof(Guid))
+            {
+                if (Guid.TryParse(str2, out Guid result))
+                {
+                    destValue = result;
+                    return true;
+                }
             }
 
             if (origValue is JObject jObj)
@@ -33,11 +67,19 @@ namespace JKang.IpcServiceFramework.Services
                 destValue = Convert.ChangeType(origValue, destType);
                 return true;
             }
-            catch (Exception)
+            catch
+            { }
+
+            try
             {
-                destValue = null;
-                return false;
+                destValue = JsonConvert.DeserializeObject(JsonConvert.SerializeObject(origValue), destType);
+                return true;
             }
+            catch
+            { }
+
+            destValue = null;
+            return false;
         }
     }
 }

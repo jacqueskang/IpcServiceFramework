@@ -1,4 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
 using IpcServiceSample.ServiceContracts;
 using Microsoft.Extensions.Logging;
 
@@ -36,7 +39,30 @@ namespace IpcServiceSample.ConsoleServer
             return x + y;
         }
 
+        public string ConvertText(string text, TextStyle style)
+        {
+            switch (style)
+            {
+                case TextStyle.TitleCase:
+                    return CultureInfo.InvariantCulture.TextInfo.ToTitleCase(text);
+                case TextStyle.Upper:
+                    return CultureInfo.InvariantCulture.TextInfo.ToUpper(text);
+                default:
+                    return text;
+            }
+        }
+
         public void DoNothing()
         { }
+
+        public Guid GenerateId()
+        {
+            return Guid.NewGuid();
+        }
+
+        public byte[] ReverseBytes(byte[] input)
+        {
+            return input.Reverse().ToArray();
+        }
     }
 }

@@ -57,8 +57,8 @@ namespace JKang.IpcServiceFramework
         private void StartServerThread(object obj)
         {
             using (var server = new NamedPipeServerStream(_pipeName, PipeDirection.InOut, _options.ThreadCount))
-            using (var writer = new IpcWriter(server, _serializer))
-            using (var reader = new IpcReader(server, _serializer))
+            using (var writer = new IpcWriter(server, _serializer, leaveOpen: true))
+            using (var reader = new IpcReader(server, _serializer, leaveOpen: true))
             {
                 server.WaitForConnection();
 
@@ -83,10 +83,6 @@ namespace JKang.IpcServiceFramework
                 {
                     _logger?.LogError(ex, ex.Message);
                 }
-                finally
-                {
-                    server.Close();
-                }
             }
         }
 
@@ -95,7 +91,7 @@ namespace JKang.IpcServiceFramework
             var @interface = Type.GetType(request.InterfaceName);
             if (@interface == null)
             {
-                return IpcResponse.Fail($"Interface '{@interface}' not found.");
+                return IpcResponse.Fail($"Interface '{request.InterfaceName}' not found.");
             }
 
             object service = scope.ServiceProvider.GetService(@interface);

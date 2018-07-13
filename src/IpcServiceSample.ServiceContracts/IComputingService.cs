@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace IpcServiceSample.ServiceContracts
 {
@@ -8,6 +9,9 @@ namespace IpcServiceSample.ServiceContracts
         ComplexNumber AddComplexNumber(ComplexNumber x, ComplexNumber y);
         ComplexNumber AddComplexNumbers(IEnumerable<ComplexNumber> numbers);
         void DoNothing();
+        string ConvertText(string text, TextStyle style);
+        Guid GenerateId();
+        byte[] ReverseBytes(byte[] input);
     }
 
     public class ComplexNumber
@@ -20,5 +24,11 @@ namespace IpcServiceSample.ServiceContracts
             A = a;
             B = b;
         }
+    }
+
+    public enum TextStyle
+    {
+        TitleCase,
+        Upper
     }
 }
