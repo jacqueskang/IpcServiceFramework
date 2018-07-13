@@ -11,7 +11,6 @@ namespace JKang.IpcServiceFramework
 {
     public abstract class IpcServiceHost : IIpcServiceHost
     {
-        private readonly string _pipeName;
         private readonly IServiceProvider _serviceProvider;
         private readonly ILogger<IpcServiceHost> _logger;
         private readonly IpcServiceOptions _options;
