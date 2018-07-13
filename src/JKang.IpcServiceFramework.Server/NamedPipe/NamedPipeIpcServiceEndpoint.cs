@@ -12,7 +12,7 @@ namespace JKang.IpcServiceFramework.NamedPipe
         private readonly NamedPipeOptions _options;
 
         public NamedPipeIpcServiceEndpoint(string name, IServiceProvider serviceProvider, string pipeName)
-            : base(name, serviceProvider, NamedPipeConstants.ProtocolName)
+            : base(name, serviceProvider)
         {
             PipeName = pipeName;
 

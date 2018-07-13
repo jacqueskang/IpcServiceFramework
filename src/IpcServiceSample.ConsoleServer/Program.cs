@@ -18,7 +18,6 @@ namespace IpcServiceSample.ConsoleServer
                 .AddNamedPipeEndpoint("endpoint1", "pipeName")
                 .Build()
                 .Run();
-
         }
 
         private static IServiceCollection ConfigureServices(IServiceCollection services)
@@ -31,11 +30,11 @@ namespace IpcServiceSample.ConsoleServer
                 });
 
             services
-                .AddIpc(options =>
+                .AddIpc()
+                .AddNamedPipe(options =>
                 {
                     options.ThreadCount = 2;
                 })
-                .AddNamedPipe()
                 .AddService<IComputingService, ComputingService>()
                 ;
 

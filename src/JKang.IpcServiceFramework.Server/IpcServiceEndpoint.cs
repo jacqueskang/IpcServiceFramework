@@ -15,18 +15,16 @@ namespace JKang.IpcServiceFramework
         private readonly IValueConverter _converter;
         private readonly IIpcMessageSerializer _serializer;
 
-        protected IpcServiceEndpoint(string name, IServiceProvider serviceProvider, string protocol)
+        protected IpcServiceEndpoint(string name, IServiceProvider serviceProvider)
         {
             Name = name;
             ServiceProvider = serviceProvider;
-            Protocol = protocol;
             _converter = serviceProvider.GetRequiredService<IValueConverter>();
             _serializer = serviceProvider.GetRequiredService<IIpcMessageSerializer>();
         }
 
         public string Name { get; }
         public IServiceProvider ServiceProvider { get; }
-        public string Protocol { get; }
 
         public abstract void Listen();
 
