@@ -1,8 +1,10 @@
-﻿using JKang.IpcServiceFramework;
+﻿using IpcServiceSample.ServiceContracts;
+using JKang.IpcServiceFramework;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using System;
+using System.Net;
 using System.Threading;
 
 namespace IpcServiceSample.WebServer
@@ -23,7 +25,8 @@ namespace IpcServiceSample.WebServer
         {
             var serviceProvider = state as IServiceProvider;
             new IpcServiceHostBuilder(serviceProvider)
-                .AddNamedPipeEndpoint("ep1", "pipeName")
+                .AddNamedPipeEndpoint<IComputingService>("computingEndpoint", "pipeName")
+                .AddTcpEndpoint<ISystemService>("systemEndpoint", IPAddress.Loopback, 45684)
                 .Build()
                 .Run();
         }

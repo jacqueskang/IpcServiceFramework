@@ -6,9 +6,10 @@ using System.Threading;
 
 namespace JKang.IpcServiceFramework.NamedPipe
 {
-    public class NamedPipeIpcServiceEndpoint : IpcServiceEndpoint
+    public class NamedPipeIpcServiceEndpoint<TContract> : IpcServiceEndpoint<TContract>
+        where TContract: class
     {
-        private readonly ILogger<NamedPipeIpcServiceEndpoint> _logger;
+        private readonly ILogger<NamedPipeIpcServiceEndpoint<TContract>> _logger;
         private readonly NamedPipeOptions _options;
 
         public NamedPipeIpcServiceEndpoint(string name, IServiceProvider serviceProvider, string pipeName)
@@ -16,7 +17,7 @@ namespace JKang.IpcServiceFramework.NamedPipe
         {
             PipeName = pipeName;
 
-            _logger = serviceProvider.GetService<ILogger<NamedPipeIpcServiceEndpoint>>();
+            _logger = serviceProvider.GetService<ILogger<NamedPipeIpcServiceEndpoint<TContract>>>();
             _options = serviceProvider.GetRequiredService<NamedPipeOptions>();
         }
 
