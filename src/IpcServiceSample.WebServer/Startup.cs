@@ -14,8 +14,9 @@ namespace IpcServiceSample.WebServer
         {
             services
                 .AddIpc()
+                .AddNamedPipe()
                 .AddService<IComputingService, ComputingService>()
-                ;
+                .AddService<ISystemService, SystemService>();
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)

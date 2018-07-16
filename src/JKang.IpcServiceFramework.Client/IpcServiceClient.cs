@@ -2,29 +2,23 @@
 using JKang.IpcServiceFramework.IO;
 using JKang.IpcServiceFramework.Services;
 using System;
-using System.IO.Pipes;
+using System.IO;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 
 namespace JKang.IpcServiceFramework
 {
-    public class IpcServiceClient<TInterface>
+    public abstract class IpcServiceClient<TInterface>
         where TInterface : class
     {
         private static readonly ProxyGenerator _proxyGenerator = new ProxyGenerator();
-        private readonly string _pipeName;
         private readonly IIpcMessageSerializer _serializer;
         private readonly IValueConverter _converter;
 
-        public IpcServiceClient(string pipeName)
-            : this(pipeName, new DefaultIpcMessageSerializer(), new DefaultValueConverter())
-        { }
-
-        internal IpcServiceClient(string pipeName,
+        protected IpcServiceClient(
             IIpcMessageSerializer serializer,
             IValueConverter converter)
         {
-            _pipeName = pipeName;
             _serializer = serializer;
             _converter = converter;
         }
@@ -84,20 +78,19 @@ namespace JKang.IpcServiceFramework
 
             return new IpcRequest
             {
-                InterfaceName = typeof(TInterface).AssemblyQualifiedName,
                 MethodName = interceptor.LastInvocation.Method.Name,
                 Parameters = interceptor.LastInvocation.Arguments,
             };
         }
 
+        protected abstract Task<Stream> ConnectToServerAsync();
+
         private async Task<IpcResponse> GetResponseAsync(IpcRequest request)
         {
-            using (var client = new NamedPipeClientStream(".", _pipeName, PipeDirection.InOut, PipeOptions.None))
+            using (Stream client = await ConnectToServerAsync())
             using (var writer = new IpcWriter(client, _serializer, leaveOpen: true))
             using (var reader = new IpcReader(client, _serializer, leaveOpen: true))
             {
-                await client.ConnectAsync();
-
                 // send request
                 writer.Write(request);
 
