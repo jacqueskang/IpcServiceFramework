@@ -24,12 +24,5 @@ namespace JKang.IpcServiceFramework
         {
             return new IpcServiceHost(_endpoints, ServiceProvider);
         }
-
-        [Obsolete("new IpcServiceHostBuilder(serviceProvider).AddEndpoint(pipeName).Build()")]
-        public static IIpcServiceHost Buid(string pipeName, IServiceProvider serviceProvider)
-        {
-            return new IpcServiceHost(pipeName, serviceProvider);
-        }
-
     }
 }
