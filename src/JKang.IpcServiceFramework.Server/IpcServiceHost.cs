@@ -13,11 +13,6 @@ namespace JKang.IpcServiceFramework
         private readonly IServiceProvider _serviceProvider;
         private readonly ILogger<IpcServiceHost> _logger;
 
-        [Obsolete("Use IpcServiceHost(IEnumerable<IpcServiceEndpoint> endpoints, IServiceProvider serviceProvider) instead.")]
-        public IpcServiceHost(string pipeName, IServiceProvider serviceProvider)
-            : this(new[] { new NamedPipe.NamedPipeIpcServiceEndpoint("_", serviceProvider, pipeName) }, serviceProvider)
-        { }
-
         public IpcServiceHost(IEnumerable<IpcServiceEndpoint> endpoints, IServiceProvider serviceProvider)
         {
             _endpoints = endpoints.ToList();
