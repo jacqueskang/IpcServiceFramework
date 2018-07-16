@@ -1,12 +1,28 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace JKang.IpcServiceFramework
 {
-    public static class IpcServiceHostBuilder
+    public class IpcServiceHostBuilder
     {
-        public static IIpcServiceHost Buid(string pipeName, IServiceProvider serviceProvider)
+        private readonly List<IpcServiceEndpoint> _endpoints = new List<IpcServiceEndpoint>();
+
+        public IpcServiceHostBuilder(IServiceProvider serviceProvider)
         {
-            return new IpcServiceHost(pipeName, serviceProvider);
+            ServiceProvider = serviceProvider;
+        }
+
+        public IServiceProvider ServiceProvider { get; }
+
+        public IpcServiceHostBuilder AddEndpoint(IpcServiceEndpoint endpoint)
+        {
+            _endpoints.Add(endpoint);
+            return this;
+        }
+
+        public IIpcServiceHost Build()
+        {
+            return new IpcServiceHost(_endpoints, ServiceProvider);
         }
     }
 }

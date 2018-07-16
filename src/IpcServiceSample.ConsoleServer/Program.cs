@@ -1,8 +1,8 @@
-﻿using IpcServiceSample.ServiceContracts;
+﻿using System.Net;
+using IpcServiceSample.ServiceContracts;
 using JKang.IpcServiceFramework;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using System;
 
 namespace IpcServiceSample.ConsoleServer
 {
@@ -15,10 +15,11 @@ namespace IpcServiceSample.ConsoleServer
             ServiceProvider serviceProvider = services.BuildServiceProvider();
 
             // TODO start IPC service host
-            IpcServiceHostBuilder
-                .Buid("pipeName", serviceProvider as IServiceProvider)
+            new IpcServiceHostBuilder(serviceProvider)
+                .AddNamedPipeEndpoint("endpoint1", "pipeName")
+                .AddTcpEndpoint("endpoint2", IPAddress.Loopback, 45684)
+                .Build()
                 .Run();
-
         }
 
         private static IServiceCollection ConfigureServices(IServiceCollection services)
@@ -31,12 +32,12 @@ namespace IpcServiceSample.ConsoleServer
                 });
 
             services
-                .AddIpc(options =>
+                .AddIpc()
+                .AddNamedPipe(options =>
                 {
                     options.ThreadCount = 2;
                 })
-                .AddService<IComputingService, ComputingService>()
-                ;
+                .AddService<IComputingService, ComputingService>();
 
             return services;
         }

@@ -1,6 +1,7 @@
 ﻿using IpcServiceSample.ServiceContracts;
 using JKang.IpcServiceFramework;
 using System;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -17,7 +18,12 @@ namespace IpcServiceSample.ConsoleClient
         {
             try
             {
-                var client = new IpcServiceClient<IComputingService>("pipeName");
+                IpcServiceClient<IComputingService> client = new IpcServiceClientBuilder<IComputingService>()
+                    // Comment in if you wish to use TCP instead
+                    .UseNamedPipe("pipeName")
+                    // Comment out if you wish to use TCP instead
+                    // .UseTcp(IPAddress.Loopback, 45684)
+                    .Build();
 
                 // test 1: call IPC service method with primitive types
                 float result1 = await client.InvokeAsync(x => x.AddFloat(1.23f, 4.56f));
