@@ -78,7 +78,6 @@ namespace JKang.IpcServiceFramework
 
             return new IpcRequest
             {
-                InterfaceName = typeof(TInterface).AssemblyQualifiedName,
                 MethodName = interceptor.LastInvocation.Method.Name,
                 Parameters = interceptor.LastInvocation.Arguments,
             };

@@ -6,16 +6,17 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace JKang.IpcServiceFramework.Tcp
 {
-    public class TcpIpcServiceEndpoint : IpcServiceEndpoint
+    public class TcpIpcServiceEndpoint<TContract> : IpcServiceEndpoint<TContract>
+        where TContract: class
     {
-        private readonly ILogger<TcpIpcServiceEndpoint> _logger;
+        private readonly ILogger<TcpIpcServiceEndpoint<TContract>> _logger;
         private readonly TcpListener _listener;
 
         public TcpIpcServiceEndpoint(String name, IServiceProvider serviceProvider, IPAddress ipEndpoint, int port)
             : base(name, serviceProvider)
         {
             _listener = new TcpListener(ipEndpoint, port);
-            _logger = serviceProvider.GetService<ILogger<TcpIpcServiceEndpoint>>();
+            _logger = serviceProvider.GetService<ILogger<TcpIpcServiceEndpoint<TContract>>>();
         }
 
         public override void Listen()
@@ -26,8 +27,8 @@ namespace JKang.IpcServiceFramework.Tcp
 
             while (true)
             {
-                var client = _listener.AcceptTcpClient();
-                var server = client.GetStream();
+                TcpClient client = _listener.AcceptTcpClient();
+                NetworkStream server = client.GetStream();
                 Process(server, _logger);
             }
         }

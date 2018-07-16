@@ -12,21 +12,30 @@ namespace JKang.IpcServiceFramework
 {
     public abstract class IpcServiceEndpoint
     {
-        private readonly IValueConverter _converter;
-        private readonly IIpcMessageSerializer _serializer;
-
         protected IpcServiceEndpoint(string name, IServiceProvider serviceProvider)
         {
             Name = name;
             ServiceProvider = serviceProvider;
-            _converter = serviceProvider.GetRequiredService<IValueConverter>();
-            _serializer = serviceProvider.GetRequiredService<IIpcMessageSerializer>();
         }
 
         public string Name { get; }
         public IServiceProvider ServiceProvider { get; }
 
         public abstract void Listen();
+    }
+
+    public abstract class IpcServiceEndpoint<TContract>: IpcServiceEndpoint
+        where TContract: class
+    {
+        private readonly IValueConverter _converter;
+        private readonly IIpcMessageSerializer _serializer;
+
+        protected IpcServiceEndpoint(string name, IServiceProvider serviceProvider)
+            : base(name, serviceProvider)
+        {
+            _converter = serviceProvider.GetRequiredService<IValueConverter>();
+            _serializer = serviceProvider.GetRequiredService<IIpcMessageSerializer>();
+        }
 
         protected void Process(Stream server, ILogger logger)
         {
@@ -59,22 +68,16 @@ namespace JKang.IpcServiceFramework
 
         protected IpcResponse GetReponse(IpcRequest request, IServiceScope scope)
         {
-            var @interface = Type.GetType(request.InterfaceName);
-            if (@interface == null)
-            {
-                return IpcResponse.Fail($"Interface '{request.InterfaceName}' not found.");
-            }
-
-            object service = scope.ServiceProvider.GetService(@interface);
+            object service = scope.ServiceProvider.GetService<TContract>();
             if (service == null)
             {
-                return IpcResponse.Fail($"No implementation of interface '{@interface}' found.");
+                return IpcResponse.Fail($"No implementation of interface '{typeof(TContract).FullName}' found.");
             }
 
             MethodInfo method = service.GetType().GetMethod(request.MethodName);
             if (method == null)
             {
-                return IpcResponse.Fail($"Method '{request.MethodName}' not found in interface '{@interface}'.");
+                return IpcResponse.Fail($"Method '{request.MethodName}' not found in interface '{typeof(TContract).FullName}'.");
             }
 
             ParameterInfo[] paramInfos = method.GetParameters();
