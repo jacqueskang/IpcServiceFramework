@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace JKang.IpcServiceFramework
@@ -22,12 +23,15 @@ namespace JKang.IpcServiceFramework
 
         public void Run()
         {
-            Parallel.ForEach(_endpoints, endpoint =>
-            {
-                _logger?.LogDebug($"Starting endpoint '{endpoint.Name}'...");
-                endpoint.Listen();
-                _logger?.LogDebug($"Endpoint '{endpoint.Name}' stopped.");
-            });
+            RunAsync().Wait();
+        }
+
+        public Task RunAsync(CancellationToken cancellationToken = default(CancellationToken))
+        {
+            Task[] tasks = _endpoints
+                .Select(endpoint => endpoint.ListenAsync(cancellationToken))
+                .ToArray();
+            return Task.WhenAll(tasks);
         }
     }
 }

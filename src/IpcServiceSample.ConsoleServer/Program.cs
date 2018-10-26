@@ -2,7 +2,10 @@
 using JKang.IpcServiceFramework;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using System;
 using System.Net;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace IpcServiceSample.ConsoleServer
 {
@@ -14,11 +17,18 @@ namespace IpcServiceSample.ConsoleServer
             IServiceCollection services = ConfigureServices(new ServiceCollection());
 
             // build and run service host
-            new IpcServiceHostBuilder(services.BuildServiceProvider())
+            IIpcServiceHost host = new IpcServiceHostBuilder(services.BuildServiceProvider())
                 .AddNamedPipeEndpoint<IComputingService>("computingEndpoint", "pipeName")
                 .AddTcpEndpoint<ISystemService>("systemEndpoint", IPAddress.Loopback, 45684)
-                .Build()
-                .Run();
+                .Build();
+
+            var source = new CancellationTokenSource();
+            Task.WaitAll(host.RunAsync(source.Token), Task.Run(() =>
+            {
+                Console.WriteLine("Press any key to shutdown.");
+                Console.ReadKey();
+                source.Cancel();
+            }));
         }
 
         private static IServiceCollection ConfigureServices(IServiceCollection services)

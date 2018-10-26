@@ -3,11 +3,12 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.IO.Pipes;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace JKang.IpcServiceFramework.NamedPipe
 {
     public class NamedPipeIpcServiceEndpoint<TContract> : IpcServiceEndpoint<TContract>
-        where TContract: class
+        where TContract : class
     {
         private readonly ILogger<NamedPipeIpcServiceEndpoint<TContract>> _logger;
         private readonly NamedPipeOptions _options;
@@ -23,7 +24,7 @@ namespace JKang.IpcServiceFramework.NamedPipe
 
         public string PipeName { get; }
 
-        public override void Listen()
+        public override Task ListenAsync(CancellationToken cancellationToken = default(CancellationToken))
         {
             NamedPipeOptions options = ServiceProvider.GetRequiredService<NamedPipeOptions>();
 
@@ -31,31 +32,43 @@ namespace JKang.IpcServiceFramework.NamedPipe
             for (int i = 0; i < threads.Length; i++)
             {
                 threads[i] = new Thread(StartServerThread);
-                threads[i].Start();
+                threads[i].Start(cancellationToken);
             }
 
-            while (true)
+            return Task.Factory.StartNew(() =>
             {
-                Thread.Sleep(100);
-                for (int i = 0; i < threads.Length; i++)
+                _logger.LogDebug($"Listening named pipe endpoint '{Name}'...");
+                while (!cancellationToken.IsCancellationRequested)
                 {
-                    if (threads[i].Join(250))
+                    Thread.Sleep(100);
+
+                    for (int i = 0; i < threads.Length; i++)
                     {
-                        // thread is finished, starting a new thread
-                        threads[i] = new Thread(StartServerThread);
-                        threads[i].Start();
+                        if (threads[i].Join(250))
+                        {
+                            // thread is finished, starting a new thread
+                            threads[i] = new Thread(StartServerThread);
+                            threads[i].Start(cancellationToken);
+                        }
                     }
                 }
-            }
+                _logger.LogDebug($"Shutting down named pipe endpoint '{Name}'...");
+            });
         }
 
         private void StartServerThread(object obj)
         {
-            using (var server = new NamedPipeServerStream(PipeName, PipeDirection.InOut, _options.ThreadCount))
+            var token = (CancellationToken)obj;
+            try
             {
-                server.WaitForConnection();
-
-                Process(server, _logger);
+                using (var server = new NamedPipeServerStream(PipeName, PipeDirection.InOut, _options.ThreadCount))
+                {
+                    server.WaitForConnectionAsync().Wait(token);
+                    Task.Run(() => Process(server, _logger)).Wait(token);
+                }
+            }
+            catch when (token.IsCancellationRequested)
+            {
             }
         }
     }
