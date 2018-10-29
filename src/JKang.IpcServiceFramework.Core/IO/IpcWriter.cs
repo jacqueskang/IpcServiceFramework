@@ -1,13 +1,16 @@
 ﻿using System;
 using System.IO;
-using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace JKang.IpcServiceFramework.IO
 {
     public class IpcWriter : IDisposable
     {
-        private readonly BinaryWriter _writer;
+        private readonly byte[] _lengthBuffer = new byte[4];
+        private readonly Stream _stream;
         private readonly IIpcMessageSerializer _serializer;
+        private readonly bool _leaveOpen;
 
         public IpcWriter(Stream stream, IIpcMessageSerializer serializer)
             : this(stream, serializer, leaveOpen: false)
@@ -15,26 +18,35 @@ namespace JKang.IpcServiceFramework.IO
 
         public IpcWriter(Stream stream, IIpcMessageSerializer serializer, bool leaveOpen)
         {
-            _writer = new BinaryWriter(stream, Encoding.UTF8, leaveOpen);
+            _stream = stream;
             _serializer = serializer;
+            _leaveOpen = leaveOpen;
         }
 
-        public void Write(IpcRequest request)
+        public async Task WriteAsync(IpcRequest request,
+            CancellationToken cancellationToken = default(CancellationToken))
         {
             byte[] binary = _serializer.SerializeRequest(request);
-            WriteMessage(binary);
+            await WriteMessageAsync(binary, cancellationToken);
         }
 
-        public void Write(IpcResponse response)
+        public async Task WriteAsync(IpcResponse response,
+            CancellationToken cancellationToken = default(CancellationToken))
         {
             byte[] binary = _serializer.SerializeResponse(response);
-            WriteMessage(binary);
+            await WriteMessageAsync(binary, cancellationToken);
         }
 
-        private void WriteMessage(byte[] binary)
+        private async Task WriteMessageAsync(byte[] binary, CancellationToken cancellationToken)
         {
-            _writer.Write(binary.Length);
-            _writer.Write(binary);
+            int length = binary.Length;
+            _lengthBuffer[0] = (byte)length;
+            _lengthBuffer[1] = (byte)(length >> 8);
+            _lengthBuffer[2] = (byte)(length >> 16);
+            _lengthBuffer[3] = (byte)(length >> 24);
+
+            await _stream.WriteAsync(_lengthBuffer, 0, _lengthBuffer.Length, cancellationToken);
+            await _stream.WriteAsync(binary, 0, binary.Length, cancellationToken);
         }
 
         #region IDisposible
@@ -56,7 +68,10 @@ namespace JKang.IpcServiceFramework.IO
 
             if (disposing)
             {
-                _writer.Dispose();
+                if (!_leaveOpen)
+                {
+                    _stream.Dispose();
+                }
             }
 
             _disposed = true;

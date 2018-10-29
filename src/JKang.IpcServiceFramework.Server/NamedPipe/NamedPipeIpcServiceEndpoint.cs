@@ -63,8 +63,8 @@ namespace JKang.IpcServiceFramework.NamedPipe
             {
                 using (var server = new NamedPipeServerStream(PipeName, PipeDirection.InOut, _options.ThreadCount))
                 {
-                    server.WaitForConnectionAsync().Wait(token);
-                    Task.Run(() => Process(server, _logger)).Wait(token);
+                    server.WaitForConnectionAsync(token).Wait();
+                    ProcessAsync(server, _logger, token).Wait();
                 }
             }
             catch when (token.IsCancellationRequested)

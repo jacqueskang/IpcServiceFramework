@@ -4,6 +4,7 @@ using JKang.IpcServiceFramework.Services;
 using System;
 using System.IO;
 using System.Linq.Expressions;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace JKang.IpcServiceFramework
@@ -23,10 +24,11 @@ namespace JKang.IpcServiceFramework
             _converter = converter;
         }
 
-        public async Task InvokeAsync(Expression<Action<TInterface>> exp)
+        public async Task InvokeAsync(Expression<Action<TInterface>> exp,
+            CancellationToken cancellationToken = default(CancellationToken))
         {
             IpcRequest request = GetRequest(exp, new MyInterceptor());
-            IpcResponse response = await GetResponseAsync(request);
+            IpcResponse response = await GetResponseAsync(request, cancellationToken);
 
             if (response.Succeed)
             {
@@ -38,10 +40,11 @@ namespace JKang.IpcServiceFramework
             }
         }
 
-        public async Task<TResult> InvokeAsync<TResult>(Expression<Func<TInterface, TResult>> exp)
+        public async Task<TResult> InvokeAsync<TResult>(Expression<Func<TInterface, TResult>> exp,
+            CancellationToken cancellationToken = default(CancellationToken))
         {
             IpcRequest request = GetRequest(exp, new MyInterceptor<TResult>());
-            IpcResponse response = await GetResponseAsync(request);
+            IpcResponse response = await GetResponseAsync(request, cancellationToken);
 
             if (response.Succeed)
             {
@@ -83,19 +86,19 @@ namespace JKang.IpcServiceFramework
             };
         }
 
-        protected abstract Task<Stream> ConnectToServerAsync();
+        protected abstract Task<Stream> ConnectToServerAsync(CancellationToken cancellationToken);
 
-        private async Task<IpcResponse> GetResponseAsync(IpcRequest request)
+        private async Task<IpcResponse> GetResponseAsync(IpcRequest request, CancellationToken cancellationToken)
         {
-            using (Stream client = await ConnectToServerAsync())
+            using (Stream client = await ConnectToServerAsync(cancellationToken))
             using (var writer = new IpcWriter(client, _serializer, leaveOpen: true))
             using (var reader = new IpcReader(client, _serializer, leaveOpen: true))
             {
                 // send request
-                writer.Write(request);
+                await writer.WriteAsync(request, cancellationToken).ConfigureAwait(false);
 
                 // receive response
-                return reader.ReadIpcResponse();
+                return await reader.ReadIpcResponseAsync(cancellationToken).ConfigureAwait(false);
             }
         }
 

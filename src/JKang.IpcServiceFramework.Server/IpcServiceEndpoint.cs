@@ -24,8 +24,8 @@ namespace JKang.IpcServiceFramework
         public abstract Task ListenAsync(CancellationToken cancellationToken = default(CancellationToken));
     }
 
-    public abstract class IpcServiceEndpoint<TContract>: IpcServiceEndpoint
-        where TContract: class
+    public abstract class IpcServiceEndpoint<TContract> : IpcServiceEndpoint
+        where TContract : class
     {
         private readonly IValueConverter _converter;
         private readonly IIpcMessageSerializer _serializer;
@@ -37,15 +37,22 @@ namespace JKang.IpcServiceFramework
             _serializer = serviceProvider.GetRequiredService<IIpcMessageSerializer>();
         }
 
-        protected void Process(Stream server, ILogger logger)
+        protected async Task ProcessAsync(Stream server, ILogger logger, CancellationToken cancellationToken)
         {
             using (var writer = new IpcWriter(server, _serializer, leaveOpen: true))
             using (var reader = new IpcReader(server, _serializer, leaveOpen: true))
             {
                 try
                 {
+                    if (cancellationToken.IsCancellationRequested)
+                    {
+                        return;
+                    }
+
                     logger?.LogDebug($"[thread {Thread.CurrentThread.ManagedThreadId}] client connected, reading request...");
-                    IpcRequest request = reader.ReadIpcRequest();
+                    IpcRequest request = await reader.ReadIpcRequestAsync(cancellationToken).ConfigureAwait(false);
+
+                    cancellationToken.ThrowIfCancellationRequested();
 
                     logger?.LogDebug($"[thread {Thread.CurrentThread.ManagedThreadId}] request received, invoking corresponding method...");
                     IpcResponse response;
@@ -54,8 +61,10 @@ namespace JKang.IpcServiceFramework
                         response = GetReponse(request, scope);
                     }
 
+                    cancellationToken.ThrowIfCancellationRequested();
+
                     logger?.LogDebug($"[thread {Thread.CurrentThread.ManagedThreadId}] sending response...");
-                    writer.Write(response);
+                    await writer.WriteAsync(response, cancellationToken).ConfigureAwait(false);
 
                     logger?.LogDebug($"[thread {Thread.CurrentThread.ManagedThreadId}] done.");
                 }

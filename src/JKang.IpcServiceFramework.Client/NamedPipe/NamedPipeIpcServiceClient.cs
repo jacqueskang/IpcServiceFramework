@@ -1,6 +1,7 @@
 ﻿using JKang.IpcServiceFramework.Services;
 using System.IO;
 using System.IO.Pipes;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace JKang.IpcServiceFramework.NamedPipe
@@ -16,10 +17,10 @@ namespace JKang.IpcServiceFramework.NamedPipe
             _pipeName = pipeName;
         }
 
-        protected override async Task<Stream> ConnectToServerAsync()
+        protected override async Task<Stream> ConnectToServerAsync(CancellationToken cancellationToken)
         {
             var stream = new NamedPipeClientStream(".", _pipeName, PipeDirection.InOut, PipeOptions.None);
-            await stream.ConnectAsync();
+            await stream.ConnectAsync(cancellationToken);
             return stream;
         }
     }
