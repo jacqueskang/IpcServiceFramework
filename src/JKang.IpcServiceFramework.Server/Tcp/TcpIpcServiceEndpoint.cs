@@ -3,11 +3,13 @@ using System.Net;
 using System.Net.Sockets;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace JKang.IpcServiceFramework.Tcp
 {
     public class TcpIpcServiceEndpoint<TContract> : IpcServiceEndpoint<TContract>
-        where TContract: class
+        where TContract : class
     {
         private readonly ILogger<TcpIpcServiceEndpoint<TContract>> _logger;
         private readonly TcpListener _listener;
@@ -19,18 +21,31 @@ namespace JKang.IpcServiceFramework.Tcp
             _logger = serviceProvider.GetService<ILogger<TcpIpcServiceEndpoint<TContract>>>();
         }
 
-        public override void Listen()
+        public override Task ListenAsync(CancellationToken cancellationToken = default(CancellationToken))
         {
             _listener.Start();
 
-            _logger?.LogDebug("TCP listener started.");
-
-            while (true)
+            cancellationToken.Register(() =>
             {
-                TcpClient client = _listener.AcceptTcpClient();
-                NetworkStream server = client.GetStream();
-                Process(server, _logger);
-            }
+                _logger.LogDebug($"Shutting down tcp endpoint '{Name}'...");
+                _listener.Stop();
+            });
+
+            return Task.Run(async () =>
+            {
+                try
+                {
+                    _logger.LogDebug($"Listening tcp endpoint '{Name}'...");
+                    while (true)
+                    {
+                        TcpClient client = await _listener.AcceptTcpClientAsync();
+                        NetworkStream server = client.GetStream();
+                        Process(server, _logger);
+                    }
+                }
+                catch when (cancellationToken.IsCancellationRequested)
+                { }
+            });
         }
     }
 }

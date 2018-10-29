@@ -21,7 +21,7 @@ namespace JKang.IpcServiceFramework
         public string Name { get; }
         public IServiceProvider ServiceProvider { get; }
 
-        public abstract void Listen();
+        public abstract Task ListenAsync(CancellationToken cancellationToken = default(CancellationToken));
     }
 
     public abstract class IpcServiceEndpoint<TContract>: IpcServiceEndpoint
