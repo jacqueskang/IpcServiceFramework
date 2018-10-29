@@ -1,13 +1,16 @@
 ﻿using System;
 using System.IO;
-using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace JKang.IpcServiceFramework.IO
 {
     public class IpcReader : IDisposable
     {
-        private readonly BinaryReader _reader;
+        private readonly byte[] _lengthBuffer = new byte[4];
+        private readonly Stream _stream;
         private readonly IIpcMessageSerializer _serializer;
+        private readonly bool _leaveOpen;
 
         public IpcReader(Stream stream, IIpcMessageSerializer serializer)
             : this(stream, serializer, leaveOpen: false)
@@ -15,26 +18,32 @@ namespace JKang.IpcServiceFramework.IO
 
         public IpcReader(Stream stream, IIpcMessageSerializer serializer, bool leaveOpen)
         {
-            _reader = new BinaryReader(stream, Encoding.UTF8, leaveOpen);
+            _stream = stream;
             _serializer = serializer;
+            _leaveOpen = leaveOpen;
         }
 
-        public IpcRequest ReadIpcRequest()
+        public async Task<IpcRequest> ReadIpcRequestAsync(CancellationToken cancellationToken = default(CancellationToken))
         {
-            byte[] binary = ReadMessage();
+            byte[] binary = await ReadMessageAsync(cancellationToken);
             return _serializer.DeserializeRequest(binary);
         }
 
-        public IpcResponse ReadIpcResponse()
+        public async Task<IpcResponse> ReadIpcResponseAsync(CancellationToken cancellationToken = default(CancellationToken))
         {
-            byte[] binary = ReadMessage();
+            byte[] binary = await ReadMessageAsync(cancellationToken);
             return _serializer.DeserializeResponse(binary);
         }
 
-        private byte[] ReadMessage()
+        private async Task<byte[]> ReadMessageAsync(CancellationToken cancellationToken)
         {
-            int length = _reader.ReadInt32();
-            return _reader.ReadBytes(length);
+            await _stream.ReadAsync(_lengthBuffer, 0, _lengthBuffer.Length, cancellationToken);
+            int length = _lengthBuffer[0] | _lengthBuffer[1] << 8 | _lengthBuffer[2] << 16 | _lengthBuffer[3] << 24;
+
+            byte[] bytes = new byte[length];
+            await _stream.ReadAsync(bytes, 0, length, cancellationToken);
+
+            return bytes;
         }
 
         #region IDisposible
@@ -56,7 +65,10 @@ namespace JKang.IpcServiceFramework.IO
 
             if (disposing)
             {
-                _reader.Dispose();
+                if (!_leaveOpen)
+                {
+                    _stream.Dispose();
+                }
             }
 
             _disposed = true;

@@ -40,7 +40,7 @@ namespace JKang.IpcServiceFramework.Tcp
                     {
                         TcpClient client = await _listener.AcceptTcpClientAsync();
                         NetworkStream server = client.GetStream();
-                        Process(server, _logger);
+                        await ProcessAsync(server, _logger, cancellationToken);
                     }
                 }
                 catch when (cancellationToken.IsCancellationRequested)
