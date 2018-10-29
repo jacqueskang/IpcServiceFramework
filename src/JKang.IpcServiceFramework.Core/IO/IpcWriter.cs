@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -11,6 +10,7 @@ namespace JKang.IpcServiceFramework.IO
         private readonly byte[] _lengthBuffer = new byte[4];
         private readonly Stream _stream;
         private readonly IIpcMessageSerializer _serializer;
+        private readonly bool _leaveOpen;
 
         public IpcWriter(Stream stream, IIpcMessageSerializer serializer)
             : this(stream, serializer, leaveOpen: false)
@@ -20,6 +20,7 @@ namespace JKang.IpcServiceFramework.IO
         {
             _stream = stream;
             _serializer = serializer;
+            _leaveOpen = leaveOpen;
         }
 
         public async Task WriteAsync(IpcRequest request,
@@ -67,7 +68,10 @@ namespace JKang.IpcServiceFramework.IO
 
             if (disposing)
             {
-                _writer.Dispose();
+                if (!_leaveOpen)
+                {
+                    _stream.Dispose();
+                }
             }
 
             _disposed = true;
