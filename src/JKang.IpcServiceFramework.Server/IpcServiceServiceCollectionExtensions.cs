@@ -8,6 +8,7 @@ namespace JKang.IpcServiceFramework
         public static IIpcServiceBuilder AddIpc(this IServiceCollection services)
         {
             services
+                .AddLogging()
                 .AddScoped<IValueConverter, DefaultValueConverter>()
                 .AddScoped<IIpcMessageSerializer, DefaultIpcMessageSerializer>();
 
