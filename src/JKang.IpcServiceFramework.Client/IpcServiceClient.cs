@@ -83,6 +83,7 @@ namespace JKang.IpcServiceFramework
             {
                 MethodName = interceptor.LastInvocation.Method.Name,
                 Parameters = interceptor.LastInvocation.Arguments,
+                GenericArguments = interceptor.LastInvocation.GenericArguments,
             };
         }
 

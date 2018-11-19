@@ -28,6 +28,11 @@ namespace IpcServiceSample.ConsoleServer
             return Guid.NewGuid();
         }
 
+        public string Printout<T>(T value)
+        {
+            return value.ToString();
+        }
+
         public byte[] ReverseBytes(byte[] input)
         {
             return input.Reverse().ToArray();

@@ -95,11 +95,22 @@ namespace JKang.IpcServiceFramework
                 return IpcResponse.Fail($"Parameter mismatch.");
             }
 
+            Type[] genericArguments = method.GetGenericArguments();
+            if (genericArguments.Length != request.GenericArguments.Length)
+            {
+                return IpcResponse.Fail($"Generic arguments mismatch.");
+            }
+
             object[] args = new object[paramInfos.Length];
             for (int i = 0; i < args.Length; i++)
             {
                 object origValue = request.Parameters[i];
                 Type destType = paramInfos[i].ParameterType;
+                if (destType.IsGenericParameter)
+                {
+                    destType = request.GenericArguments[destType.GenericParameterPosition];
+                }
+
                 if (_converter.TryConvert(origValue, destType, out object arg))
                 {
                     args[i] = arg;
@@ -112,6 +123,11 @@ namespace JKang.IpcServiceFramework
 
             try
             {
+                if (method.IsGenericMethod)
+                {
+                    method = method.MakeGenericMethod(request.GenericArguments);
+                }
+                
                 object @return = method.Invoke(service, args);
                 if (@return is Task)
                 {
