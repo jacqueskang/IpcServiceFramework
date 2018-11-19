@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace IpcServiceSample.ServiceContracts
 {
@@ -10,5 +8,6 @@ namespace IpcServiceSample.ServiceContracts
         string ConvertText(string text, TextStyle style);
         Guid GenerateId();
         byte[] ReverseBytes(byte[] input);
+        string Printout<T>(T value);
     }
 }
