@@ -29,7 +29,20 @@ namespace JKang.IpcServiceFramework
         public Task RunAsync(CancellationToken cancellationToken = default(CancellationToken))
         {
             Task[] tasks = _endpoints
-                .Select(endpoint => endpoint.ListenAsync(cancellationToken))
+                .Select(endpoint =>
+                {
+                    _logger.LogDebug($"Starting endpoint '{endpoint.Name}'...");
+
+                    cancellationToken.Register(() =>
+                    {
+                        _logger.LogDebug($"Stopping endpoint '{endpoint.Name}'...");
+                    });
+
+                    return endpoint.ListenAsync(cancellationToken).ContinueWith(_ =>
+                    {
+                        _logger.LogDebug($"Endpoint '{endpoint.Name}' stopped.");
+                    });
+                })
                 .ToArray();
             return Task.WhenAll(tasks);
         }
