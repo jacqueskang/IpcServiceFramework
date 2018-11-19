@@ -12,18 +12,25 @@ namespace JKang.IpcServiceFramework.Tcp
         where TContract : class
     {
         private readonly ILogger<TcpIpcServiceEndpoint<TContract>> _logger;
+
+        public int Port { get; private set; }
+
         private readonly TcpListener _listener;
 
-        public TcpIpcServiceEndpoint(String name, IServiceProvider serviceProvider, IPAddress ipEndpoint, int port)
+        public TcpIpcServiceEndpoint(String name, IServiceProvider serviceProvider, IPAddress ipEndpoint, int port = 0)
             : base(name, serviceProvider)
         {
             _listener = new TcpListener(ipEndpoint, port);
             _logger = serviceProvider.GetService<ILogger<TcpIpcServiceEndpoint<TContract>>>();
+            Port = port;
         }
 
         public override Task ListenAsync(CancellationToken cancellationToken = default(CancellationToken))
         {
             _listener.Start();
+
+            // If port is dynamically assigned, get the port number after start
+            Port = ((IPEndPoint)_listener.LocalEndpoint).Port;
 
             cancellationToken.Register(() =>
             {
@@ -35,7 +42,7 @@ namespace JKang.IpcServiceFramework.Tcp
             {
                 try
                 {
-                    _logger.LogDebug($"Listening tcp endpoint '{Name}'...");
+                    _logger.LogDebug($"Listening tcp endpoint '{Name}' on port {Port}...");
                     while (true)
                     {
                         TcpClient client = await _listener.AcceptTcpClientAsync();
