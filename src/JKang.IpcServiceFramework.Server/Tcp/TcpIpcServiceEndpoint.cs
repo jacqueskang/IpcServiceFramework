@@ -34,7 +34,6 @@ namespace JKang.IpcServiceFramework.Tcp
 
             cancellationToken.Register(() =>
             {
-                _logger.LogDebug($"Shutting down tcp endpoint '{Name}'...");
                 _listener.Stop();
             });
 
@@ -42,7 +41,7 @@ namespace JKang.IpcServiceFramework.Tcp
             {
                 try
                 {
-                    _logger.LogDebug($"Listening tcp endpoint '{Name}' on port {Port}...");
+                    _logger.LogDebug($"Endpoint '{Name}' listening on port {Port}...");
                     while (true)
                     {
                         TcpClient client = await _listener.AcceptTcpClientAsync();

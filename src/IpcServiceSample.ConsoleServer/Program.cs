@@ -29,6 +29,8 @@ namespace IpcServiceSample.ConsoleServer
                 Console.ReadKey();
                 source.Cancel();
             }));
+
+            Console.WriteLine("Server stopped.");
         }
 
         private static IServiceCollection ConfigureServices(IServiceCollection services)
