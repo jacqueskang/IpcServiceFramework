@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using System;
 
 namespace JKang.IpcServiceFramework
 {
@@ -9,5 +10,9 @@ namespace JKang.IpcServiceFramework
         IIpcServiceBuilder AddService<TInterface, TImplementation>()
             where TInterface: class
             where TImplementation: class, TInterface;
+
+        IIpcServiceBuilder AddService<TInterface, TImplementation>(Func<IServiceProvider, TImplementation> implementationFactory)
+            where TInterface : class
+            where TImplementation : class, TInterface;
     }
 }
