@@ -54,7 +54,7 @@ namespace JKang.IpcServiceFramework
 
                     cancellationToken.ThrowIfCancellationRequested();
 
-                    logger?.LogDebug($"[thread {Thread.CurrentThread.ManagedThreadId}] request received, invoking corresponding method...");
+                    logger?.LogDebug($"[thread {Thread.CurrentThread.ManagedThreadId}] request received, invoking '{request.MethodName}'...");
                     IpcResponse response;
                     using (IServiceScope scope = ServiceProvider.CreateScope())
                     {
