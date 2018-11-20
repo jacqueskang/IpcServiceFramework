@@ -30,16 +30,20 @@ namespace JKang.IpcServiceFramework.Tcp
 
             await Task.Run(() =>
             {
-                // poll every 1 second to check cancellation request
-                while (!result.AsyncWaitHandle.WaitOne(TimeSpan.FromMilliseconds(1000), false))
+                // poll every 100ms to check cancellation request
+                while (!result.AsyncWaitHandle.WaitOne(TimeSpan.FromMilliseconds(100), false))
                 {
                     if (cancellationToken.IsCancellationRequested)
                     {
-                        client.Close();
+                        client.EndConnect(result);
                         cancellationToken.ThrowIfCancellationRequested();
                     }
                 }
-                client.EndConnect(result);
+            });
+
+            cancellationToken.Register(() =>
+            {
+                client.Close();
             });
 
             return client.GetStream();
