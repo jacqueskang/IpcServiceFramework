@@ -9,5 +9,6 @@ namespace IpcServiceSample.ServiceContracts
         Guid GenerateId();
         byte[] ReverseBytes(byte[] input);
         string Printout<T>(T value);
+        void SlowOperation();
     }
 }

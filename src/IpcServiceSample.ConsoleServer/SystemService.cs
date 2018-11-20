@@ -2,6 +2,7 @@
 using System;
 using System.Globalization;
 using System.Linq;
+using System.Threading;
 
 namespace IpcServiceSample.ConsoleServer
 {
@@ -36,6 +37,11 @@ namespace IpcServiceSample.ConsoleServer
         public byte[] ReverseBytes(byte[] input)
         {
             return input.Reverse().ToArray();
+        }
+
+        public void SlowOperation()
+        {
+            Thread.Sleep(10000);
         }
     }
 }
