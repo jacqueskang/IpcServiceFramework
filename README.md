@@ -19,7 +19,6 @@ Support multi-threading on server side with configurable number of threads (name
 
 IpcServiceFramework is available via NuGet:
 
- - [JKang.IpcServiceFramework.Core](https://www.nuget.org/packages/JKang.IpcServiceFramework.Core/)
  - [JKang.IpcServiceFramework.Server](https://www.nuget.org/packages/JKang.IpcServiceFramework.Server/)
  - [JKang.IpcServiceFramework.Client](https://www.nuget.org/packages/JKang.IpcServiceFramework.Client/)
 
