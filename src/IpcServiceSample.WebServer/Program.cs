@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Net;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 
 namespace IpcServiceSample.WebServer
@@ -27,6 +28,7 @@ namespace IpcServiceSample.WebServer
             new IpcServiceHostBuilder(serviceProvider)
                 .AddNamedPipeEndpoint<IComputingService>("computingEndpoint", "pipeName")
                 .AddTcpEndpoint<ISystemService>("systemEndpoint", IPAddress.Loopback, 45684)
+                .AddSslEndpoint<ISecureService>("secureEndpoint", IPAddress.Loopback, 44384, new X509Certificate2(@"Certificates\server.pfx", "password"))
                 .Build()
                 .Run();
         }

@@ -2,6 +2,8 @@
 using JKang.IpcServiceFramework;
 using System;
 using System.Net;
+using System.Net.Security;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -35,6 +37,20 @@ namespace IpcServiceSample.ConsoleClient
             }
         }
 
+        private static bool AcceptAllCertificates(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors)
+        {
+            /* WARNING: Using certificate validation callback can be dangerous. Incorrect implementation can lead to serious security issues.
+             * 
+             * For example, unconditionally returning true in this function provides no security whatsoever against an attacker who can perform
+             * man-in-the-middle attacks.
+             * 
+             * This function is used only for test purposes. It validates only that the correct server certificate is used by the server.
+             * However, it does not validate the certificate chain or validate that the certificate common name matches the server domain name.
+             * Do not use this example in a production application.
+            */
+            return certificate.GetCertHashString() == "FA54627C36D3DAEFF69E04B59120992305A7104F";
+        }
+
         private static async Task RunTestsAsync(CancellationToken cancellationToken)
         {
             IpcServiceClient<IComputingService> computingClient = new IpcServiceClientBuilder<IComputingService>()
@@ -43,6 +59,10 @@ namespace IpcServiceSample.ConsoleClient
 
             IpcServiceClient<ISystemService> systemClient = new IpcServiceClientBuilder<ISystemService>()
                 .UseTcp(IPAddress.Loopback, 45684)
+                .Build();
+
+            IpcServiceClient<ISecureService> secureClient = new IpcServiceClientBuilder<ISecureService>()
+                .UseSsl(IPAddress.Loopback, 44384, "test-ipcsf-secure-server", AcceptAllCertificates)
                 .Build();
 
             // test 1: call IPC service method with primitive types
@@ -88,6 +108,10 @@ namespace IpcServiceSample.ConsoleClient
             // test 9: call slow IPC service method 
             await systemClient.InvokeAsync(x => x.SlowOperation(), cancellationToken);
             Console.WriteLine($"[TEST 9] Called slow operation");
+
+            // test 10: call secure service method
+            await secureClient.InvokeAsync(x => x.GenerateId(), cancellationToken);
+            Console.WriteLine($"[TEST 10] Called secure service method");
         }
     }
 }

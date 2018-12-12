@@ -18,7 +18,8 @@ namespace IpcServiceSample.WebServer
                     builder
                         .AddNamedPipe()
                         .AddService<IComputingService, ComputingService>()
-                        .AddService<ISystemService, SystemService>();
+                        .AddService<ISystemService, SystemService>()
+                        .AddService<ISecureService, SecureService>();
                 });
         }
 

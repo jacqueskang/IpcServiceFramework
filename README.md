@@ -2,7 +2,7 @@
 
 # IpcServiceFramework
 
-A .NET Core lightweight inter-process communication framework allowing invoking a service via named pipeline and/or TCP (in a similar way as WCF, which is currently unavailable for .NET Core).
+A .NET Core lightweight inter-process communication framework allowing invoking a service via named pipeline and/or TCP (in a similar way as WCF, which is currently unavailable for .NET Core). Secure communication over SSL is also supported.
 
 Support using primitive or complexe types in service contract.
 
