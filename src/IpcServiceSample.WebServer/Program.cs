@@ -28,7 +28,7 @@ namespace IpcServiceSample.WebServer
             new IpcServiceHostBuilder(serviceProvider)
                 .AddNamedPipeEndpoint<IComputingService>("computingEndpoint", "pipeName")
                 .AddTcpEndpoint<ISystemService>("systemEndpoint", IPAddress.Loopback, 45684)
-                .AddSslEndpoint<ISecureService>("secureEndpoint", IPAddress.Loopback, 44384, new X509Certificate2(@"Certificates\server.pfx", "password"))
+                .AddTcpEndpoint<ITestService>("secureEndpoint", IPAddress.Loopback, 44384, new X509Certificate2(@"Certificates\server.pfx", "password"))
                 .Build()
                 .Run();
         }

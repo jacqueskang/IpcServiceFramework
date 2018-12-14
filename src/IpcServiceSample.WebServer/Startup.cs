@@ -19,7 +19,7 @@ namespace IpcServiceSample.WebServer
                         .AddNamedPipe()
                         .AddService<IComputingService, ComputingService>()
                         .AddService<ISystemService, SystemService>()
-                        .AddService<ISecureService, SecureService>();
+                        .AddService<ITestService, TestService>();
                 });
         }
 

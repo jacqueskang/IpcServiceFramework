@@ -6,7 +6,7 @@ using System.Threading;
 
 namespace IpcServiceSample.ConsoleServer
 {
-    public class SecureService : ISecureService
+    public class TestService : ITestService
     {
         public Guid GenerateId()
         {

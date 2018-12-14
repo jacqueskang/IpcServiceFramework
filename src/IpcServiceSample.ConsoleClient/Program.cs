@@ -1,4 +1,5 @@
 ﻿using IpcServiceSample.ServiceContracts;
+using IpcServiceSample.ServiceContracts.Helpers;
 using JKang.IpcServiceFramework;
 using System;
 using System.Net;
@@ -37,7 +38,7 @@ namespace IpcServiceSample.ConsoleClient
             }
         }
 
-        private static bool AcceptAllCertificates(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors)
+        private static bool InsecureValidationCallback_TESTONLY(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors)
         {
             /* WARNING: Using certificate validation callback can be dangerous. Incorrect implementation can lead to serious security issues.
              * 
@@ -61,8 +62,12 @@ namespace IpcServiceSample.ConsoleClient
                 .UseTcp(IPAddress.Loopback, 45684)
                 .Build();
 
-            IpcServiceClient<ISecureService> secureClient = new IpcServiceClientBuilder<ISecureService>()
-                .UseSsl(IPAddress.Loopback, 44384, "test-ipcsf-secure-server", AcceptAllCertificates)
+            IpcServiceClient<ITestService> secureClient = new IpcServiceClientBuilder<ITestService>()
+                .UseTcp(IPAddress.Loopback, 44384, "test-ipcsf-secure-server", InsecureValidationCallback_TESTONLY)
+                .Build();
+
+            IpcServiceClient<ITestService> xorTranslatedClient = new IpcServiceClientBuilder<ITestService>()
+                .UseTcp(IPAddress.Loopback, 45454, s => new XorStream(s))
                 .Build();
 
             // test 1: call IPC service method with primitive types
@@ -110,8 +115,12 @@ namespace IpcServiceSample.ConsoleClient
             Console.WriteLine($"[TEST 9] Called slow operation");
 
             // test 10: call secure service method
-            await secureClient.InvokeAsync(x => x.GenerateId(), cancellationToken);
-            Console.WriteLine($"[TEST 10] Called secure service method");
+            generatedId = await secureClient.InvokeAsync(x => x.GenerateId(), cancellationToken);
+            Console.WriteLine($"[TEST 10] Called secure service method, generated ID is: {generatedId}");
+
+            // test 10: call translated service method
+            generatedId = await xorTranslatedClient.InvokeAsync(x => x.GenerateId(), cancellationToken);
+            Console.WriteLine($"[TEST 10] Called translated service method, generated ID is: {generatedId}");
         }
     }
 }

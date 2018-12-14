@@ -4,7 +4,7 @@ using System.Text;
 
 namespace IpcServiceSample.ServiceContracts
 {
-    public interface ISecureService
+    public interface ITestService
     {
         Guid GenerateId();
     }

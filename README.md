@@ -112,7 +112,7 @@ __Welcome to raise any issue or even provide any suggestion/PR to participate th
 
 ## Security
 
-If you are running IPC channels over TCP on an untrusted network, you should consider using SSL via the SslIpcServiceClient and SslIpcServiceEndpoint classes.
+If you are running IPC channels over TCP on an untrusted network, you should consider using SSL. IpcServiceFramework supports SSL on TCP clients and hosts.
 
 ### Generate certificates for testing
 
@@ -137,9 +137,11 @@ You will be asked for a password.
 You can import the certificate and provide it to the server endpoint using code similar to the following:
 
     var certificate = new X509Certificate2(@"path\to\server.pfx", "password");
-	serviceHostBuilder.AddSslEndpoint<ISomeServiceContract>("someEndpoint", ip, port, certificate);
+	serviceHostBuilder.AddTcpEndpoint<ISomeServiceContract>("someEndpoint", ip, port, certificate);
 
 See the ConsoleServer and WebServer projects for more complete examples.
+
+Note: for security and maintenance reasons, we do not recommend that you hard-code the certificate password. It should instead be stored in the application configuration file so that it can be easily changed.
 
 ### Safe usage
 
@@ -153,3 +155,7 @@ SSL/TLS is only secure if you use it properly. Here are some tips:
 ### Client certificates
 
 Client certificates are not currently supported.
+
+## Stream translators
+
+If you want to process the binary data after serialisation or before deserialisation, for example to add a custom handshake or packet header, you can do so using a stream translator. Host and client classes allow you to pass a `Func<Stream, Stream>` stream translation callback in their constructors, which can be used to "wrap" a custom stream around the network stream. This is supported on TCP communications both with and without SSL enabled. See the `XorStream` class in the IpcServiceSample.ServiceContracts project for an example of a stream translator.
