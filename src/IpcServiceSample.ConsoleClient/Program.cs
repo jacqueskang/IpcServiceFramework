@@ -70,6 +70,10 @@ namespace IpcServiceSample.ConsoleClient
                 .UseTcp(IPAddress.Loopback, 45454, s => new XorStream(s))
                 .Build();
 
+            IpcServiceClient<ISystemService> loggedClient = new IpcServiceClientBuilder<ISystemService>()
+                .UseTcp(IPAddress.Loopback, 45684, s => new LoggingStream(s, "ipc.log"))
+                .Build();
+
             // test 1: call IPC service method with primitive types
             float result1 = await computingClient.InvokeAsync(x => x.AddFloat(1.23f, 4.56f), cancellationToken);
             Console.WriteLine($"[TEST 1] sum of 2 floating number is: {result1}");
@@ -118,9 +122,13 @@ namespace IpcServiceSample.ConsoleClient
             generatedId = await secureClient.InvokeAsync(x => x.GenerateId(), cancellationToken);
             Console.WriteLine($"[TEST 10] Called secure service method, generated ID is: {generatedId}");
 
-            // test 10: call translated service method
+            // test 11 call translated service method
             generatedId = await xorTranslatedClient.InvokeAsync(x => x.GenerateId(), cancellationToken);
-            Console.WriteLine($"[TEST 10] Called translated service method, generated ID is: {generatedId}");
+            Console.WriteLine($"[TEST 11] Called translated service method, generated ID is: {generatedId}");
+            
+            // test 12: use a translated stream to log data to a text file
+            generatedId = await loggedClient.InvokeAsync(x => x.GenerateId(), cancellationToken);
+            Console.WriteLine($"[TEST 12] Called method using stream translator for logging, generated ID is: {generatedId}");
         }
     }
 }
