@@ -58,7 +58,7 @@ namespace JKang.IpcServiceFramework
                     IpcResponse response;
                     using (IServiceScope scope = ServiceProvider.CreateScope())
                     {
-                        response = GetReponse(request, scope);
+                        response = await GetReponse(request, scope);
                     }
 
                     cancellationToken.ThrowIfCancellationRequested();
@@ -75,7 +75,7 @@ namespace JKang.IpcServiceFramework
             }
         }
 
-        protected IpcResponse GetReponse(IpcRequest request, IServiceScope scope)
+        protected async Task<IpcResponse> GetReponse(IpcRequest request, IServiceScope scope)
         {
             object service = scope.ServiceProvider.GetService<TContract>();
             if (service == null)
@@ -127,11 +127,15 @@ namespace JKang.IpcServiceFramework
                 {
                     method = method.MakeGenericMethod(request.GenericArguments);
                 }
-                
+
                 object @return = method.Invoke(service, args);
+
                 if (@return is Task)
                 {
-                    throw new NotImplementedException();
+                    await (Task)@return;
+
+                    var resultProperty = @return.GetType().GetProperty("Result");
+                    return IpcResponse.Success(resultProperty?.GetValue(@return));
                 }
                 else
                 {

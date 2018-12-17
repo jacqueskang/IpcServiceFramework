@@ -1,6 +1,7 @@
 ﻿using IpcServiceSample.ServiceContracts;
 using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace IpcServiceSample.ConsoleServer
 {
@@ -34,6 +35,16 @@ namespace IpcServiceSample.ConsoleServer
         {
             _logger.LogInformation($"{nameof(AddFloat)} called.");
             return x + y;
+        }
+
+        public Task MethodAsync()
+        {
+            return Task.CompletedTask;
+        }
+
+        public Task<int> SumAsync(int x, int y)
+        {
+            return Task.FromResult(x + y);
         }
     }
 }
