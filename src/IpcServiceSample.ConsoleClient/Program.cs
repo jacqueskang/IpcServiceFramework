@@ -88,6 +88,14 @@ namespace IpcServiceSample.ConsoleClient
             // test 9: call slow IPC service method 
             await systemClient.InvokeAsync(x => x.SlowOperation(), cancellationToken);
             Console.WriteLine($"[TEST 9] Called slow operation");
+
+            // test 10: call async server method
+            await computingClient.InvokeAsync(x => x.MethodAsync());
+            Console.WriteLine($"[TEST 10] Called async method");
+
+            // test 11: call async server function
+            int sum = await computingClient.InvokeAsync(x => x.SumAsync(1, 1));
+            Console.WriteLine($"[TEST 11] Called async function: {sum}");
         }
     }
 }

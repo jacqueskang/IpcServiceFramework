@@ -63,6 +63,46 @@ namespace JKang.IpcServiceFramework
             }
         }
 
+        public async Task InvokeAsync(Expression<Func<TInterface, Task>> exp,
+            CancellationToken cancellationToken = default(CancellationToken))
+        {
+            IpcRequest request = GetRequest(exp, new MyInterceptor<Task>());
+            IpcResponse response = await GetResponseAsync(request, cancellationToken);
+
+            if (response.Succeed)
+            {
+                return;
+            }
+            else
+            {
+                throw new InvalidOperationException(response.Failure);
+            }
+        }
+
+        public async Task<TResult> InvokeAsync<TResult>(Expression<Func<TInterface, Task<TResult>>> exp,
+            CancellationToken cancellationToken = default(CancellationToken))
+        {
+            IpcRequest request = GetRequest(exp, new MyInterceptor<Task<TResult>>());
+            IpcResponse response = await GetResponseAsync(request, cancellationToken);
+
+            if (response.Succeed)
+            {
+                if (_converter.TryConvert(response.Data, typeof(TResult), out object @return))
+                {
+                    return (TResult)@return;
+                }
+                else
+                {
+                    throw new InvalidOperationException($"Unable to convert returned value to '{typeof(TResult).Name}'.");
+                }
+            }
+            else
+            {
+                throw new InvalidOperationException(response.Failure);
+            }
+        }
+
+
         private static IpcRequest GetRequest(Expression exp, MyInterceptor interceptor)
         {
             if (!(exp is LambdaExpression lamdaExp))
