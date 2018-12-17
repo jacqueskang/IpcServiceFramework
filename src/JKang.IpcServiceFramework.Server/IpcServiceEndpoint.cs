@@ -71,6 +71,7 @@ namespace JKang.IpcServiceFramework
                 catch (Exception ex)
                 {
                     logger?.LogError(ex, ex.Message);
+                    await writer.WriteAsync(IpcResponse.Fail($"Internal server error: {ex.Message}"), cancellationToken);
                 }
             }
         }
