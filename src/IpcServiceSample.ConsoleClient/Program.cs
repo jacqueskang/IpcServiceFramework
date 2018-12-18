@@ -118,17 +118,25 @@ namespace IpcServiceSample.ConsoleClient
             await systemClient.InvokeAsync(x => x.SlowOperation(), cancellationToken);
             Console.WriteLine($"[TEST 9] Called slow operation");
 
-            // test 10: call secure service method
-            generatedId = await secureClient.InvokeAsync(x => x.GenerateId(), cancellationToken);
-            Console.WriteLine($"[TEST 10] Called secure service method, generated ID is: {generatedId}");
+            // test 10: call async server method
+            await computingClient.InvokeAsync(x => x.MethodAsync());
+            Console.WriteLine($"[TEST 10] Called async method");
 
-            // test 11 call translated service method
+            // test 11: call async server function
+            int sum = await computingClient.InvokeAsync(x => x.SumAsync(1, 1));
+            Console.WriteLine($"[TEST 11] Called async function: {sum}");
+          
+            // test 12: call secure service method
+            generatedId = await secureClient.InvokeAsync(x => x.GenerateId(), cancellationToken);
+            Console.WriteLine($"[TEST 12] Called secure service method, generated ID is: {generatedId}");
+
+            // test 13 call translated service method
             generatedId = await xorTranslatedClient.InvokeAsync(x => x.GenerateId(), cancellationToken);
-            Console.WriteLine($"[TEST 11] Called translated service method, generated ID is: {generatedId}");
+            Console.WriteLine($"[TEST 13] Called translated service method, generated ID is: {generatedId}");
             
-            // test 12: use a translated stream to log data to a text file
+            // test 14: use a translated stream to log data to a text file
             generatedId = await loggedClient.InvokeAsync(x => x.GenerateId(), cancellationToken);
-            Console.WriteLine($"[TEST 12] Called method using stream translator for logging, generated ID is: {generatedId}");
+            Console.WriteLine($"[TEST 14] Called method using stream translator for logging, generated ID is: {generatedId}");
         }
     }
 }

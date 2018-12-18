@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace IpcServiceSample.ServiceContracts
 {
@@ -8,6 +9,9 @@ namespace IpcServiceSample.ServiceContracts
         float AddFloat(float x, float y);
         ComplexNumber AddComplexNumber(ComplexNumber x, ComplexNumber y);
         ComplexNumber AddComplexNumbers(IEnumerable<ComplexNumber> numbers);
+
+        Task MethodAsync();
+        Task<int> SumAsync(int x, int y);
     }
 
     public class ComplexNumber
