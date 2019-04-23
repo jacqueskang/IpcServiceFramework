@@ -14,5 +14,8 @@ namespace JKang.IpcServiceFramework
         IIpcServiceBuilder AddService<TInterface, TImplementation>(Func<IServiceProvider, TImplementation> implementationFactory)
             where TInterface : class
             where TImplementation : class, TInterface;
+
+        IIpcServiceBuilder AddService<TInterface>(Func<IServiceProvider, TInterface> implementationFactory)
+            where TInterface : class;
     }
 }
