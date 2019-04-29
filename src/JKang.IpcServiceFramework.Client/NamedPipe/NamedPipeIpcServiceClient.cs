@@ -1,4 +1,5 @@
 ﻿using JKang.IpcServiceFramework.Services;
+using System;
 using System.IO;
 using System.IO.Pipes;
 using System.Threading;
@@ -19,8 +20,8 @@ namespace JKang.IpcServiceFramework.NamedPipe
 
         protected override async Task<Stream> ConnectToServerAsync(CancellationToken cancellationToken)
         {
-            var stream = new NamedPipeClientStream(".", _pipeName, PipeDirection.InOut, PipeOptions.None);
-            await stream.ConnectAsync(cancellationToken);
+            var stream = new NamedPipeClientStream(".", _pipeName, PipeDirection.InOut, PipeOptions.Asynchronous);
+            await stream.ConnectAsync((int)TimeSpan.FromSeconds(3).TotalMilliseconds, cancellationToken).ConfigureAwait(false);
             return stream;
         }
     }
