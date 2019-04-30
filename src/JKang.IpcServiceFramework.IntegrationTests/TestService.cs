@@ -44,7 +44,7 @@ namespace JKang.IpcServiceFramework.IntegrationTests
 
         public T GetDefaultValue<T>()
         {
-            return default;
+            return default(T);
         }
 
         public async Task<long> WaitAsync(int milliseconds)
