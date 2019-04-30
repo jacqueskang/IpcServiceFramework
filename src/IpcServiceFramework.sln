@@ -13,6 +13,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IpcServiceSample.ConsoleCli
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{20913218-C740-42E9-9D17-CAD973B676D0}"
 	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
 		..\.travis.yml = ..\.travis.yml
 		Directory.Build.props = Directory.Build.props
 		..\README.md = ..\README.md
@@ -28,7 +29,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JKang.IpcServiceFramework.C
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IpcServiceSample.WebServer", "IpcServiceSample.WebServer\IpcServiceSample.WebServer.csproj", "{D57727B9-81F1-439A-AD17-0DB26C8F0523}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JKang.IpcServiceFramework.IntegrationTests", "JKang.IpcServiceFramework.IntegrationTests\JKang.IpcServiceFramework.IntegrationTests.csproj", "{451DE9A3-7A34-487B-823C-FB3C6B6EF20D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JKang.IpcServiceFramework.IntegrationTests", "JKang.IpcServiceFramework.IntegrationTests\JKang.IpcServiceFramework.IntegrationTests.csproj", "{451DE9A3-7A34-487B-823C-FB3C6B6EF20D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
