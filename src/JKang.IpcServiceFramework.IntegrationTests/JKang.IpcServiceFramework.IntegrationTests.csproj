@@ -8,14 +8,15 @@
 
   <ItemGroup>
     <PackageReference Include="AutoFixture.Xunit2" Version="4.8.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="2.2.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.9.0" />
     <PackageReference Include="xunit" Version="2.4.0" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.4.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\IpcServiceSample.ConsoleClient\IpcServiceSample.ConsoleClient.csproj" />
-    <ProjectReference Include="..\IpcServiceSample.ConsoleServer\IpcServiceSample.ConsoleServer.csproj" />
+    <ProjectReference Include="..\JKang.IpcServiceFramework.Client\JKang.IpcServiceFramework.Client.csproj" />
+    <ProjectReference Include="..\JKang.IpcServiceFramework.Server\JKang.IpcServiceFramework.Server.csproj" />
   </ItemGroup>
 
 </Project>
