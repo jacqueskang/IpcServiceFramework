@@ -114,7 +114,7 @@ namespace JKang.IpcServiceFramework.Tcp
                         if (_throttle != null)
                             await _throttle.WaitAsync();
 
-                        TcpClient client = await _listener.AcceptTcpClientAsync();
+                        TcpClient client = await _listener.AcceptTcpClientAsync().ConfigureAwait(false);
 
                         Stream server = client.GetStream();
 
@@ -143,7 +143,7 @@ namespace JKang.IpcServiceFramework.Tcp
                                 {
                                     try
                                     {
-                                        await ProcessAsync(server, _logger, cancellationToken);
+                                        await ProcessAsync(server, _logger, cancellationToken).ConfigureAwait(false);
                                     }
                                     catch when (cancellationToken.IsCancellationRequested) { }
                                     finally

@@ -27,14 +27,14 @@ namespace JKang.IpcServiceFramework.IO
             CancellationToken cancellationToken = default(CancellationToken))
         {
             byte[] binary = _serializer.SerializeRequest(request);
-            await WriteMessageAsync(binary, cancellationToken);
+            await WriteMessageAsync(binary, cancellationToken).ConfigureAwait(false);
         }
 
         public async Task WriteAsync(IpcResponse response,
             CancellationToken cancellationToken = default(CancellationToken))
         {
             byte[] binary = _serializer.SerializeResponse(response);
-            await WriteMessageAsync(binary, cancellationToken);
+            await WriteMessageAsync(binary, cancellationToken).ConfigureAwait(false);
         }
 
         private async Task WriteMessageAsync(byte[] binary, CancellationToken cancellationToken)
@@ -45,8 +45,8 @@ namespace JKang.IpcServiceFramework.IO
             _lengthBuffer[2] = (byte)(length >> 16);
             _lengthBuffer[3] = (byte)(length >> 24);
 
-            await _stream.WriteAsync(_lengthBuffer, 0, _lengthBuffer.Length, cancellationToken);
-            await _stream.WriteAsync(binary, 0, binary.Length, cancellationToken);
+            await _stream.WriteAsync(_lengthBuffer, 0, _lengthBuffer.Length, cancellationToken).ConfigureAwait(false);
+            await _stream.WriteAsync(binary, 0, binary.Length, cancellationToken).ConfigureAwait(false);
         }
 
         #region IDisposible
