@@ -58,7 +58,7 @@ namespace JKang.IpcServiceFramework
                     IpcResponse response;
                     using (IServiceScope scope = ServiceProvider.CreateScope())
                     {
-                        response = await GetReponse(request, scope);
+                        response = await GetReponse(request, scope).ConfigureAwait(false);
                     }
 
                     cancellationToken.ThrowIfCancellationRequested();
@@ -71,7 +71,7 @@ namespace JKang.IpcServiceFramework
                 catch (Exception ex)
                 {
                     logger?.LogError(ex, ex.Message);
-                    await writer.WriteAsync(IpcResponse.Fail($"Internal server error: {ex.Message}"), cancellationToken);
+                    await writer.WriteAsync(IpcResponse.Fail($"Internal server error: {ex.Message}"), cancellationToken).ConfigureAwait(false);
                 }
             }
         }
@@ -133,7 +133,7 @@ namespace JKang.IpcServiceFramework
 
                 if (@return is Task)
                 {
-                    await (Task)@return;
+                    await ((Task)@return).ConfigureAwait(false);
 
                     var resultProperty = @return.GetType().GetProperty("Result");
                     return IpcResponse.Success(resultProperty?.GetValue(@return));

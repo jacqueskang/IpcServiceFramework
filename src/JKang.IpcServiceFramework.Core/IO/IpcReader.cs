@@ -25,23 +25,23 @@ namespace JKang.IpcServiceFramework.IO
 
         public async Task<IpcRequest> ReadIpcRequestAsync(CancellationToken cancellationToken = default(CancellationToken))
         {
-            byte[] binary = await ReadMessageAsync(cancellationToken);
+            byte[] binary = await ReadMessageAsync(cancellationToken).ConfigureAwait(false);
             return _serializer.DeserializeRequest(binary);
         }
 
         public async Task<IpcResponse> ReadIpcResponseAsync(CancellationToken cancellationToken = default(CancellationToken))
         {
-            byte[] binary = await ReadMessageAsync(cancellationToken);
+            byte[] binary = await ReadMessageAsync(cancellationToken).ConfigureAwait(false);
             return _serializer.DeserializeResponse(binary);
         }
 
         private async Task<byte[]> ReadMessageAsync(CancellationToken cancellationToken)
         {
-            await _stream.ReadAsync(_lengthBuffer, 0, _lengthBuffer.Length, cancellationToken);
+            await _stream.ReadAsync(_lengthBuffer, 0, _lengthBuffer.Length, cancellationToken).ConfigureAwait(false);
             int length = _lengthBuffer[0] | _lengthBuffer[1] << 8 | _lengthBuffer[2] << 16 | _lengthBuffer[3] << 24;
 
             byte[] bytes = new byte[length];
-            await _stream.ReadAsync(bytes, 0, length, cancellationToken);
+            await _stream.ReadAsync(bytes, 0, length, cancellationToken).ConfigureAwait(false);
 
             return bytes;
         }

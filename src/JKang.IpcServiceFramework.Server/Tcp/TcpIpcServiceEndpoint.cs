@@ -94,7 +94,7 @@ namespace JKang.IpcServiceFramework.Tcp
                     _logger.LogDebug($"Endpoint '{Name}' listening on port {Port}...");
                     while (true)
                     {
-                        TcpClient client = await _listener.AcceptTcpClientAsync();
+                        TcpClient client = await _listener.AcceptTcpClientAsync().ConfigureAwait(false);
 
                         Stream server = client.GetStream();
 
@@ -112,7 +112,7 @@ namespace JKang.IpcServiceFramework.Tcp
                             server = ssl;
                         }
 
-                        await ProcessAsync(server, _logger, cancellationToken);
+                        await ProcessAsync(server, _logger, cancellationToken).ConfigureAwait(false);
                     }
                 }
                 catch when (cancellationToken.IsCancellationRequested)
