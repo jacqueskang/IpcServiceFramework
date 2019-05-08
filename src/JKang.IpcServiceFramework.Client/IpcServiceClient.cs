@@ -119,11 +119,19 @@ namespace JKang.IpcServiceFramework
             Delegate @delegate = lamdaExp.Compile();
             @delegate.DynamicInvoke(proxy);
 
-            return new IpcRequest
+            Type[] arguments = new Type[interceptor.LastInvocation.Arguments.Length];
+
+            for (int i = 0; i < interceptor.LastInvocation.Arguments.Length; i++)
+            {
+                arguments[i] = interceptor.LastInvocation.Arguments[i].GetType();
+            }
+
+            return new IpcRequest()
             {
                 MethodName = interceptor.LastInvocation.Method.Name,
                 Parameters = interceptor.LastInvocation.Arguments,
                 GenericArguments = interceptor.LastInvocation.GenericArguments,
+                ArgumentTypes = arguments
             };
         }
 

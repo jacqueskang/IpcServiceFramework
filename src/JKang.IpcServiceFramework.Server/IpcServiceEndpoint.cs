@@ -84,10 +84,17 @@ namespace JKang.IpcServiceFramework
                 return IpcResponse.Fail($"No implementation of interface '{typeof(TContract).FullName}' found.");
             }
 
-            MethodInfo method = service.GetType().GetMethod(request.MethodName);
+            // First try to find the method with arguments
+            MethodInfo method = service.GetType().GetMethod(request.MethodName, request.ArgumentTypes);
             if (method == null)
             {
-                return IpcResponse.Fail($"Method '{request.MethodName}' not found in interface '{typeof(TContract).FullName}'.");
+                // If no match found, try again without arguments
+                method = service.GetType().GetMethod(request.MethodName);
+
+                if (method == null)
+                {
+                    return IpcResponse.Fail($"Method '{request.MethodName}' not found in interface '{typeof(TContract).FullName}'.");
+                }
             }
 
             ParameterInfo[] paramInfos = method.GetParameters();
