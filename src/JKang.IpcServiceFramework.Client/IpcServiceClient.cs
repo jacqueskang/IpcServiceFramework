@@ -123,7 +123,16 @@ namespace JKang.IpcServiceFramework
 
             for (int i = 0; i < interceptor.LastInvocation.Arguments.Length; i++)
             {
-                arguments[i] = interceptor.LastInvocation.Arguments[i].GetType();
+                if (interceptor.LastInvocation.Arguments[i] != null)
+                {
+                    arguments[i] = interceptor.LastInvocation.Arguments[i].GetType();
+                }
+                else
+                {
+                    // If any argument is null, we cannot lookup the Method with parameter types
+                    arguments = Type.EmptyTypes;
+                    break;
+                }
             }
 
             return new IpcRequest()
