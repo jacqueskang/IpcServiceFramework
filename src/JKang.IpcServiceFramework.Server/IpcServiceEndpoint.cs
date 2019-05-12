@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
@@ -84,7 +85,8 @@ namespace JKang.IpcServiceFramework
                 return IpcResponse.Fail($"No implementation of interface '{typeof(TContract).FullName}' found.");
             }
 
-            MethodInfo method = service.GetType().GetMethod(request.MethodName);
+            MethodInfo method = GetUnambiguousMethod(request, service);
+
             if (method == null)
             {
                 return IpcResponse.Fail($"Method '{request.MethodName}' not found in interface '{typeof(TContract).FullName}'.");
@@ -147,6 +149,56 @@ namespace JKang.IpcServiceFramework
             {
                 return IpcResponse.Fail($"Internal server error: {ex.Message}");
             }
+        }
+
+        /// <summary>
+        /// Get the method that matches the requested signature
+        /// </summary>
+        /// <param name="request">The service call request</param>
+        /// <param name="service">The service</param>
+        /// <returns>The disambiguated service method</returns>
+        public static MethodInfo GetUnambiguousMethod(IpcRequest request, object service)
+        {
+            if (request == null || service == null)
+            {
+                return null;
+            }
+
+            MethodInfo method = null;     // disambiguate - can't just call as before with generics - MethodInfo method = service.GetType().GetMethod(request.MethodName);
+            var serviceMethods = service.GetType().GetMethods().Where(m => m.Name == request.MethodName);
+
+            foreach (var serviceMethod in serviceMethods)
+            {
+                var serviceMethodParameters = serviceMethod.GetParameters();
+                var parameterTypeMatches = 0;
+
+                if (serviceMethodParameters.Length == request.Parameters.Length && serviceMethod.GetGenericArguments().Length == request.GenericArguments.Length)
+                {
+                    for (int parameterIndex = 0; parameterIndex < serviceMethodParameters.Length; parameterIndex++)
+                    {
+                        Type serviceParameterType = serviceMethodParameters[parameterIndex].ParameterType.IsGenericParameter ?
+                                            request.GenericArguments[serviceMethodParameters[parameterIndex].ParameterType.GenericParameterPosition] :
+                                            serviceMethodParameters[parameterIndex].ParameterType;
+
+                        if (serviceParameterType == request.ParameterTypes[parameterIndex])
+                        {
+                            parameterTypeMatches++;
+                        }
+                        else
+                        {
+                            break;
+                        }
+                    }
+
+                    if (parameterTypeMatches == serviceMethodParameters.Length)
+                    {
+                        method = serviceMethod;        // signatures match so assign
+                        break;
+                    }
+                }
+            }
+
+            return method;
         }
     }
 }
