@@ -25,23 +25,53 @@ namespace JKang.IpcServiceFramework.IO
 
         public async Task<IpcRequest> ReadIpcRequestAsync(CancellationToken cancellationToken = default(CancellationToken))
         {
-            byte[] binary = await ReadMessageAsync(cancellationToken);
+            byte[] binary = await ReadMessageAsync(cancellationToken).ConfigureAwait(false);
             return _serializer.DeserializeRequest(binary);
         }
 
         public async Task<IpcResponse> ReadIpcResponseAsync(CancellationToken cancellationToken = default(CancellationToken))
         {
-            byte[] binary = await ReadMessageAsync(cancellationToken);
+            byte[] binary = await ReadMessageAsync(cancellationToken).ConfigureAwait(false);
             return _serializer.DeserializeResponse(binary);
         }
 
         private async Task<byte[]> ReadMessageAsync(CancellationToken cancellationToken)
         {
-            await _stream.ReadAsync(_lengthBuffer, 0, _lengthBuffer.Length, cancellationToken);
-            int length = _lengthBuffer[0] | _lengthBuffer[1] << 8 | _lengthBuffer[2] << 16 | _lengthBuffer[3] << 24;
+            int headerLength = await _stream.ReadAsync(_lengthBuffer, 0, _lengthBuffer.Length, cancellationToken);
 
-            byte[] bytes = new byte[length];
-            await _stream.ReadAsync(bytes, 0, length, cancellationToken);
+            if (headerLength != 4)
+            {
+                throw new ArgumentOutOfRangeException($"Header length must be 4 but was {headerLength}");
+            }
+
+            int expectedLength = _lengthBuffer[0] | _lengthBuffer[1] << 8 | _lengthBuffer[2] << 16 | _lengthBuffer[3] << 24;
+            byte[] bytes = new byte[expectedLength];
+            int totalBytesReceived = 0;
+            int remainingBytes = expectedLength;
+
+            using (var ms = new MemoryStream())
+            {
+                while (totalBytesReceived < expectedLength)
+                {
+                    int dataLength = await _stream.ReadAsync(bytes, 0, remainingBytes, cancellationToken);
+
+                    if (dataLength == 0)
+                    {
+                        break;             // end of stream or stream shut down.
+                    }
+
+                    ms.Write(bytes, 0, dataLength);
+                    totalBytesReceived += dataLength;
+                    remainingBytes -= dataLength;
+                }
+
+                bytes = ms.ToArray();
+            }
+
+            if (totalBytesReceived != expectedLength)
+            {
+                throw new System.ArgumentOutOfRangeException($"Data length must be {expectedLength} but was {totalBytesReceived}");
+            }
 
             return bytes;
         }

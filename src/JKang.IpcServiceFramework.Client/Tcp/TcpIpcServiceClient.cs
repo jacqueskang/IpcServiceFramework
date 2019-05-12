@@ -78,7 +78,7 @@ namespace JKang.IpcServiceFramework.Tcp
                         cancellationToken.ThrowIfCancellationRequested();
                     }
                 }
-            });
+            }).ConfigureAwait(false);
 
             cancellationToken.Register(() =>
             {
