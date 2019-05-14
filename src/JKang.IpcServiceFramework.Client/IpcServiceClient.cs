@@ -3,6 +3,7 @@ using JKang.IpcServiceFramework.IO;
 using JKang.IpcServiceFramework.Services;
 using System;
 using System.IO;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -123,6 +124,12 @@ namespace JKang.IpcServiceFramework
             {
                 MethodName = interceptor.LastInvocation.Method.Name,
                 Parameters = interceptor.LastInvocation.Arguments,
+
+                ParameterTypes = interceptor.LastInvocation.Method.GetParameters()
+                              .Select(p => p.ParameterType)
+                              .ToArray(),
+
+
                 GenericArguments = interceptor.LastInvocation.GenericArguments,
             };
         }
