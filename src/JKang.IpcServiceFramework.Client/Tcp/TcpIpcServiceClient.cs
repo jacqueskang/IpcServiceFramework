@@ -72,13 +72,11 @@ namespace JKang.IpcServiceFramework.Tcp
                 // poll every 100ms to check cancellation request
                 while (!result.AsyncWaitHandle.WaitOne(TimeSpan.FromMilliseconds(100), false))
                 {
-                    if (cancellationToken.IsCancellationRequested)
-                    {
-                        client.EndConnect(result);
-                        cancellationToken.ThrowIfCancellationRequested();
-                    }
+                    cancellationToken.ThrowIfCancellationRequested();
                 }
             }).ConfigureAwait(false);
+
+            client.EndConnect(result);
 
             cancellationToken.Register(() =>
             {
