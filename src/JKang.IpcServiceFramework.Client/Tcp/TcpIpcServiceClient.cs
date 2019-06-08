@@ -65,23 +65,8 @@ namespace JKang.IpcServiceFramework.Tcp
             cancellationToken.ThrowIfCancellationRequested();
 
             var client = new TcpClient();
-            IAsyncResult result = client.BeginConnect(_serverIp, _serverPort, null, null);
 
-            await Task.Run(() =>
-            {
-                // poll every 100ms to check cancellation request
-                while (!result.AsyncWaitHandle.WaitOne(TimeSpan.FromMilliseconds(100), false))
-                {
-                    cancellationToken.ThrowIfCancellationRequested();
-                }
-            }).ConfigureAwait(false);
-
-            client.EndConnect(result);
-
-            cancellationToken.Register(() =>
-            {
-                client.Close();
-            });
+            await client.ConnectAsync(_serverIp, _serverPort);
 
             Stream stream = client.GetStream();
 
@@ -108,6 +93,8 @@ namespace JKang.IpcServiceFramework.Tcp
                 ssl.AuthenticateAsClient(_sslServerIdentity);
                 stream = ssl;
             }
+
+            stream = new CancellableStream(stream, cancellationToken);
 
             return stream;
         }
