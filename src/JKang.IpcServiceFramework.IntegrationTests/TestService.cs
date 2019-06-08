@@ -53,5 +53,10 @@ namespace JKang.IpcServiceFramework.IntegrationTests
             await Task.Delay(milliseconds);
             return sw.ElapsedMilliseconds;
         }
+
+        int ITestService.ExplicitInterfaceMember()
+        {
+            return 0;
+        }
     }
 }

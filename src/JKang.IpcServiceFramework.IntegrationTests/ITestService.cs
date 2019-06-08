@@ -16,5 +16,6 @@ namespace JKang.IpcServiceFramework.IntegrationTests
         byte[] ReverseBytes(byte[] input);
         T GetDefaultValue<T>();
         Task<long> WaitAsync(int milliseconds);
+        int ExplicitInterfaceMember();
     }
 }

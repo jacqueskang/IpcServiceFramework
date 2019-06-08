@@ -98,6 +98,13 @@ namespace JKang.IpcServiceFramework.IntegrationTests
             Assert.True(actual >= 450);
         }
 
+        [Fact]
+        public async Task ExplicitInterfaceOperation()
+        {
+            int actual = await _client.InvokeAsync(x => x.ExplicitInterfaceMember());
+            Assert.True(actual == 0);
+        }
+
         public void Dispose()
         {
             _cancellationToken.Cancel();

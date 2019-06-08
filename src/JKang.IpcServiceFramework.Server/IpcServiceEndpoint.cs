@@ -59,7 +59,7 @@ namespace JKang.IpcServiceFramework
                     IpcResponse response;
                     using (IServiceScope scope = ServiceProvider.CreateScope())
                     {
-                        response = await GetReponse(request, scope).ConfigureAwait(false);
+                        response = await GetResponse(request, scope).ConfigureAwait(false);
                     }
 
                     cancellationToken.ThrowIfCancellationRequested();
@@ -77,7 +77,7 @@ namespace JKang.IpcServiceFramework
             }
         }
 
-        protected async Task<IpcResponse> GetReponse(IpcRequest request, IServiceScope scope)
+        protected async Task<IpcResponse> GetResponse(IpcRequest request, IServiceScope scope)
         {
             object service = scope.ServiceProvider.GetService<TContract>();
             if (service == null)
@@ -165,7 +165,12 @@ namespace JKang.IpcServiceFramework
             }
 
             MethodInfo method = null;     // disambiguate - can't just call as before with generics - MethodInfo method = service.GetType().GetMethod(request.MethodName);
-            var serviceMethods = service.GetType().GetMethods().Where(m => m.Name == request.MethodName);
+
+            var types = new[] {service.GetType()}.Concat(service.GetType().GetInterfaces());
+
+            var allMethods = types.SelectMany(t => t.GetMethods());
+
+            var serviceMethods = allMethods.Where(t => t.Name == request.MethodName).ToList();
 
             foreach (var serviceMethod in serviceMethods)
             {
