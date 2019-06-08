@@ -166,7 +166,7 @@ namespace JKang.IpcServiceFramework
 
             MethodInfo method = null;     // disambiguate - can't just call as before with generics - MethodInfo method = service.GetType().GetMethod(request.MethodName);
 
-            var types = new[] {service.GetType()}.Concat(service.GetType().GetInterfaces());
+            var types = service.GetType().GetInterfaces();
 
             var allMethods = types.SelectMany(t => t.GetMethods());
 
