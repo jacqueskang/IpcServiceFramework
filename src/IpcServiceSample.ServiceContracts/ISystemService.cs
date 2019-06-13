@@ -1,4 +1,5 @@
 ﻿using System;
+using JKang.IpcServiceFramework.Services;
 
 namespace IpcServiceSample.ServiceContracts
 {
@@ -10,5 +11,12 @@ namespace IpcServiceSample.ServiceContracts
         byte[] ReverseBytes(byte[] input);
         string Printout<T>(T value);
         void SlowOperation();
+        int TryGetInt(ITest test);
+    }
+    
+    [KnowType(typeof(Test))]
+    public interface ITest
+    {
+        int Sum { get; }     
     }
 }

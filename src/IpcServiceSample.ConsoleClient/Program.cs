@@ -136,7 +136,10 @@ namespace IpcServiceSample.ConsoleClient
             // test 14: use a translated stream to log data to a text file
             generatedId = await loggedClient.InvokeAsync(x => x.GenerateId(), cancellationToken);
             Console.WriteLine($"[TEST 14] Called method using stream translator for logging, generated ID is: {generatedId}");
-
+            
+            int testSum = await systemClient.InvokeAsync(x => x.TryGetInt(new Test(1)), cancellationToken);
+            Console.WriteLine($"[TEST 15] Called method which takes the interface. Result: {testSum}");
+            
             Console.WriteLine("All test finished. Press any key to exit.");
         }
     }

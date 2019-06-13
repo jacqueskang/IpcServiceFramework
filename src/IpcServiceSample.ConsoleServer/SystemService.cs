@@ -43,5 +43,10 @@ namespace IpcServiceSample.ConsoleServer
         {
             Thread.Sleep(10000);
         }
+
+        public int TryGetInt(ITest test)
+        {
+            return test.Sum;
+        }
     }
 }

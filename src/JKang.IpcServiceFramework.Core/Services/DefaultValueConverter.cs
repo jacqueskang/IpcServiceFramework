@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
+using System.Linq;
 
 namespace JKang.IpcServiceFramework.Services
 {
@@ -14,7 +15,7 @@ namespace JKang.IpcServiceFramework.Services
                 return destType.IsClass || (Nullable.GetUnderlyingType(destType) != null);
             }
 
-            if (destType.IsAssignableFrom(origValue.GetType()))
+            if (destType.IsInstanceOfType(origValue))
             {
                 // copy value directly if it can be assigned to destType
                 destValue = origValue;
@@ -56,7 +57,16 @@ namespace JKang.IpcServiceFramework.Services
 
             if (origValue is JObject jObj)
             {
-                // rely on JSON.Net to convert complexe type
+                if (destType.IsInterface || (destType.IsClass && destType.IsAbstract))
+                {
+                    KnowType kT = (KnowType) Attribute.GetCustomAttributes(destType).First(x => x.GetType() == typeof(KnowType));
+                    if (kT != null)
+                    {
+                        destValue = jObj.ToObject(kT.Type);
+                        return true; 
+                    }
+                }
+
                 destValue = jObj.ToObject(destType);
                 // TODO: handle error
                 return true;
