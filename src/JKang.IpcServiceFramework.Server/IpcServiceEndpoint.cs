@@ -163,7 +163,7 @@ namespace JKang.IpcServiceFramework
             {
                 return null;
             }
-            
+
             MethodInfo method = null;     // disambiguate - can't just call as before with generics - MethodInfo method = service.GetType().GetMethod(request.MethodName);
             
             // Thanks https://github.com/luhis for these changes

@@ -63,7 +63,7 @@ namespace JKang.IpcServiceFramework.Services
                     if (kT != null)
                     {
                         destValue = jObj.ToObject(kT.Type);
-                        return true; 
+                        return true;
                     }
                 }
 
