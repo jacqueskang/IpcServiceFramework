@@ -135,6 +135,7 @@ namespace JKang.IpcServiceFramework.Tcp
                         if (_throttle == null)
                         {
                             await ProcessAsync(server, _logger, cancellationToken);
+                            client.Close();
                         }
                         else
                         {
@@ -144,6 +145,7 @@ namespace JKang.IpcServiceFramework.Tcp
                                     try
                                     {
                                         await ProcessAsync(server, _logger, cancellationToken).ConfigureAwait(false);
+                                        client.Close();
                                     }
                                     catch when (cancellationToken.IsCancellationRequested) { }
                                     finally
