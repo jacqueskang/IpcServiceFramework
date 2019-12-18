@@ -13,14 +13,16 @@ namespace JKang.IpcServiceFramework
 {
     public abstract class IpcServiceEndpoint
     {
-        protected IpcServiceEndpoint(string name, IServiceProvider serviceProvider)
+        protected IpcServiceEndpoint(string name, IServiceProvider serviceProvider, bool includeFailureDetailsInResponse = false)
         {
             Name = name;
             ServiceProvider = serviceProvider;
+            IncludeFailureDetailsInResponse = includeFailureDetailsInResponse;
         }
 
         public string Name { get; }
         public IServiceProvider ServiceProvider { get; }
+        public bool IncludeFailureDetailsInResponse { get; }
 
         public abstract Task ListenAsync(CancellationToken cancellationToken = default(CancellationToken));
     }
@@ -31,8 +33,8 @@ namespace JKang.IpcServiceFramework
         private readonly IValueConverter _converter;
         private readonly IIpcMessageSerializer _serializer;
 
-        protected IpcServiceEndpoint(string name, IServiceProvider serviceProvider)
-            : base(name, serviceProvider)
+        protected IpcServiceEndpoint(string name, IServiceProvider serviceProvider, bool includeFailureDetailsInResponse = false)
+            : base(name, serviceProvider, includeFailureDetailsInResponse)
         {
             _converter = serviceProvider.GetRequiredService<IValueConverter>();
             _serializer = serviceProvider.GetRequiredService<IIpcMessageSerializer>();
@@ -59,7 +61,7 @@ namespace JKang.IpcServiceFramework
                     IpcResponse response;
                     using (IServiceScope scope = ServiceProvider.CreateScope())
                     {
-                        response = await GetReponse(request, scope).ConfigureAwait(false);
+                        response = await GetReponse(request, scope, logger).ConfigureAwait(false);
                     }
 
                     cancellationToken.ThrowIfCancellationRequested();
@@ -69,15 +71,16 @@ namespace JKang.IpcServiceFramework
 
                     logger?.LogDebug($"[thread {Thread.CurrentThread.ManagedThreadId}] done.");
                 }
-                catch (Exception ex)
+                catch (Exception ex) when (!(ex is IpcServerException))
                 {
-                    logger?.LogError(ex, ex.Message);
-                    await writer.WriteAsync(IpcResponse.Fail($"Internal server error: {ex.Message}"), cancellationToken).ConfigureAwait(false);
+                    var response = IpcResponse.Fail(ex, IncludeFailureDetailsInResponse);
+                    logger?.LogError(ex, response.Failure);
+                    await writer.WriteAsync(response, cancellationToken).ConfigureAwait(false);
                 }
             }
         }
 
-        protected async Task<IpcResponse> GetReponse(IpcRequest request, IServiceScope scope)
+        protected async Task<IpcResponse> GetReponse(IpcRequest request, IServiceScope scope, ILogger logger)
         {
             object service = scope.ServiceProvider.GetService<TContract>();
             if (service == null)
@@ -131,7 +134,15 @@ namespace JKang.IpcServiceFramework
                     method = method.MakeGenericMethod(request.GenericArguments);
                 }
 
-                object @return = method.Invoke(service, args);
+                object @return;
+                try
+                {
+                    @return = method.Invoke(service, args);
+                }
+                catch (Exception ex)
+                {
+                    return IpcResponse.Fail(ex, IncludeFailureDetailsInResponse, true);
+                }
 
                 if (@return is Task)
                 {
@@ -145,9 +156,11 @@ namespace JKang.IpcServiceFramework
                     return IpcResponse.Success(@return);
                 }
             }
-            catch (Exception ex)
+            catch (Exception ex) when (!(ex is IpcServerException))
             {
-                return IpcResponse.Fail($"Internal server error: {ex.Message}");
+                var response = IpcResponse.Fail(ex, IncludeFailureDetailsInResponse);
+                logger?.LogError(ex, response.Failure);
+                return response;
             }
         }
 

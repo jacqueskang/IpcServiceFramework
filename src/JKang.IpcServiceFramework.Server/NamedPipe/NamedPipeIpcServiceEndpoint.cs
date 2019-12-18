@@ -13,8 +13,8 @@ namespace JKang.IpcServiceFramework.NamedPipe
         private readonly ILogger<NamedPipeIpcServiceEndpoint<TContract>> _logger;
         private readonly NamedPipeOptions _options;
 
-        public NamedPipeIpcServiceEndpoint(string name, IServiceProvider serviceProvider, string pipeName)
-            : base(name, serviceProvider)
+        public NamedPipeIpcServiceEndpoint(string name, IServiceProvider serviceProvider, string pipeName, bool includeFailureDetailsInResponse = false)
+            : base(name, serviceProvider, includeFailureDetailsInResponse)
         {
             PipeName = pipeName;
 
