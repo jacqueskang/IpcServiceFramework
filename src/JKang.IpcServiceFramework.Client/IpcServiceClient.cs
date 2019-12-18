@@ -37,7 +37,7 @@ namespace JKang.IpcServiceFramework
             }
             else
             {
-                throw new InvalidOperationException(response.Failure);
+                throw response.GetException();
             }
         }
 
@@ -60,7 +60,7 @@ namespace JKang.IpcServiceFramework
             }
             else
             {
-                throw new InvalidOperationException(response.Failure);
+                throw response.GetException();
             }
         }
 
@@ -76,7 +76,7 @@ namespace JKang.IpcServiceFramework
             }
             else
             {
-                throw new InvalidOperationException(response.Failure);
+                throw response.GetException();
             }
         }
 
@@ -99,7 +99,7 @@ namespace JKang.IpcServiceFramework
             }
             else
             {
-                throw new InvalidOperationException(response.Failure);
+                throw response.GetException();
             }
         }
 

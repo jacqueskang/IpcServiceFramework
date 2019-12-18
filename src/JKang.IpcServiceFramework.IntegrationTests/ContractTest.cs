@@ -104,6 +104,20 @@ namespace JKang.IpcServiceFramework.IntegrationTests
             int actual = await _client.InvokeAsync(x => x.ExplicitInterfaceMember());
             Assert.True(actual == 0);
         }
+        
+        [Fact]
+        public async Task ThrowException()
+        {
+            try
+            {
+                await _client.InvokeAsync(x => x.ThrowException("This was forced"));
+            }
+            catch (IpcServerException ex)
+            {
+                Assert.Contains("This was forced", ex.Message);
+                Assert.DoesNotContain(IpcServerException.ServerFailureDetails, ex.ToString());
+            }
+        }
 
         public void Dispose()
         {

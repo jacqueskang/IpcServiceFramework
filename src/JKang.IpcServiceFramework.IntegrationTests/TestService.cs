@@ -58,5 +58,10 @@ namespace JKang.IpcServiceFramework.IntegrationTests
         {
             return 0;
         }
+        
+        public void ThrowException(string message)
+        {
+            throw new Exception(message);
+        }
     }
 }

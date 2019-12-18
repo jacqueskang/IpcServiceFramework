@@ -17,5 +17,6 @@ namespace JKang.IpcServiceFramework.IntegrationTests
         T GetDefaultValue<T>();
         Task<long> WaitAsync(int milliseconds);
         int ExplicitInterfaceMember();
+        void ThrowException(string message);
     }
 }
