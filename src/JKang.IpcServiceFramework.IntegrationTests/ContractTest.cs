@@ -99,6 +99,13 @@ namespace JKang.IpcServiceFramework.IntegrationTests
         }
 
         [Fact]
+        public async Task ExplicitInterfaceOperation()
+        {
+            int actual = await _client.InvokeAsync(x => x.ExplicitInterfaceMember());
+            Assert.True(actual == 0);
+        }
+        
+        [Fact]
         public async Task ThrowException()
         {
             try

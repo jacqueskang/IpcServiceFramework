@@ -54,6 +54,11 @@ namespace JKang.IpcServiceFramework.IntegrationTests
             return sw.ElapsedMilliseconds;
         }
 
+        int ITestService.ExplicitInterfaceMember()
+        {
+            return 0;
+        }
+        
         public void ThrowException(string message)
         {
             throw new Exception(message);
