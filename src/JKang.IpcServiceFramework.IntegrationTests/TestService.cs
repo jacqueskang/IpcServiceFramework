@@ -53,5 +53,10 @@ namespace JKang.IpcServiceFramework.IntegrationTests
             await Task.Delay(milliseconds);
             return sw.ElapsedMilliseconds;
         }
+
+        public void ThrowException(string message)
+        {
+            throw new Exception(message);
+        }
     }
 }

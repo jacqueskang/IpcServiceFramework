@@ -25,8 +25,8 @@ namespace JKang.IpcServiceFramework.Tcp
         private readonly X509Certificate _serverCertificate;
         private readonly int _maximumConcurrentCalls;
 
-        public TcpIpcServiceEndpoint(String name, IServiceProvider serviceProvider, IPAddress ipEndpoint, int port, TcpConcurrencyOptions concurrencyOptions)
-            : base(name, serviceProvider)
+        public TcpIpcServiceEndpoint(String name, IServiceProvider serviceProvider, IPAddress ipEndpoint, int port, TcpConcurrencyOptions concurrencyOptions, bool includeFailureDetailsInResponse = false)
+            : base(name, serviceProvider, includeFailureDetailsInResponse)
         {
             if (concurrencyOptions == null)
                 _maximumConcurrentCalls = 1;
@@ -43,45 +43,45 @@ namespace JKang.IpcServiceFramework.Tcp
             Port = port;
         }
 
-        public TcpIpcServiceEndpoint(String name, IServiceProvider serviceProvider, IPAddress ipEndpoint, TcpConcurrencyOptions concurrencyOptions)
-            : this(name, serviceProvider, ipEndpoint, 0, concurrencyOptions)
+        public TcpIpcServiceEndpoint(String name, IServiceProvider serviceProvider, IPAddress ipEndpoint, TcpConcurrencyOptions concurrencyOptions, bool includeFailureDetailsInResponse = false)
+            : this(name, serviceProvider, ipEndpoint, 0, concurrencyOptions, includeFailureDetailsInResponse)
         {
         }
 
-        public TcpIpcServiceEndpoint(String name, IServiceProvider serviceProvider, IPAddress ipEndpoint, Func<Stream, Stream> streamTranslator, TcpConcurrencyOptions concurrencyOptions)
-            : this(name, serviceProvider, ipEndpoint, 0, concurrencyOptions)
+        public TcpIpcServiceEndpoint(String name, IServiceProvider serviceProvider, IPAddress ipEndpoint, Func<Stream, Stream> streamTranslator, TcpConcurrencyOptions concurrencyOptions, bool includeFailureDetailsInResponse = false)
+            : this(name, serviceProvider, ipEndpoint, 0, concurrencyOptions, includeFailureDetailsInResponse)
         {
             _streamTranslator = streamTranslator;
         }
 
-        public TcpIpcServiceEndpoint(String name, IServiceProvider serviceProvider, IPAddress ipEndpoint, X509Certificate sslCertificate, TcpConcurrencyOptions concurrencyOptions)
-            : this(name, serviceProvider, ipEndpoint, 0, concurrencyOptions)
+        public TcpIpcServiceEndpoint(String name, IServiceProvider serviceProvider, IPAddress ipEndpoint, X509Certificate sslCertificate, TcpConcurrencyOptions concurrencyOptions, bool includeFailureDetailsInResponse = false)
+            : this(name, serviceProvider, ipEndpoint, 0, concurrencyOptions, includeFailureDetailsInResponse)
         {
             _serverCertificate = sslCertificate;
             SSL = true;
         }
 
-        public TcpIpcServiceEndpoint(String name, IServiceProvider serviceProvider, IPAddress ipEndpoint, X509Certificate sslCertificate, Func<Stream, Stream> streamTranslator, TcpConcurrencyOptions concurrencyOptions)
-            : this(name, serviceProvider, ipEndpoint, sslCertificate, concurrencyOptions)
+        public TcpIpcServiceEndpoint(String name, IServiceProvider serviceProvider, IPAddress ipEndpoint, X509Certificate sslCertificate, Func<Stream, Stream> streamTranslator, TcpConcurrencyOptions concurrencyOptions, bool includeFailureDetailsInResponse = false)
+            : this(name, serviceProvider, ipEndpoint, sslCertificate, concurrencyOptions, includeFailureDetailsInResponse)
         {
             _streamTranslator = streamTranslator;
         }
 
-        public TcpIpcServiceEndpoint(String name, IServiceProvider serviceProvider, IPAddress ipEndpoint, int port, Func<Stream, Stream> streamTranslator, TcpConcurrencyOptions concurrencyOptions)
-            : this(name, serviceProvider, ipEndpoint, port, concurrencyOptions)
+        public TcpIpcServiceEndpoint(String name, IServiceProvider serviceProvider, IPAddress ipEndpoint, int port, Func<Stream, Stream> streamTranslator, TcpConcurrencyOptions concurrencyOptions, bool includeFailureDetailsInResponse = false)
+            : this(name, serviceProvider, ipEndpoint, port, concurrencyOptions, includeFailureDetailsInResponse)
         {
             _streamTranslator = streamTranslator;
         }
 
-        public TcpIpcServiceEndpoint(String name, IServiceProvider serviceProvider, IPAddress ipEndpoint, int port, X509Certificate sslCertificate, TcpConcurrencyOptions concurrencyOptions)
-            : this(name, serviceProvider, ipEndpoint, port, concurrencyOptions)
+        public TcpIpcServiceEndpoint(String name, IServiceProvider serviceProvider, IPAddress ipEndpoint, int port, X509Certificate sslCertificate, TcpConcurrencyOptions concurrencyOptions, bool includeFailureDetailsInResponse = false)
+            : this(name, serviceProvider, ipEndpoint, port, concurrencyOptions, includeFailureDetailsInResponse)
         {
             _serverCertificate = sslCertificate;
             SSL = true;
         }
 
-        public TcpIpcServiceEndpoint(String name, IServiceProvider serviceProvider, IPAddress ipEndpoint, int port, X509Certificate sslCertificate, Func<Stream, Stream> streamTranslator, TcpConcurrencyOptions concurrencyOptions)
-            : this(name, serviceProvider, ipEndpoint, port, sslCertificate, concurrencyOptions)
+        public TcpIpcServiceEndpoint(String name, IServiceProvider serviceProvider, IPAddress ipEndpoint, int port, X509Certificate sslCertificate, Func<Stream, Stream> streamTranslator, TcpConcurrencyOptions concurrencyOptions, bool includeFailureDetailsInResponse = false)
+            : this(name, serviceProvider, ipEndpoint, port, sslCertificate, concurrencyOptions, includeFailureDetailsInResponse)
         {
             _streamTranslator = streamTranslator;
         }
