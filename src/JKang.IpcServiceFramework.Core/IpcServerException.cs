@@ -5,6 +5,7 @@ using System.Text;
 
 namespace JKang.IpcServiceFramework
 {
+
     /// <summary>
     /// An exception that originated at the server.
     /// </summary>

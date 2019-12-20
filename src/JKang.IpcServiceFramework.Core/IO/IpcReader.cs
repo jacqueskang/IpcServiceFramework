@@ -41,7 +41,7 @@ namespace JKang.IpcServiceFramework.IO
 
             if (headerLength != 4)
             {
-                throw new ArgumentOutOfRangeException($"Header length must be 4 but was {headerLength}");
+                throw new IpcReadException("Header", _lengthBuffer.Length, headerLength);
             }
 
             int expectedLength = _lengthBuffer[0] | _lengthBuffer[1] << 8 | _lengthBuffer[2] << 16 | _lengthBuffer[3] << 24;
@@ -70,7 +70,7 @@ namespace JKang.IpcServiceFramework.IO
 
             if (totalBytesReceived != expectedLength)
             {
-                throw new System.ArgumentOutOfRangeException($"Data length must be {expectedLength} but was {totalBytesReceived}");
+                throw new IpcReadException("Data", expectedLength, totalBytesReceived);
             }
 
             return bytes;
