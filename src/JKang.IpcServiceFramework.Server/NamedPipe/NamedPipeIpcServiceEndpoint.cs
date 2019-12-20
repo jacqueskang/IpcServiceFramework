@@ -33,6 +33,10 @@ namespace JKang.IpcServiceFramework.NamedPipe
             {
                 threads[i] = new Thread((a) => { StartServerThread(a).ConfigureAwait(false).GetAwaiter().GetResult(); });
                 threads[i].Start(cancellationToken);
+                if (options.UseThreadNames)
+                {
+                    threads[i].Name = PipeName + ":" + i;
+                }
             }
 
             return Task.Factory.StartNew(() =>
@@ -49,6 +53,10 @@ namespace JKang.IpcServiceFramework.NamedPipe
                             // thread is finished, starting a new thread
                             threads[i] = new Thread((a) => { StartServerThread(a).ConfigureAwait(false).GetAwaiter().GetResult(); });
                             threads[i].Start(cancellationToken);
+                            if (options.UseThreadNames)
+                            {
+                                threads[i].Name = PipeName + ":" + i;
+                            }
                         }
                     }
                 }
