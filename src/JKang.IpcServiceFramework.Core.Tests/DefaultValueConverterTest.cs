@@ -3,6 +3,8 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 
 namespace JKang.IpcServiceFramework.Core.Tests
 {
@@ -174,6 +176,70 @@ namespace JKang.IpcServiceFramework.Core.Tests
             Assert.IsTrue(succeed);
             Assert.IsInstanceOfType(actual, typeof(Guid));
             Assert.AreEqual(expected, actual);
+        }
+
+        T ParseTestData<T>(string valueData)
+        {
+            if (typeof(T).GetMember(valueData).FirstOrDefault() is MemberInfo member)
+            {
+                if (member is FieldInfo field)
+                    return (T)field.GetValue(null);
+                else if (member is PropertyInfo property)
+                    return (T)property.GetValue(null);
+                else if (member is MethodInfo method)
+                    return (T)method.Invoke(null, null);
+            }
+
+            var parseMethod = typeof(T).GetMethod("Parse", new[] { typeof(string) });
+
+            return (T)parseMethod.Invoke(null, new[] { valueData });
+        }
+
+        void PerformRoundTripTest<T>(T value, Action<T, T> assertAreEqual = null)
+        {
+            // Act
+            bool succeed = _sut.TryConvert(value, typeof(string), out object intermediate);
+            bool succeed2 = _sut.TryConvert(intermediate, typeof(T), out object final);
+
+            // Assert
+            Assert.IsTrue(succeed);
+            Assert.IsTrue(succeed2);
+
+            Assert.IsInstanceOfType(final, typeof(T));
+
+            if (assertAreEqual != null)
+                assertAreEqual(value, (T)final);
+            else
+                Assert.AreEqual(value, final);
+        }
+
+        [TestMethod]
+        [DataRow(nameof(Guid.Empty))]
+        [DataRow(nameof(Guid.NewGuid))]
+        public void TryConvert_RoundTripGuid(string valueData)
+        {
+            PerformRoundTripTest(ParseTestData<Guid>(valueData));
+        }
+
+        [TestMethod]
+        [DataRow(nameof(TimeSpan.Zero))]
+        [DataRow(nameof(TimeSpan.MinValue))]
+        [DataRow(nameof(TimeSpan.MaxValue))]
+        [DataRow("-00:00:05.9167374")]
+        public void TryConvert_RoundTripTimeSpan(string valueData)
+        {
+            PerformRoundTripTest(ParseTestData<TimeSpan>(valueData));
+        }
+
+        [TestMethod]
+        [DataRow(nameof(DateTime.Now))]
+        [DataRow(nameof(DateTime.Today))]
+        [DataRow(nameof(DateTime.MinValue))]
+        [DataRow(nameof(DateTime.MaxValue))]
+        [DataRow("2020-02-05 3:10:27 PM")]
+        public void TryConvert_RoundTripDateTime(string valueData)
+        {
+            PerformRoundTripTest(ParseTestData<DateTime>(valueData), assertAreEqual: (x, y) => Assert.AreEqual(DateTime.SpecifyKind(x, DateTimeKind.Unspecified), DateTime.SpecifyKind(y, DateTimeKind.Unspecified)));
         }
 
         interface IComplexType

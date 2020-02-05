@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
+using System.Globalization;
 
 namespace JKang.IpcServiceFramework.Services
 {
@@ -8,11 +9,16 @@ namespace JKang.IpcServiceFramework.Services
     {
         public bool TryConvert(object origValue, Type destType, out object destValue)
         {
+            var destConcreteType = Nullable.GetUnderlyingType(destType);
+
             if (origValue == null)
             {
                 destValue = null;
-                return destType.IsClass || (Nullable.GetUnderlyingType(destType) != null);
+                return destType.IsClass || (destConcreteType != null);
             }
+
+            if (destConcreteType != null)
+                destType = destConcreteType;
 
             if (destType.IsAssignableFrom(origValue.GetType()))
             {
@@ -45,13 +51,37 @@ namespace JKang.IpcServiceFramework.Services
                 }
             }
 
-            if (origValue is string str2 && destType == typeof(Guid))
+            if (origValue is string origStringValue)
             {
-                if (Guid.TryParse(str2, out Guid result))
+                if ((destType == typeof(Guid)) && Guid.TryParse(origStringValue, out var guidResult))
                 {
-                    destValue = result;
+                    destValue = guidResult;
                     return true;
                 }
+
+                if ((destType == typeof(TimeSpan)) && TimeSpan.TryParse(origStringValue, CultureInfo.InvariantCulture, out var timeSpanResult))
+                {
+                    destValue = timeSpanResult;
+                    return true;
+                }
+
+                if ((destType == typeof(DateTime)) && DateTime.TryParse(origStringValue, CultureInfo.InvariantCulture, DateTimeStyles.None, out var dateTimeResult))
+                {
+                    destValue = dateTimeResult;
+                    return true;
+                }
+            }
+
+            if ((origValue is TimeSpan timeSpan) && (destType == typeof(string)))
+            {
+                destValue = timeSpan.ToString("c");
+                return true;
+            }
+
+            if ((origValue is DateTime dateTime) && (destType == typeof(string)))
+            {
+                destValue = dateTime.ToString("o");
+                return true;
             }
 
             if (origValue is JObject jObj)
