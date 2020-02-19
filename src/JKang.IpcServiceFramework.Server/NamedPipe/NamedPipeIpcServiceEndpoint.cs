@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
+using System.IO;
 using System.IO.Pipes;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,6 +13,7 @@ namespace JKang.IpcServiceFramework.NamedPipe
     {
         private readonly ILogger<NamedPipeIpcServiceEndpoint<TContract>> _logger;
         private readonly NamedPipeOptions _options;
+        private readonly Func<Stream, Stream> _streamTranslator;
 
         public NamedPipeIpcServiceEndpoint(string name, IServiceProvider serviceProvider, string pipeName, bool includeFailureDetailsInResponse = false)
             : base(name, serviceProvider, includeFailureDetailsInResponse)
@@ -20,6 +22,12 @@ namespace JKang.IpcServiceFramework.NamedPipe
 
             _logger = serviceProvider.GetService<ILogger<NamedPipeIpcServiceEndpoint<TContract>>>();
             _options = serviceProvider.GetRequiredService<NamedPipeOptions>();
+        }
+
+        public NamedPipeIpcServiceEndpoint(string name, IServiceProvider serviceProvider, string pipeName, Func<Stream, Stream> streamTranslator, bool includeFailureDetailsInResponse = false)
+            : this(name, serviceProvider, pipeName, includeFailureDetailsInResponse)
+        {
+            _streamTranslator = streamTranslator;
         }
 
         public string PipeName { get; }
@@ -64,7 +72,7 @@ namespace JKang.IpcServiceFramework.NamedPipe
                     PipeTransmissionMode.Byte, PipeOptions.Asynchronous))
                 {
                     await server.WaitForConnectionAsync(token).ConfigureAwait(false);
-                    await ProcessAsync(server, _logger, token).ConfigureAwait(false);
+                    await ProcessAsync(_streamTranslator?.Invoke(server) ?? server, _logger, token).ConfigureAwait(false);
                 }
             }
             catch when (token.IsCancellationRequested)
