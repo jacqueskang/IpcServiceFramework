@@ -1,7 +1,10 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace IpcServiceSample.ServiceContracts.Helpers
 {
@@ -9,11 +12,18 @@ namespace IpcServiceSample.ServiceContracts.Helpers
     {
         private Stream _baseStream;
         private StreamWriter _log;
+        private readonly ReaderWriterLockSlim _logLock;
+
+        private static readonly ConcurrentDictionary<string, ReaderWriterLockSlim> _readWriteLocks = new ConcurrentDictionary<string, ReaderWriterLockSlim>();
 
         public LoggingStream(Stream stream, string logFile)
         {
             _baseStream = stream;
-            _log = new StreamWriter(logFile) { AutoFlush = true };
+
+            var fs = File.Open(logFile, FileMode.Append, FileAccess.Write, FileShare.ReadWrite);
+            _log = new StreamWriter(fs) { AutoFlush = true };
+
+            _logLock = _readWriteLocks.GetOrAdd(logFile, new ReaderWriterLockSlim());
         }
 
         public override bool CanRead => _baseStream.CanRead;
@@ -27,10 +37,9 @@ namespace IpcServiceSample.ServiceContracts.Helpers
         public override long Position { get => _baseStream.Position; set => _baseStream.Position = value; }
 
         private enum StreamOperation { Read, Write };
-        
+
         private void Log(StreamOperation direction, byte[] buffer, int offset, int count)
         {
-            _log.WriteLine($"[{direction.ToString().ToUpper()}: {count}]");
             var dump = new StringBuilder();
             var hex = new StringBuilder();
             var ascii = new StringBuilder();
@@ -63,12 +72,29 @@ namespace IpcServiceSample.ServiceContracts.Helpers
                 dump.AppendLine();
             }
 
-            _log.WriteLine(dump.ToString());
+            try
+            {
+                _logLock.EnterWriteLock();
+                _log.WriteLine($"[{direction.ToString().ToUpper()}: {count}]");
+                _log.WriteLine(dump.ToString());
+            }
+            finally
+            {
+                _logLock.ExitWriteLock();
+            }
         }
 
         private void Log(string message)
         {
-            _log.WriteLine(message);
+            try
+            {
+                _logLock.EnterWriteLock();
+                _log.WriteLine(message);
+            }
+            finally
+            {
+                _logLock.ExitWriteLock();
+            }
         }
 
         public override void Flush()
@@ -77,9 +103,22 @@ namespace IpcServiceSample.ServiceContracts.Helpers
             _baseStream.Flush();
         }
 
+        public override async Task FlushAsync(CancellationToken cancellationToken)
+        {
+            Log("[FLUSH]");
+            await _baseStream.FlushAsync(cancellationToken);
+        }
+
         public override int Read(byte[] buffer, int offset, int count)
         {
             int br = _baseStream.Read(buffer, offset, count);
+            Log(StreamOperation.Read, buffer, offset, br);
+            return br;
+        }
+
+        public override async Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+        {
+            int br = await _baseStream.ReadAsync(buffer, offset, count, cancellationToken);
             Log(StreamOperation.Read, buffer, offset, br);
             return br;
         }
@@ -99,6 +138,12 @@ namespace IpcServiceSample.ServiceContracts.Helpers
         public override void Write(byte[] buffer, int offset, int count)
         {
             _baseStream.Write(buffer, offset, count);
+            Log(StreamOperation.Write, buffer, offset, count);
+        }
+
+        public override async Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+        {
+            await _baseStream.WriteAsync(buffer, offset, count, cancellationToken);
             Log(StreamOperation.Write, buffer, offset, count);
         }
     }
