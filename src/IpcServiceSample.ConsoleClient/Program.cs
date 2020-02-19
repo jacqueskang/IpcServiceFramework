@@ -57,6 +57,10 @@ namespace IpcServiceSample.ConsoleClient
                 .UseNamedPipe("pipeName")
                 .Build();
 
+            IpcServiceClient<ITestService> loggedPipeClient = new IpcServiceClientBuilder<ITestService>()
+                .UseNamedPipe("testPipe", s => new LoggingStream(s, "pipeClient-ipc.log"))
+                .Build();
+
             IpcServiceClient<ISystemService> systemClient = new IpcServiceClientBuilder<ISystemService>()
                 .UseTcp(IPAddress.Loopback, 45684)
                 .Build();
@@ -129,13 +133,17 @@ namespace IpcServiceSample.ConsoleClient
             generatedId = await secureClient.InvokeAsync(x => x.GenerateId(), cancellationToken);
             Console.WriteLine($"[TEST 12] Called secure service method, generated ID is: {generatedId}");
 
-            // test 13 call translated service method
+            // test 13: call translated service method
             generatedId = await xorTranslatedClient.InvokeAsync(x => x.GenerateId(), cancellationToken);
             Console.WriteLine($"[TEST 13] Called translated service method, generated ID is: {generatedId}");
             
-            // test 14: use a translated stream to log data to a text file
+            // test 14: use a translated stream to log data to a text file (tcp client)
             generatedId = await loggedClient.InvokeAsync(x => x.GenerateId(), cancellationToken);
-            Console.WriteLine($"[TEST 14] Called method using stream translator for logging, generated ID is: {generatedId}");
+            Console.WriteLine($"[TEST 14] Called method using stream translator for logging (tcp client), generated ID is: {generatedId}");
+
+            // test 15: use a translated stream to log data to a text file (named pipe client)
+            generatedId = await loggedPipeClient.InvokeAsync(x => x.GenerateId(), cancellationToken);
+            Console.WriteLine($"[TEST 15] Called method using stream translator for logging (named pipe client), generated ID is: {generatedId}");
 
             Console.WriteLine("All test finished. Press any key to exit.");
         }

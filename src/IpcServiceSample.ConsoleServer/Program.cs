@@ -21,6 +21,7 @@ namespace IpcServiceSample.ConsoleServer
             // build and run service host
             IIpcServiceHost host = new IpcServiceHostBuilder(services.BuildServiceProvider())
                 .AddNamedPipeEndpoint<IComputingService>("computingEndpoint", "pipeName")
+                .AddNamedPipeEndpoint<ITestService>("testPipeEndpoint", "testPipe", s => new LoggingStream(s, "pipeServer-ipc.log"))
                 .AddTcpEndpoint<ISystemService>("systemEndpoint", IPAddress.Loopback, 45684)
                 .AddTcpEndpoint<ITestService>("secureEndpoint", IPAddress.Loopback, 44384, new X509Certificate2(@"Certificates\server.pfx", "password"))
                 .AddTcpEndpoint<ITestService>("xorTranslatedEndpoint", IPAddress.Loopback, 45454, s => new XorStream(s))
