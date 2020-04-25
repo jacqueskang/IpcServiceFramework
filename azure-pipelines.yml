@@ -1,47 +1,28 @@
-# Set variables once
-variables:
-  configuration: release
-  assemblyVersion: 2.0.0.0
-  packageVersion: 2.0.3
+# ASP.NET Core (.NET Framework)
+# Build and test ASP.NET Core projects targeting the full .NET Framework.
+# Add steps that publish symbols, save build artifacts, and more:
+# https://docs.microsoft.com/azure/devops/pipelines/languages/dotnet-core
 
-resources:
-- repo: self
-  clean: true
-queue:
-  name: Hosted VS2017
-#Your build pipeline references the ‘BuildConfiguration’ variable, which you’ve selected to be settable at queue time. Create or edit the build pipeline for this YAML file, define the variable on the Variables tab, and then select the option to make it settable at queue time. See https://go.microsoft.com/fwlink/?linkid=865971
-#Your build pipeline references the ‘AssemblyVersion’ variable, which you’ve selected to be settable at queue time. Create or edit the build pipeline for this YAML file, define the variable on the Variables tab, and then select the option to make it settable at queue time. See https://go.microsoft.com/fwlink/?linkid=865971
-#Your build pipeline references an undefined variable named ‘Parameters.TestProjects’. Create or edit the build pipeline for this YAML file, define the variable on the Variables tab. See https://go.microsoft.com/fwlink/?linkid=865972
-#Your build pipeline references the ‘BuildConfiguration’ variable, which you’ve selected to be settable at queue time. Create or edit the build pipeline for this YAML file, define the variable on the Variables tab, and then select the option to make it settable at queue time. See https://go.microsoft.com/fwlink/?linkid=865971
-#Your build pipeline references the ‘AssemblyVersion’ variable, which you’ve selected to be settable at queue time. Create or edit the build pipeline for this YAML file, define the variable on the Variables tab, and then select the option to make it settable at queue time. See https://go.microsoft.com/fwlink/?linkid=865971
+trigger:
+- develop
+
+pool:
+  vmImage: 'ubuntu-16.04'
+
+variables:
+  buildConfiguration: 'Release'
+
 steps:
 - task: DotNetCoreCLI@2
   displayName: Build
   inputs:
-    projects: 'src/IpcServiceFramework.sln'
-    arguments: '--configuration $(configuration) /p:Version=$(assemblyVersion)'
-
+    command: build
+    projects: '**/*.sln'
+    arguments: '--configuration $(buildConfiguration)'
 
 - task: DotNetCoreCLI@2
   displayName: Test
   inputs:
     command: test
-    projects: 'src/JKang.IpcServiceFramework.Core.Tests'
-    arguments: '--configuration $(configuration)'
-
-
-- task: DotNetCoreCLI@2
-  displayName: Pack
-  inputs:
-    command: pack
-    packagesToPack: '**/JKang.IpcServiceFramework*.csproj'
-    nobuild: true
-    versioningScheme: byEnvVar
-    versionEnvVar: packageVersion
-
-- task: PublishBuildArtifacts@1
-  displayName: 'Publish Artifact'
-  inputs:
-    PathtoPublish: '$(build.artifactstagingdirectory)'
-
-
+    projects: '**/*Tests/*.csproj'
+    arguments: '--configuration $(buildConfiguration)'
