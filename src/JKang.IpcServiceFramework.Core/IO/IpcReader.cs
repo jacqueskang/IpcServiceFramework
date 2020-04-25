@@ -1,4 +1,5 @@
-﻿using System;
+﻿using JKang.IpcServiceFramework.Services;
+using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -23,13 +24,13 @@ namespace JKang.IpcServiceFramework.IO
             _leaveOpen = leaveOpen;
         }
 
-        public async Task<IpcRequest> ReadIpcRequestAsync(CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<IpcRequest> ReadIpcRequestAsync(CancellationToken cancellationToken = default)
         {
             byte[] binary = await ReadMessageAsync(cancellationToken).ConfigureAwait(false);
             return _serializer.DeserializeRequest(binary);
         }
 
-        public async Task<IpcResponse> ReadIpcResponseAsync(CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<IpcResponse> ReadIpcResponseAsync(CancellationToken cancellationToken = default)
         {
             byte[] binary = await ReadMessageAsync(cancellationToken).ConfigureAwait(false);
             return _serializer.DeserializeResponse(binary);
@@ -37,7 +38,9 @@ namespace JKang.IpcServiceFramework.IO
 
         private async Task<byte[]> ReadMessageAsync(CancellationToken cancellationToken)
         {
-            int headerLength = await _stream.ReadAsync(_lengthBuffer, 0, _lengthBuffer.Length, cancellationToken);
+            int headerLength = await _stream
+                .ReadAsync(_lengthBuffer, 0, _lengthBuffer.Length, cancellationToken)
+                .ConfigureAwait(false);
 
             if (headerLength != 4)
             {
@@ -53,7 +56,9 @@ namespace JKang.IpcServiceFramework.IO
             {
                 while (totalBytesReceived < expectedLength)
                 {
-                    int dataLength = await _stream.ReadAsync(bytes, 0, remainingBytes, cancellationToken);
+                    int dataLength = await _stream
+                        .ReadAsync(bytes, 0, remainingBytes, cancellationToken)
+                        .ConfigureAwait(false);
 
                     if (dataLength == 0)
                     {
