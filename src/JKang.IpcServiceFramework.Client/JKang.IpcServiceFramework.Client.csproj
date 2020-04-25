@@ -7,10 +7,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Castle.Core" Version="4.2.1" />
+    <PackageReference Include="Castle.Core" Version="4.4.0" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\JKang.IpcServiceFramework.Client.Abstractions\JKang.IpcServiceFramework.Client.Abstractions.csproj" />
     <ProjectReference Include="..\JKang.IpcServiceFramework.Core\JKang.IpcServiceFramework.Core.csproj" />
   </ItemGroup>
 

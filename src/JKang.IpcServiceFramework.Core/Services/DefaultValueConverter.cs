@@ -8,6 +8,11 @@ namespace JKang.IpcServiceFramework.Services
     {
         public bool TryConvert(object origValue, Type destType, out object destValue)
         {
+            if (destType is null)
+            {
+                throw new ArgumentNullException(nameof(destType));
+            }
+
             if (origValue == null)
             {
                 destValue = null;

@@ -1,7 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System.Text;
 
-namespace JKang.IpcServiceFramework
+namespace JKang.IpcServiceFramework.Services
 {
     public class DefaultIpcMessageSerializer : IIpcMessageSerializer
     {
