@@ -9,9 +9,6 @@ trigger:
   branches:
     include:
     - develop
-  paths:
-    include:
-    - src/*
 
 pr: none
 
