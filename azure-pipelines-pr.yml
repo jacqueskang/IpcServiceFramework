@@ -9,9 +9,6 @@ pr:
   branches:
     include:
     - '*'
-  paths:
-    include:
-    - src/*
 
 pool:
   vmImage: 'ubuntu-16.04'
