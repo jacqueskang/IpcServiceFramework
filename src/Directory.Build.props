@@ -5,10 +5,8 @@
     <Company />
     <PackageLicenseUrl>https://github.com/jacqueskang/IpcServiceFramework/blob/develop/LICENSE</PackageLicenseUrl>
     <RepositoryUrl>https://github.com/jacqueskang/IpcServiceFramework</RepositoryUrl>
-    <PackageTags>dotnetcore,named-pipes,interprocess-communication</PackageTags>
     <PackageProjectUrl>https://github.com/jacqueskang/IpcServiceFramework</PackageProjectUrl>
-    <!-- this version will be overwritten during build -->
-    <Version>2.0.3</Version>
+    <Version>3.0.0</Version>
   </PropertyGroup>
 
 </Project>
