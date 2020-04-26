@@ -12,7 +12,7 @@ pool:
   vmImage: 'ubuntu-16.04'
 
 variables:
-  BuildConfiguration: 'Release'
+  buildConfiguration: 'Release'
 
 steps:
 - task: DotNetCoreCLI@2
@@ -20,14 +20,14 @@ steps:
   inputs:
     command: 'build'
     projects: 'src/*.sln'
-    arguments: '--configuration $(BuildConfiguration)'
+    arguments: '--configuration $(buildConfiguration)'
 
 - task: DotNetCoreCLI@2
   displayName: Test
   inputs:
     command: 'test'
     projects: 'src/*Tests/*.csproj'
-    arguments: '--configuration $(BuildConfiguration)'
+    arguments: '--configuration $(buildConfiguration)'
 
 - task: DotNetCoreCLI@2
   displayName: Pack

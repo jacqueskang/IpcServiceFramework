@@ -11,7 +11,7 @@ pool:
   vmImage: 'ubuntu-16.04'
 
 variables:
-  buildConfiguration: 'Release'
+  BuildConfiguration: 'Release'
 
 steps:
 - task: DotNetCoreCLI@2
