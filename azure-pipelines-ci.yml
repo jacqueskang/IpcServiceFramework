@@ -3,11 +3,10 @@
 # Add steps that publish symbols, save build artifacts, and more:
 # https://docs.microsoft.com/azure/devops/pipelines/languages/dotnet-core
 
-name: 3.0.0$(Rev:.r)
+name: 3.0.0$(Rev:.r)-alpha
 
 trigger:
 - develop
-- master
 
 pool:
   vmImage: 'ubuntu-16.04'
@@ -19,21 +18,21 @@ steps:
 - task: DotNetCoreCLI@2
   displayName: Build
   inputs:
-    command: build
-    projects: '**/IpcServiceFramework.sln'
+    command: 'build'
+    projects: 'src/*.sln'
     arguments: '--configuration $(BuildConfiguration)'
 
 - task: DotNetCoreCLI@2
   displayName: Test
   inputs:
-    command: test
-    projects: '**/*Tests/*.csproj'
+    command: 'test'
+    projects: 'src/*Tests/*.csproj'
     arguments: '--configuration $(BuildConfiguration)'
 
 - task: DotNetCoreCLI@2
   displayName: Pack
   inputs:
-    command: pack
-    projects: '**/IpcServiceFramework.sln'
-    arguments: '--configuration $(BuildConfiguration)'
-    outputDir: '$(Build.ArtifactStagingDirectory)'
+    command: 'pack'
+    packagesToPack: 'src/*.csproj'
+    nobuild: true
+    versioningScheme: 'byBuildNumber'
