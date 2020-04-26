@@ -3,7 +3,7 @@
 # Add steps that publish symbols, save build artifacts, and more:
 # https://docs.microsoft.com/azure/devops/pipelines/languages/dotnet-core
 
-name: 3.0.0$(Rev:.r)-alpha
+name: 3.0.0$(Rev:.r)
 
 trigger:
   branches:
@@ -17,6 +17,7 @@ pool:
 
 variables:
   buildConfiguration: 'Release'
+  nugetVersion: '$(Build.BuildNumber)-alpha'
 
 steps:
 - task: DotNetCoreCLI@2
@@ -39,7 +40,8 @@ steps:
     command: 'pack'
     packagesToPack: 'src/**/*.csproj'
     nobuild: true
-    versioningScheme: 'byBuildNumber'
+    versioningScheme: 'byEnvVar'
+    versionEnvVar: 'nugetVersion'
 
 - task: PublishBuildArtifacts@1
   inputs:
