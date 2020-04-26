@@ -3,15 +3,21 @@
 # Add steps that publish symbols, save build artifacts, and more:
 # https://docs.microsoft.com/azure/devops/pipelines/languages/dotnet-core
 
+trigger: none
+
 pr:
-- develop
-- master
+  branches:
+    include:
+    - '*'
+  paths:
+    include:
+    - src/*
 
 pool:
   vmImage: 'ubuntu-16.04'
 
 variables:
-  buildConfiguration: 'Release'
+  BuildConfiguration: 'Release'
 
 steps:
 - task: DotNetCoreCLI@2
