@@ -6,6 +6,8 @@ MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{20913218-C740-42E9-9D17-CAD973B676D0}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
+		..\azure-pipelines-ci.yml = ..\azure-pipelines-ci.yml
+		..\azure-pipelines-pr.yml = ..\azure-pipelines-pr.yml
 		Directory.Build.props = Directory.Build.props
 		..\README.md = ..\README.md
 	EndProjectSection
@@ -18,15 +20,15 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JKang.IpcServiceFramework.H
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "NamedPipe", "NamedPipe", "{7ED117EC-C390-4D2E-94D3-C00010B63535}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JKang.IpcServiceFramework.Client.NamedPipe", "JKang.IpcServiceFramework.Client.NamedPipe\JKang.IpcServiceFramework.Client.NamedPipe.csproj", "{3BCFFC74-2722-43DC-B910-92A34997FA2B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JKang.IpcServiceFramework.Client.NamedPipe", "JKang.IpcServiceFramework.Client.NamedPipe\JKang.IpcServiceFramework.Client.NamedPipe.csproj", "{3BCFFC74-2722-43DC-B910-92A34997FA2B}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tcp", "Tcp", "{7A7B0FCA-ADE5-4C7A-9640-9E10821D251C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JKang.IpcServiceFramework.Hosting.Tcp", "JKang.IpcServiceFramework.Hosting.Tcp\JKang.IpcServiceFramework.Hosting.Tcp.csproj", "{2783640E-5E3D-447A-BEC2-C1A74E09089C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JKang.IpcServiceFramework.Hosting.Tcp", "JKang.IpcServiceFramework.Hosting.Tcp\JKang.IpcServiceFramework.Hosting.Tcp.csproj", "{2783640E-5E3D-447A-BEC2-C1A74E09089C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JKang.IpcServiceFramework.Client.Tcp", "JKang.IpcServiceFramework.Client.Tcp\JKang.IpcServiceFramework.Client.Tcp.csproj", "{E1EE30C2-EF31-47C9-B9FC-D55A94911C40}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JKang.IpcServiceFramework.Client.Tcp", "JKang.IpcServiceFramework.Client.Tcp\JKang.IpcServiceFramework.Client.Tcp.csproj", "{E1EE30C2-EF31-47C9-B9FC-D55A94911C40}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JKang.IpcServiceFramework.Abstractions", "JKang.IpcServiceFramework.Abstractions\JKang.IpcServiceFramework.Abstractions.csproj", "{F8E7A89B-F863-42FF-9FE0-77A107938454}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JKang.IpcServiceFramework.Abstractions", "JKang.IpcServiceFramework.Abstractions\JKang.IpcServiceFramework.Abstractions.csproj", "{F8E7A89B-F863-42FF-9FE0-77A107938454}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JKang.IpcServiceFramework.Client", "JKang.IpcServiceFramework.Client\JKang.IpcServiceFramework.Client.csproj", "{46465A56-CF19-4403-A78C-9871BFD8B49E}"
 EndProject
@@ -36,7 +38,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JKang.IpcServiceFramework.H
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JKang.IpcServiceFramework.Client.Abstractions", "JKang.IpcServiceFramework.Client.Abstractions\JKang.IpcServiceFramework.Client.Abstractions.csproj", "{AE3DE1F9-EAF2-4785-9A23-E03F40D52156}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JKang.IpcServiceFramework.Testing", "JKang.IpcServiceFramework.Testing\JKang.IpcServiceFramework.Testing.csproj", "{915000BD-9D84-4554-9A91-428923060EC5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JKang.IpcServiceFramework.Testing", "JKang.IpcServiceFramework.Testing\JKang.IpcServiceFramework.Testing.csproj", "{915000BD-9D84-4554-9A91-428923060EC5}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JKang.IpcServiceFramework.TcpTests", "JKang.IpcServiceFramework.TcpTests\JKang.IpcServiceFramework.TcpTests.csproj", "{C6625102-AC1B-4D86-8BF8-B2096F701AC2}"
 EndProject
