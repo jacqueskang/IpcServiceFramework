@@ -40,3 +40,9 @@ steps:
     packagesToPack: 'src/**/*.csproj'
     nobuild: true
     versioningScheme: 'byBuildNumber'
+
+- task: PublishBuildArtifacts@1
+  inputs:
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+    ArtifactName: 'drop'
+    publishLocation: 'Container'
