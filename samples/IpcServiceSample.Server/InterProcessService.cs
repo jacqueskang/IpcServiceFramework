@@ -7,7 +7,9 @@ namespace IpcServiceSample.Server
     {
         public string ReverseString(string input)
         {
-            return new string(Array.Reverse(input.ToCharArray()));
+            char[] charArray = input.ToCharArray();
+            Array.Reverse(input.ToCharArray());
+            return new string(charArray);
         }
     }
 }
