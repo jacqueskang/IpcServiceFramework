@@ -21,7 +21,7 @@ namespace IpcServiceSample.ConsoleClient
             string output = await client.InvokeAsync(x => x.ReverseString(input));
 
             Console.WriteLine($"Result from server: '{output}'");
-            Console.WriteLine($"Press");
+            Console.WriteLine("Press any key to exit.");
         }
     }
 }
