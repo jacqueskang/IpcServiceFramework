@@ -6,14 +6,14 @@ using System.Threading.Tasks;
 
 namespace JKang.IpcServiceFramework.Hosting
 {
-    public sealed class IpcHostedService : BackgroundService
+    public sealed class IpcBackgroundService : BackgroundService
     {
         private readonly IEnumerable<IIpcEndpoint> _endpoints;
-        private readonly ILogger<IpcHostedService> _logger;
+        private readonly ILogger<IpcBackgroundService> _logger;
 
-        public IpcHostedService(
+        public IpcBackgroundService(
             IEnumerable<IIpcEndpoint> endpoints,
-            ILogger<IpcHostedService> logger)
+            ILogger<IpcBackgroundService> logger)
         {
             _endpoints = endpoints ?? throw new System.ArgumentNullException(nameof(endpoints));
             _logger = logger ?? throw new System.ArgumentNullException(nameof(logger));
@@ -24,8 +24,9 @@ namespace JKang.IpcServiceFramework.Hosting
             foreach (IIpcEndpoint endpoint in _endpoints)
             {
                 await endpoint.ExecuteAsync(stoppingToken).ConfigureAwait(false);
-                _logger.LogDebug("Started endpoint {EndpointName}.", endpoint.Name);
+                _logger.LogDebug("Endpoint '{EndpointName}' started.", endpoint.Name);
             }
+            _logger.LogInformation("IPC background service started.");
         }
 
         public override void Dispose()
@@ -33,9 +34,11 @@ namespace JKang.IpcServiceFramework.Hosting
             foreach (IIpcEndpoint endpoint in _endpoints)
             {
                 endpoint.Dispose();
+                _logger.LogDebug("Endpoint '{EndpointName}' disposed.", endpoint.Name);
             }
 
             base.Dispose();
+            _logger.LogInformation("IPC background service disposed.");
         }
     }
 }

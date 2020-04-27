@@ -14,8 +14,10 @@ namespace JKang.IpcServiceFramework
         public string FailureDetails { get; }
 
         public IpcServerException()
-        {
-        }
+        { }
+
+        public IpcServerException(string message) : base(message)
+        { }
 
         public IpcServerException(string message, string failureDetails)
             : base(message)

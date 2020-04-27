@@ -13,6 +13,11 @@ namespace JKang.IpcServiceFramework
         {
         }
 
+        public IpcServerUserCodeException(string message)
+            : base(message)
+        {
+        }
+
         public IpcServerUserCodeException(string message, string failureDetails)
             : base(message, failureDetails)
         {

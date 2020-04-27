@@ -2,6 +2,7 @@
 
 namespace JKang.IpcServiceFramework
 {
+#pragma warning disable CA1819 // Properties should not return arrays
     public class IpcRequest
     {
         private Type[] _genericArguments = Array.Empty<Type>();
@@ -20,4 +21,5 @@ namespace JKang.IpcServiceFramework
             set => _genericArguments = value;
         }
     }
+#pragma warning restore CA1819 // Properties should not return arrays
 }
