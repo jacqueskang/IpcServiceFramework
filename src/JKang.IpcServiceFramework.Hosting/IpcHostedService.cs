@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace JKang.IpcServiceFramework.Hosting
 {
-    public class IpcHostedService : IHostedService
+    public sealed class IpcHostedService : BackgroundService
     {
         private readonly IEnumerable<IIpcEndpoint> _endpoints;
         private readonly ILogger<IpcHostedService> _logger;
@@ -15,26 +15,27 @@ namespace JKang.IpcServiceFramework.Hosting
             IEnumerable<IIpcEndpoint> endpoints,
             ILogger<IpcHostedService> logger)
         {
-            _endpoints = endpoints;
-            _logger = logger;
+            _endpoints = endpoints ?? throw new System.ArgumentNullException(nameof(endpoints));
+            _logger = logger ?? throw new System.ArgumentNullException(nameof(logger));
         }
 
-        public async Task StartAsync(CancellationToken cancellationToken)
+        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             foreach (IIpcEndpoint endpoint in _endpoints)
             {
-                await endpoint.StartAsync(cancellationToken).ConfigureAwait(false);
+                await endpoint.ExecuteAsync(stoppingToken).ConfigureAwait(false);
+                _logger.LogDebug("Started endpoint {EndpointName}.", endpoint.Name);
             }
-            _logger.LogInformation("IPC hosted service started.");
         }
 
-        public async Task StopAsync(CancellationToken cancellationToken)
+        public override void Dispose()
         {
             foreach (IIpcEndpoint endpoint in _endpoints)
             {
-                await endpoint.StopAsync(cancellationToken).ConfigureAwait(false);
+                endpoint.Dispose();
             }
-            _logger.LogInformation("IPC hosted service stopped.");
+
+            base.Dispose();
         }
     }
 }

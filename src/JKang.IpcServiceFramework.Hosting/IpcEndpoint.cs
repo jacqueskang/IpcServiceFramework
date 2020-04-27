@@ -15,12 +15,12 @@ namespace JKang.IpcServiceFramework.Hosting
     public abstract class IpcEndpoint<TContract> : IIpcEndpoint
         where TContract : class
     {
-        private readonly CancellationTokenSource _cts = new CancellationTokenSource();
         private readonly IpcEndpointOptions _options;
         private readonly IServiceProvider _serviceProvider;
         private readonly IIpcMessageSerializer _serializer;
         private readonly IValueConverter _valueConverter;
         private readonly ILogger _logger;
+        private readonly SemaphoreSlim _semaphore;
 
         protected IpcEndpoint(
             string name,
@@ -31,18 +31,39 @@ namespace JKang.IpcServiceFramework.Hosting
             ILogger logger)
         {
             Name = name;
-            _options = options;
-            _serviceProvider = serviceProvider;
-            _serializer = serializer;
-            _valueConverter = valueConverter;
-            _logger = logger;
+            _options = options ?? throw new ArgumentNullException(nameof(options));
+            _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
+            _serializer = serializer ?? throw new ArgumentNullException(nameof(serializer));
+            _valueConverter = valueConverter ?? throw new ArgumentNullException(nameof(valueConverter));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _semaphore = new SemaphoreSlim(options.MaxConcurrentCalls);
         }
 
         public string Name { get; }
 
+        public async Task ExecuteAsync(CancellationToken stoppingToken)
+        {
+            var factory = new TaskFactory(TaskScheduler.Default);
+            while (!stoppingToken.IsCancellationRequested)
+            {
+                await _semaphore.WaitAsync(stoppingToken).ConfigureAwait(false);
+
+                WaitAndProcessAsync(ProcessAsync, stoppingToken).ContinueWith(task =>
+                {
+                    if (task.IsFaulted)
+                    {
+                        _logger.LogError(task.Exception, "Error occurred");
+                    }
+                    return _semaphore.Release();
+                });
+            }
+        }
+
+        protected abstract Task WaitAndProcessAsync(Func<Stream, CancellationToken, Task> process, CancellationToken stoppingToken);
+
         protected virtual Stream TransformStream(Stream input) => input;
 
-        protected async Task ProcessAsync(Stream server, CancellationToken cancellationToken)
+        private async Task ProcessAsync(Stream server, CancellationToken stoppingToken)
         {
             server = TransformStream(server);
             using (var writer = new IpcWriter(server, _serializer, leaveOpen: true))
@@ -50,15 +71,15 @@ namespace JKang.IpcServiceFramework.Hosting
             {
                 try
                 {
-                    if (cancellationToken.IsCancellationRequested)
+                    if (stoppingToken.IsCancellationRequested)
                     {
                         return;
                     }
 
                     _logger.LogDebug($"[thread {Thread.CurrentThread.ManagedThreadId}] client connected, reading request...");
-                    IpcRequest request = await reader.ReadIpcRequestAsync(cancellationToken).ConfigureAwait(false);
+                    IpcRequest request = await reader.ReadIpcRequestAsync(stoppingToken).ConfigureAwait(false);
 
-                    cancellationToken.ThrowIfCancellationRequested();
+                    stoppingToken.ThrowIfCancellationRequested();
 
                     _logger.LogDebug($"[thread {Thread.CurrentThread.ManagedThreadId}] request received, invoking '{request.MethodName}'...");
                     IpcResponse response;
@@ -67,10 +88,10 @@ namespace JKang.IpcServiceFramework.Hosting
                         response = await GetReponse(request, scope).ConfigureAwait(false);
                     }
 
-                    cancellationToken.ThrowIfCancellationRequested();
+                    stoppingToken.ThrowIfCancellationRequested();
 
                     _logger.LogDebug($"[thread {Thread.CurrentThread.ManagedThreadId}] sending response...");
-                    await writer.WriteAsync(response, cancellationToken).ConfigureAwait(false);
+                    await writer.WriteAsync(response, stoppingToken).ConfigureAwait(false);
 
                     _logger.LogDebug($"[thread {Thread.CurrentThread.ManagedThreadId}] done.");
                 }
@@ -78,12 +99,12 @@ namespace JKang.IpcServiceFramework.Hosting
                 {
                     var response = IpcResponse.Fail(ex, _options.IncludeFailureDetailsInResponse);
                     _logger.LogError(ex, response.Failure);
-                    await writer.WriteAsync(response, cancellationToken).ConfigureAwait(false);
+                    await writer.WriteAsync(response, stoppingToken).ConfigureAwait(false);
                 }
             }
         }
 
-        protected async Task<IpcResponse> GetReponse(IpcRequest request, IServiceScope scope)
+        private async Task<IpcResponse> GetReponse(IpcRequest request, IServiceScope scope)
         {
             if (request is null)
             {
@@ -232,42 +253,31 @@ namespace JKang.IpcServiceFramework.Hosting
             return method;
         }
 
-        public virtual Task StartAsync(CancellationToken cancellationToken = default)
-        {
-            Task.Run(() =>
-            {
-                var semaphore = new SemaphoreSlim(_options.MaxConcurrentCalls);
-                while (!_cts.IsCancellationRequested)
-                {
-                    semaphore.Wait();
-                    WaitAndProcessAsync(_cts.Token)
-                        .ContinueWith(task =>
-                        {
-                            if (task.IsFaulted)
-                            {
-                                _logger.LogError(task.Exception, "Error occurred");
-                            }
-                            return semaphore.Release();
-                        });
-                }
-            });
+        #region IDisposable
 
-            _logger.LogInformation("IPC endpoint '{EndpointName}' started.", Name);
-            return Task.CompletedTask;
+        private bool _disposed;
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            if (disposing)
+            {
+                _semaphore.Dispose();
+            }
+
+            _disposed = true;
         }
 
-        public virtual async Task StopAsync(CancellationToken cancellationToken = default)
+        public void Dispose()
         {
-            _cts.Cancel();
-
-            await Task.Run(() =>
-            {
-                WaitHandle.WaitAny(new[] { _cts.Token.WaitHandle });
-            }, cancellationToken).ConfigureAwait(false);
-
-            _logger.LogInformation("IPC endpoint '{EndpointName}' stopped.", Name);
+            Dispose(true);
+            GC.SuppressFinalize(this);
         }
 
-        protected abstract Task WaitAndProcessAsync(CancellationToken cancellationToken);
+        #endregion
     }
 }

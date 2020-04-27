@@ -29,8 +29,15 @@ namespace JKang.IpcServiceFramework.Hosting.Tcp
             _listener.Start();
         }
 
-        protected override async Task WaitAndProcessAsync(CancellationToken cancellationToken)
+        protected override async Task WaitAndProcessAsync(
+            Func<Stream, CancellationToken, Task> process,
+            CancellationToken cancellationToken)
         {
+            if (process is null)
+            {
+                throw new ArgumentNullException(nameof(process));
+            }
+
             using (TcpClient client = await _listener.AcceptTcpClientAsync().ConfigureAwait(false))
             {
                 Stream server = client.GetStream();
@@ -39,13 +46,18 @@ namespace JKang.IpcServiceFramework.Hosting.Tcp
                 // if SSL is enabled, wrap the stream in an SslStream in client mode
                 if (_options.EnableSsl)
                 {
-                    var ssl = new SslStream(server, false);
-                    ssl.AuthenticateAsServer(_options.SslCertificate
-                        ?? throw new IpcHostingConfigurationException("Invalid TCP IPC endpoint configured: SSL enabled without providing certificate."));
-                    server = ssl;
+                    using (var ssl = new SslStream(server, false))
+                    {
+                        ssl.AuthenticateAsServer(_options.SslCertificate
+                            ?? throw new IpcHostingConfigurationException("Invalid TCP IPC endpoint configured: SSL enabled without providing certificate."));
+                        await process(ssl, cancellationToken).ConfigureAwait(false);
+                    }
+                }
+                else
+                {
+                    await process(server, cancellationToken).ConfigureAwait(false);
                 }
 
-                await ProcessAsync(server, cancellationToken).ConfigureAwait(false);
                 client.Close();
             }
         }

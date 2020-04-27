@@ -1,14 +1,13 @@
-﻿using System.Threading;
+﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace JKang.IpcServiceFramework.Hosting
 {
-    public interface IIpcEndpoint
+    public interface IIpcEndpoint: IDisposable
     {
         string Name { get; }
 
-        Task StartAsync(CancellationToken cancellationToken = default);
-
-        Task StopAsync(CancellationToken cancellationToken = default);
+        Task ExecuteAsync(CancellationToken stoppingToken);
     }
 }
