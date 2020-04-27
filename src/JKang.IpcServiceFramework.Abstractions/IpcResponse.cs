@@ -21,6 +21,11 @@ namespace JKang.IpcServiceFramework
 
         public static IpcResponse Fail(Exception ex, bool includeDetails, bool userFailure = false)
         {
+            if (ex is null)
+            {
+                throw new ArgumentNullException(nameof(ex));
+            }
+
             string message = null;
             string details = null;
 

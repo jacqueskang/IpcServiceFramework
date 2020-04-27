@@ -4,6 +4,7 @@ using JKang.IpcServiceFramework.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -48,6 +49,7 @@ namespace JKang.IpcServiceFramework.Hosting
             {
                 await _semaphore.WaitAsync(stoppingToken).ConfigureAwait(false);
 
+#pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
                 WaitAndProcessAsync(ProcessAsync, stoppingToken).ContinueWith(task =>
                 {
                     if (task.IsFaulted)
@@ -55,7 +57,8 @@ namespace JKang.IpcServiceFramework.Hosting
                         _logger.LogError(task.Exception, "Error occurred");
                     }
                     return _semaphore.Release();
-                });
+                }, TaskScheduler.Default);
+#pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
             }
         }
 
@@ -65,35 +68,37 @@ namespace JKang.IpcServiceFramework.Hosting
 
         private async Task ProcessAsync(Stream server, CancellationToken stoppingToken)
         {
+            if (stoppingToken.IsCancellationRequested)
+            {
+                return;
+            }
+
             server = TransformStream(server);
             using (var writer = new IpcWriter(server, _serializer, leaveOpen: true))
             using (var reader = new IpcReader(server, _serializer, leaveOpen: true))
+            using (IDisposable loggingScope = _logger.BeginScope(new Dictionary<string, object>
+            {
+                { "threadId", Thread.CurrentThread.ManagedThreadId }
+            }))
             {
                 try
                 {
-                    if (stoppingToken.IsCancellationRequested)
-                    {
-                        return;
-                    }
-
-                    _logger.LogDebug($"[thread {Thread.CurrentThread.ManagedThreadId}] client connected, reading request...");
+                    _logger.LogDebug($"Client connected, reading request...");
                     IpcRequest request = await reader.ReadIpcRequestAsync(stoppingToken).ConfigureAwait(false);
 
                     stoppingToken.ThrowIfCancellationRequested();
-
-                    _logger.LogDebug($"[thread {Thread.CurrentThread.ManagedThreadId}] request received, invoking '{request.MethodName}'...");
+                    _logger.LogDebug($"Request received, invoking '{request.MethodName}'...");
                     IpcResponse response;
                     using (IServiceScope scope = _serviceProvider.CreateScope())
                     {
-                        response = await GetReponse(request, scope).ConfigureAwait(false);
+                        response = await GetReponseAsync(request, scope).ConfigureAwait(false);
                     }
 
                     stoppingToken.ThrowIfCancellationRequested();
-
-                    _logger.LogDebug($"[thread {Thread.CurrentThread.ManagedThreadId}] sending response...");
+                    _logger.LogDebug($"Sending response...");
                     await writer.WriteAsync(response, stoppingToken).ConfigureAwait(false);
 
-                    _logger.LogDebug($"[thread {Thread.CurrentThread.ManagedThreadId}] done.");
+                    _logger.LogDebug($"Process finished.");
                 }
                 catch (Exception ex) when (!(ex is IpcServerException))
                 {
@@ -104,7 +109,7 @@ namespace JKang.IpcServiceFramework.Hosting
             }
         }
 
-        private async Task<IpcResponse> GetReponse(IpcRequest request, IServiceScope scope)
+        private async Task<IpcResponse> GetReponseAsync(IpcRequest request, IServiceScope scope)
         {
             if (request is null)
             {
@@ -173,14 +178,16 @@ namespace JKang.IpcServiceFramework.Hosting
                 {
                     @return = method.Invoke(service, args);
                 }
+#pragma warning disable CA1031 // Do not catch general exception types
                 catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
                 {
                     return IpcResponse.Fail(ex, _options.IncludeFailureDetailsInResponse, true);
                 }
 
-                if (@return is Task)
+                if (@return is Task task)
                 {
-                    await ((Task)@return).ConfigureAwait(false);
+                    await task.ConfigureAwait(false);
 
                     PropertyInfo resultProperty = @return.GetType().GetProperty("Result");
                     return IpcResponse.Success(resultProperty?.GetValue(@return));
@@ -198,13 +205,7 @@ namespace JKang.IpcServiceFramework.Hosting
             }
         }
 
-        /// <summary>
-        /// Get the method that matches the requested signature
-        /// </summary>
-        /// <param name="request">The service call request</param>
-        /// <param name="service">The service</param>
-        /// <returns>The disambiguated service method</returns>
-        public static MethodInfo GetUnambiguousMethod(IpcRequest request, object service)
+        private static MethodInfo GetUnambiguousMethod(IpcRequest request, object service)
         {
             if (request == null || service == null)
             {

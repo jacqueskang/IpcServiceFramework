@@ -16,7 +16,7 @@ namespace JKang.IpcServiceFramework.Hosting
             {
                 services
                     .TryAddIpcInternalServices()
-                    .AddHostedService<IpcHostedService>();
+                    .AddHostedService<IpcBackgroundService>();
             });
         }
 
