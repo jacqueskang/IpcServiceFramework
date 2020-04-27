@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -6,8 +6,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="JKang.IpcServiceFramework.Client.NamedPipe" Version="3.0.0.10-alpha" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="3.1.3" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\IpcServiceSample.ServiceContracts\IpcServiceSample.ServiceContracts.csproj" />
-    <ProjectReference Include="..\JKang.IpcServiceFramework.Client\JKang.IpcServiceFramework.Client.csproj" />
   </ItemGroup>
   
 </Project>
