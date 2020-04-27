@@ -3,6 +3,7 @@ using IpcServiceSample.ServiceContracts;
 using JKang.IpcServiceFramework.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
 namespace IpcServiceSample.ConsoleServer
 {
@@ -22,6 +23,10 @@ namespace IpcServiceSample.ConsoleServer
                 .ConfigureIpcHost(builder =>
                 {
                     builder.AddNamedPipeEndpoint<IInterProcessService>("endpoint1", "pipeinternal");
+                })
+                .ConfigureLogging(builder =>
+                {
+                    builder.SetMinimumLevel(LogLevel.Information);
                 });
     }
 }
