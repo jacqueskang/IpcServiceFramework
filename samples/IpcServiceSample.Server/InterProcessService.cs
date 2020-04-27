@@ -8,7 +8,7 @@ namespace IpcServiceSample.Server
         public string ReverseString(string input)
         {
             char[] charArray = input.ToCharArray();
-            Array.Reverse(input.ToCharArray());
+            Array.Reverse(charArray);
             return new string(charArray);
         }
     }
