@@ -29,7 +29,7 @@ namespace JKang.IpcServiceFramework.TcpTests
                 .WithServiceImplementation(_ => serviceMock.Object)
                 .WithIpcHostConfiguration(hostBuilder =>
                 {
-                    hostBuilder.AddTcpEndpoint<ITestService>("default", IPAddress.Loopback, port);
+                    hostBuilder.AddTcpEndpoint<ITestService>(IPAddress.Loopback, port);
                 })
                 .CreateClient(services =>
                 {

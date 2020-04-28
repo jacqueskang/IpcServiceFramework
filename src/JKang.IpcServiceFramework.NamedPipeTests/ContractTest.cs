@@ -27,7 +27,7 @@ namespace JKang.IpcServiceFramework.NamedPipeTests
                 .WithServiceImplementation(_ => serviceMock.Object)
                 .WithIpcHostConfiguration(hostBuilder =>
                 {
-                    hostBuilder.AddNamedPipeEndpoint<ITestService>("default", pipeName);
+                    hostBuilder.AddNamedPipeEndpoint<ITestService>(pipeName);
                 })
                 .CreateClient(services =>
                 {

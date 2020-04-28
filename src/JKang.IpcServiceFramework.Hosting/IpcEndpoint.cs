@@ -24,14 +24,12 @@ namespace JKang.IpcServiceFramework.Hosting
         private readonly SemaphoreSlim _semaphore;
 
         protected IpcEndpoint(
-            string name,
             IpcEndpointOptions options,
             IServiceProvider serviceProvider,
             IIpcMessageSerializer serializer,
             IValueConverter valueConverter,
             ILogger logger)
         {
-            Name = name;
             _options = options ?? throw new ArgumentNullException(nameof(options));
             _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
             _serializer = serializer ?? throw new ArgumentNullException(nameof(serializer));
@@ -39,8 +37,6 @@ namespace JKang.IpcServiceFramework.Hosting
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _semaphore = new SemaphoreSlim(options.MaxConcurrentCalls);
         }
-
-        public string Name { get; }
 
         public async Task ExecuteAsync(CancellationToken stoppingToken)
         {

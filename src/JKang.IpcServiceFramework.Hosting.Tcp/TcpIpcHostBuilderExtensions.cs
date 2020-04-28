@@ -10,10 +10,10 @@ namespace JKang.IpcServiceFramework.Hosting
     public static class TcpIpcHostBuilderExtensions
     {
         public static IIpcHostBuilder AddTcpEndpoint<TContract>(this IIpcHostBuilder builder,
-            string name, IPAddress ipEndpoint, int port)
+            IPAddress ipEndpoint, int port)
             where TContract : class
         {
-            return builder.AddTcpEndpoint<TContract>(name, options =>
+            return builder.AddTcpEndpoint<TContract>(options =>
             {
                 options.IpEndpoint = ipEndpoint;
                 options.Port = port;
@@ -21,7 +21,7 @@ namespace JKang.IpcServiceFramework.Hosting
         }
 
         public static IIpcHostBuilder AddTcpEndpoint<TContract>(this IIpcHostBuilder builder,
-            string name, Action<TcpIpcEndpointOptions> configure)
+            Action<TcpIpcEndpointOptions> configure)
             where TContract : class
         {
             var options = new TcpIpcEndpointOptions();
@@ -34,7 +34,7 @@ namespace JKang.IpcServiceFramework.Hosting
                 ILogger<TcpIpcEndpoint<TContract>> logger = serviceProvider
                     .GetRequiredService<ILogger<TcpIpcEndpoint<TContract>>>();
 
-                return new TcpIpcEndpoint<TContract>(name, options, serializer, valueConverter, logger, serviceProvider);
+                return new TcpIpcEndpoint<TContract>(options, serializer, valueConverter, logger, serviceProvider);
             });
 
             return builder;
