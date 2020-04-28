@@ -14,13 +14,12 @@ namespace JKang.IpcServiceFramework.Hosting.NamedPipe
         private readonly NamedPipeIpcServiceEndpointOptions _options;
 
         public NamedPipeIpcServiceEndpoint(
-            string name,
             NamedPipeIpcServiceEndpointOptions options,
             IIpcMessageSerializer serializer,
             IValueConverter valueConverter,
             ILogger<NamedPipeIpcServiceEndpoint<TContract>> logger,
             IServiceProvider serviceProvider)
-            : base(name, options, serviceProvider, serializer, valueConverter, logger)
+            : base(options, serviceProvider, serializer, valueConverter, logger)
         {
             _options = options;
         }
