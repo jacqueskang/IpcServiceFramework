@@ -16,13 +16,12 @@ namespace JKang.IpcServiceFramework.Hosting.Tcp
         private readonly TcpListener _listener;
 
         public TcpIpcEndpoint(
-            string name,
             TcpIpcEndpointOptions options,
             IIpcMessageSerializer serializer,
             IValueConverter valueConverter,
             ILogger<TcpIpcEndpoint<TContract>> logger,
             IServiceProvider serviceProvider)
-            : base(name, options, serviceProvider, serializer, valueConverter, logger)
+            : base(options, serviceProvider, serializer, valueConverter, logger)
         {
             _options = options ?? throw new ArgumentNullException(nameof(options));
             _listener = new TcpListener(_options.IpEndpoint, _options.Port);

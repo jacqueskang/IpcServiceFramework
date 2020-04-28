@@ -24,7 +24,6 @@ namespace JKang.IpcServiceFramework.Hosting
             foreach (IIpcEndpoint endpoint in _endpoints)
             {
                 await endpoint.ExecuteAsync(stoppingToken).ConfigureAwait(false);
-                _logger.LogDebug("Endpoint '{EndpointName}' started.", endpoint.Name);
             }
             _logger.LogInformation("IPC background service started.");
         }
@@ -34,7 +33,6 @@ namespace JKang.IpcServiceFramework.Hosting
             foreach (IIpcEndpoint endpoint in _endpoints)
             {
                 endpoint.Dispose();
-                _logger.LogDebug("Endpoint '{EndpointName}' disposed.", endpoint.Name);
             }
 
             base.Dispose();
