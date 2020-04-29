@@ -10,7 +10,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		..\azure-pipelines-pr.yml = ..\azure-pipelines-pr.yml
 		Directory.Build.props = Directory.Build.props
 		IpcServiceFramework.snk = IpcServiceFramework.snk
-		..\README.md = ..\README.md
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JKang.IpcServiceFramework.Core.Tests", "JKang.IpcServiceFramework.Core.Tests\JKang.IpcServiceFramework.Core.Tests.csproj", "{1EC81913-883B-487C-A3FD-98A80EDE3225}"

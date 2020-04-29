@@ -1,7 +1,6 @@
 ﻿using JKang.IpcServiceFramework.Services;
 using System;
 using System.IO;
-using System.Net;
 using System.Net.Security;
 using System.Net.Sockets;
 using System.Threading;
@@ -17,22 +16,10 @@ namespace JKang.IpcServiceFramework.Client.Tcp
         private bool _isDisposed;
 
         public TcpIpcClient(
+            TcpIpcClientOptions options,
             IIpcMessageSerializer serializer,
-            IValueConverter converter,
-            IPAddress serverIp,
-            int serverPort)
-            : this(serializer, converter, new TcpIpcClientOptions
-            {
-                ServerIp = serverIp ?? throw new ArgumentNullException(nameof(serverIp)),
-                ServerPort = serverPort,
-            })
-        { }
-
-        public TcpIpcClient(
-            IIpcMessageSerializer serializer,
-            IValueConverter converter,
-            TcpIpcClientOptions options)
-            : base(serializer, converter)
+            IValueConverter converter)
+            : base(options, serializer, converter)
         {
             _options = options ?? throw new ArgumentNullException(nameof(options));
         }

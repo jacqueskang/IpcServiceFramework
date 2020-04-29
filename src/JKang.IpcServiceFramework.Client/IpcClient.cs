@@ -10,17 +10,20 @@ using System.Threading.Tasks;
 
 namespace JKang.IpcServiceFramework.Client
 {
-    public abstract class IpcClient<TInterface>: IIpcClient<TInterface>
+    public abstract class IpcClient<TInterface> : IIpcClient<TInterface>
         where TInterface : class
     {
         private static readonly ProxyGenerator _proxyGenerator = new ProxyGenerator();
+        private readonly IpcClientOptions _options;
         private readonly IIpcMessageSerializer _serializer;
         private readonly IValueConverter _converter;
 
         protected IpcClient(
+            IpcClientOptions options,
             IIpcMessageSerializer serializer,
             IValueConverter converter)
         {
+            _options = options;
             _serializer = serializer;
             _converter = converter;
         }
@@ -138,7 +141,7 @@ namespace JKang.IpcServiceFramework.Client
         private async Task<IpcResponse> GetResponseAsync(IpcRequest request, CancellationToken cancellationToken)
         {
             using (Stream client = await ConnectToServerAsync(cancellationToken).ConfigureAwait(false))
-            using (Stream client2 = TransformStream(client))
+            using (Stream client2 = _options.StreamTranslator == null ? client : _options.StreamTranslator(client))
             using (var writer = new IpcWriter(client2, _serializer, leaveOpen: true))
             using (var reader = new IpcReader(client2, _serializer, leaveOpen: true))
             {
@@ -149,8 +152,6 @@ namespace JKang.IpcServiceFramework.Client
                 return await reader.ReadIpcResponseAsync(cancellationToken).ConfigureAwait(false);
             }
         }
-
-        protected virtual Stream TransformStream(Stream input) => input;
 
         private class MyInterceptor : IInterceptor
         {

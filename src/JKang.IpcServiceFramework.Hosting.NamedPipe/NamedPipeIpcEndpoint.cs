@@ -8,16 +8,16 @@ using System.Threading.Tasks;
 
 namespace JKang.IpcServiceFramework.Hosting.NamedPipe
 {
-    public class NamedPipeIpcServiceEndpoint<TContract> : IpcEndpoint<TContract>
+    public class NamedPipeIpcEndpoint<TContract> : IpcEndpoint<TContract>
         where TContract : class
     {
-        private readonly NamedPipeIpcServiceEndpointOptions _options;
+        private readonly NamedPipeIpcEndpointOptions _options;
 
-        public NamedPipeIpcServiceEndpoint(
-            NamedPipeIpcServiceEndpointOptions options,
+        public NamedPipeIpcEndpoint(
+            NamedPipeIpcEndpointOptions options,
             IIpcMessageSerializer serializer,
             IValueConverter valueConverter,
-            ILogger<NamedPipeIpcServiceEndpoint<TContract>> logger,
+            ILogger<NamedPipeIpcEndpoint<TContract>> logger,
             IServiceProvider serviceProvider)
             : base(options, serviceProvider, serializer, valueConverter, logger)
         {
