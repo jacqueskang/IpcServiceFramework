@@ -1,4 +1,5 @@
 ﻿using JKang.IpcServiceFramework.Client.Tcp;
+using System;
 using System.Net;
 
 namespace Microsoft.Extensions.DependencyInjection
@@ -9,19 +10,23 @@ namespace Microsoft.Extensions.DependencyInjection
             this IServiceCollection services, IPAddress serverIp, int serverPort)
             where TContract : class
         {
-            return services.AddIpcClient((serializer, valueConverter) =>
+            return services.AddTcpIpcClient<TContract>(options =>
             {
-                return new TcpIpcClient<TContract>(serializer, valueConverter, serverIp, serverPort);
+                options.ServerIp = serverIp;
+                options.ServerPort = serverPort;
             });
         }
 
         public static IServiceCollection AddTcpIpcClient<TContract>(
-            this IServiceCollection services, TcpIpcClientOptions options)
+            this IServiceCollection services, Action<TcpIpcClientOptions> configure)
             where TContract : class
         {
+            var options = new TcpIpcClientOptions();
+            configure?.Invoke(options);
+
             return services.AddIpcClient((serializer, valueConverter) =>
             {
-                return new TcpIpcClient<TContract>(serializer, valueConverter, options);
+                return new TcpIpcClient<TContract>(options, serializer, valueConverter);
             });
         }
     }

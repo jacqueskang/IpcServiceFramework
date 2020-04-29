@@ -60,8 +60,6 @@ namespace JKang.IpcServiceFramework.Hosting
 
         protected abstract Task WaitAndProcessAsync(Func<Stream, CancellationToken, Task> process, CancellationToken stoppingToken);
 
-        protected virtual Stream TransformStream(Stream input) => input;
-
         private async Task ProcessAsync(Stream server, CancellationToken stoppingToken)
         {
             if (stoppingToken.IsCancellationRequested)
@@ -69,7 +67,11 @@ namespace JKang.IpcServiceFramework.Hosting
                 return;
             }
 
-            server = TransformStream(server);
+            if (_options.StreamTranslator != null)
+            {
+                server = _options.StreamTranslator(server);
+            }
+
             using (var writer = new IpcWriter(server, _serializer, leaveOpen: true))
             using (var reader = new IpcReader(server, _serializer, leaveOpen: true))
             using (IDisposable loggingScope = _logger.BeginScope(new Dictionary<string, object>
