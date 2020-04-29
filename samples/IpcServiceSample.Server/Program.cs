@@ -22,11 +22,11 @@ namespace IpcServiceSample.ConsoleServer
                 })
                 .ConfigureIpcHost(builder =>
                 {
-                    builder.AddNamedPipeEndpoint<IInterProcessService>("endpoint1", "pipeinternal");
+                    builder.AddNamedPipeEndpoint<IInterProcessService>("pipeinternal");
                 })
                 .ConfigureLogging(builder =>
                 {
-                    builder.SetMinimumLevel(LogLevel.Information);
+                    builder.SetMinimumLevel(LogLevel.Debug);
                 });
     }
 }

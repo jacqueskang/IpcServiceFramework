@@ -10,18 +10,19 @@ namespace IpcServiceSample.ConsoleClient
     {
         private static async Task Main(string[] args)
         {
-            Console.WriteLine("Type a phrase and press enter:");
-            string input = Console.ReadLine();
+            while (true)
+            {
+                Console.WriteLine("Type a phrase and press enter or press Ctrl+C to exit:");
+                string input = Console.ReadLine();
 
-            Console.WriteLine("Invoking inter-process service...");
-            IIpcClient<IInterProcessService> client = new ServiceCollection()
-                .AddNamedPipeIpcClient<IInterProcessService>("pipeinternal")
-                .BuildServiceProvider()
-                .GetRequiredService<IIpcClient<IInterProcessService>>();
-            string output = await client.InvokeAsync(x => x.ReverseString(input));
+                IIpcClient<IInterProcessService> client = new ServiceCollection()
+                    .AddNamedPipeIpcClient<IInterProcessService>("pipeinternal")
+                    .BuildServiceProvider()
+                    .GetRequiredService<IIpcClient<IInterProcessService>>();
+                string output = await client.InvokeAsync(x => x.ReverseString(input));
 
-            Console.WriteLine($"Result from server: '{output}'");
-            Console.WriteLine("Press any key to exit.");
+                Console.WriteLine($"Result from server: '{output}'.\n");
+            }
         }
     }
 }
