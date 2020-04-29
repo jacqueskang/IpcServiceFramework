@@ -40,7 +40,11 @@ namespace JKang.IpcServiceFramework.Hosting.Tcp
             using (TcpClient client = await _listener.AcceptTcpClientAsync().ConfigureAwait(false))
             {
                 Stream server = client.GetStream();
-                server = TransformStream(server);
+
+                if (_options.StreamTranslator != null)
+                {
+                    server = _options.StreamTranslator(server);
+                }
 
                 // if SSL is enabled, wrap the stream in an SslStream in client mode
                 if (_options.EnableSsl)

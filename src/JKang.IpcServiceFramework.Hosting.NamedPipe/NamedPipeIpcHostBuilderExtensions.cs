@@ -12,24 +12,27 @@ namespace JKang.IpcServiceFramework.Hosting
             string pipeName)
             where TContract : class
         {
-            return builder.AddNamedPipeEndpoint<TContract>(pipeName, null);
+            return builder.AddNamedPipeEndpoint<TContract>(options =>
+            {
+                options.PipeName = pipeName;
+            });
         }
 
         public static IIpcHostBuilder AddNamedPipeEndpoint<TContract>(this IIpcHostBuilder builder,
-            string pipeName, Action<NamedPipeIpcServiceEndpointOptions> configure)
+            Action<NamedPipeIpcEndpointOptions> configure)
             where TContract : class
         {
-            var options = new NamedPipeIpcServiceEndpointOptions(pipeName);
+            var options = new NamedPipeIpcEndpointOptions();
             configure?.Invoke(options);
 
             builder.AddIpcEndpoint(serviceProvider =>
             {
                 IIpcMessageSerializer serializer = serviceProvider.GetRequiredService<IIpcMessageSerializer>();
                 IValueConverter valueConverter = serviceProvider.GetRequiredService<IValueConverter>();
-                ILogger<NamedPipeIpcServiceEndpoint<TContract>> logger = serviceProvider
-                    .GetRequiredService<ILogger<NamedPipeIpcServiceEndpoint<TContract>>>();
+                ILogger<NamedPipeIpcEndpoint<TContract>> logger = serviceProvider
+                    .GetRequiredService<ILogger<NamedPipeIpcEndpoint<TContract>>>();
 
-                return new NamedPipeIpcServiceEndpoint<TContract>(options, serializer, valueConverter, logger, serviceProvider);
+                return new NamedPipeIpcEndpoint<TContract>(options, serializer, valueConverter, logger, serviceProvider);
             });
 
             return builder;

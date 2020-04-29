@@ -9,17 +9,20 @@ namespace JKang.IpcServiceFramework.Client.NamedPipe
     internal class NamedPipeIpcClient<TInterface> : IpcClient<TInterface>
         where TInterface : class
     {
-        private readonly string _pipeName;
+        private readonly NamedPipeIpcClientOptions _options;
 
-        public NamedPipeIpcClient(IIpcMessageSerializer serializer, IValueConverter converter, string pipeName)
-            : base(serializer, converter)
+        public NamedPipeIpcClient(
+            NamedPipeIpcClientOptions options,
+            IIpcMessageSerializer serializer,
+            IValueConverter converter)
+            : base(options, serializer, converter)
         {
-            _pipeName = pipeName;
+            _options = options;
         }
 
         protected override async Task<Stream> ConnectToServerAsync(CancellationToken cancellationToken)
         {
-            var stream = new NamedPipeClientStream(".", _pipeName, PipeDirection.InOut, PipeOptions.Asynchronous);
+            var stream = new NamedPipeClientStream(".", _options.PipeName, PipeDirection.InOut, PipeOptions.Asynchronous);
             await stream.ConnectAsync(cancellationToken).ConfigureAwait(false);
             return stream;
         }
