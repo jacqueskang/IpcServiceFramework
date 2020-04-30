@@ -24,31 +24,15 @@ namespace JKang.IpcServiceFramework.Client.Tcp
             _options = options ?? throw new ArgumentNullException(nameof(options));
         }
 
-        protected override async Task<Stream> ConnectToServerAsync(CancellationToken cancellationToken)
+        protected override Task<Stream> ConnectToServerAsync(CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            await _client.ConnectAsync(_options.ServerIp, _options.ServerPort).ConfigureAwait(false);
-
-            //IAsyncResult result = _client.BeginConnect(_options.ServerIp, _options.ServerPort, null, null);
-
-            //await Task.Run(() =>
-            //{
-            //    // poll every 100ms to check cancellation request
-            //    while (!result.AsyncWaitHandle.WaitOne(TimeSpan.FromMilliseconds(100), false))
-            //    {
-            //        if (cancellationToken.IsCancellationRequested)
-            //        {
-            //            _client.EndConnect(result);
-            //            cancellationToken.ThrowIfCancellationRequested();
-            //        }
-            //    }
-            //}).ConfigureAwait(false);
-
-            //cancellationToken.Register(() =>
-            //{
-            //    _client.Close();
-            //});
+            if (!_client.ConnectAsync(_options.ServerIp, _options.ServerPort)
+                .Wait(_options.ConnectionTimeout, cancellationToken))
+            {
+                throw new TimeoutException();
+            }
 
             Stream stream = _client.GetStream();
 
@@ -73,7 +57,7 @@ namespace JKang.IpcServiceFramework.Client.Tcp
                 stream = ssl;
             }
 
-            return stream;
+            return Task.FromResult(stream);
         }
 
         public void Dispose() => Dispose(true);
