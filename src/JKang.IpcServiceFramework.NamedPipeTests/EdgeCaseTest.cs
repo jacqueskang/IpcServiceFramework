@@ -29,7 +29,7 @@ namespace JKang.IpcServiceFramework.NamedPipeTests
                 string output = await client.InvokeAsync(x => x.StringType("abc"));
             });
 
-            Assert.True(sw.ElapsedMilliseconds < timeout * 1.5); // makesure timeout works with marge
+            Assert.True(sw.ElapsedMilliseconds < timeout * 2); // makesure timeout works with marge
         }
     }
 }
