@@ -80,5 +80,9 @@ namespace JKang.IpcServiceFramework.NamedPipeTests
         [Theory, AutoData]
         public Task ThrowException(Exception expected)
             => _testCase.ThrowException(expected);
+
+        [Theory, AutoData]
+        public Task Abstraction(TestDto input, TestDto expected)
+            => _testCase.Abstraction(input, expected);
     }
 }

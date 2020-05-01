@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Numerics;
 using System.Threading.Tasks;
+using Xunit.Abstractions;
 
 namespace JKang.IpcServiceFramework.Testing.Fixtures
 {
@@ -20,5 +21,6 @@ namespace JKang.IpcServiceFramework.Testing.Fixtures
         T GenericMethod<T>(T input);
         Task<int> AsyncMethod();
         void ThrowException();
+        ITestDto Abstraction(ITestDto input);
     }
 }
