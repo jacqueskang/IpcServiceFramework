@@ -4,6 +4,8 @@ using JKang.IpcServiceFramework.Services;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 using Xunit;
 
 namespace JKang.IpcServiceFramework.Core.Tests
@@ -135,6 +137,88 @@ namespace JKang.IpcServiceFramework.Core.Tests
             Assert.True(succeed);
             Assert.IsType<Guid>(actual);
             Assert.Equal(expected, actual);
+        }
+
+        private T ParseTestData<T>(string valueData)
+        {
+            if (typeof(T).GetMember(valueData).FirstOrDefault() is MemberInfo member)
+            {
+                if (member is FieldInfo field)
+                    return (T)field.GetValue(null);
+                else if (member is PropertyInfo property)
+                    return (T)property.GetValue(null);
+                else if (member is MethodInfo method)
+                    return (T)method.Invoke(null, null);
+            }
+
+            var parseMethod = typeof(T).GetMethod("Parse", new[] { typeof(string) });
+
+            return (T)parseMethod.Invoke(null, new[] { valueData });
+        }
+
+        private void PerformRoundTripTest<T>(T value, Action<T, T> assertAreEqual = null)
+        {
+            // Act
+            bool succeed = _sut.TryConvert(value, typeof(string), out object intermediate);
+            bool succeed2 = _sut.TryConvert(intermediate, typeof(T), out object final);
+
+            // Assert
+            Assert.True(succeed);
+            Assert.True(succeed2);
+
+            Assert.IsType<T>(final);
+
+            if (assertAreEqual != null)
+                assertAreEqual(value, (T)final);
+            else
+                Assert.Equal(value, final);
+        }
+
+        [Theory]
+        [InlineData(nameof(Guid.Empty))]
+        [InlineData(nameof(Guid.NewGuid))]
+        public void TryConvert_RoundTripGuid(string valueData)
+        {
+            PerformRoundTripTest(ParseTestData<Guid>(valueData));
+        }
+
+        [Theory]
+        [InlineData(nameof(TimeSpan.Zero))]
+        [InlineData(nameof(TimeSpan.MinValue))]
+        [InlineData(nameof(TimeSpan.MaxValue))]
+        [InlineData("-00:00:05.9167374")]
+        public void TryConvert_RoundTripTimeSpan(string valueData)
+        {
+            PerformRoundTripTest(ParseTestData<TimeSpan>(valueData));
+        }
+
+        [Theory]
+        [InlineData(nameof(DateTime.Now))]
+        [InlineData(nameof(DateTime.Today))]
+        [InlineData(nameof(DateTime.MinValue))]
+        [InlineData(nameof(DateTime.MaxValue))]
+        [InlineData("2020-02-05 3:10:27 PM")]
+        public void TryConvert_RoundTripDateTime(string valueData)
+        {
+            PerformRoundTripTest(ParseTestData<DateTime>(valueData), assertAreEqual: (x, y) => Assert.Equal(DateTime.SpecifyKind(x, DateTimeKind.Unspecified), DateTime.SpecifyKind(y, DateTimeKind.Unspecified)));
+        }
+
+        public interface IComplexType
+        {
+            int Int32Value { get; }
+            string StringValue { get; }
+        }
+
+        public class ComplexType : IComplexType
+        {
+            public int Int32Value { get; set; }
+            public string StringValue { get; set; }
+        }
+
+        public enum EnumType
+        {
+            FirstOption,
+            SecondOption
         }
     }
 }
