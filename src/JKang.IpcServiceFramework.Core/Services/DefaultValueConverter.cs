@@ -9,6 +9,11 @@ namespace JKang.IpcServiceFramework.Services
     {
         public bool TryConvert(object origValue, Type destType, out object destValue)
         {
+            if (destType is null)
+            {
+                throw new ArgumentNullException(nameof(destType));
+            }
+            
             var destConcreteType = Nullable.GetUnderlyingType(destType);
 
             if (origValue == null)
@@ -36,7 +41,11 @@ namespace JKang.IpcServiceFramework.Services
                         destValue = Enum.Parse(destType, str, ignoreCase: true);
                         return true;
                     }
-                    catch
+                    catch (Exception ex) when (
+                        ex is ArgumentNullException ||
+                        ex is ArgumentException ||
+                        ex is OverflowException
+                    )
                     { }
                 }
                 else
@@ -46,7 +55,10 @@ namespace JKang.IpcServiceFramework.Services
                         destValue = Enum.ToObject(destType, origValue);
                         return true;
                     }
-                    catch
+                    catch (Exception ex) when (
+                        ex is ArgumentNullException ||
+                        ex is ArgumentException
+                    )
                     { }
                 }
             }
@@ -100,10 +112,14 @@ namespace JKang.IpcServiceFramework.Services
 
             try
             {
-                destValue = Convert.ChangeType(origValue, destType);
+                destValue = Convert.ChangeType(origValue, destType, CultureInfo.InvariantCulture);
                 return true;
             }
-            catch
+            catch (Exception ex) when (
+                ex is InvalidCastException ||
+                ex is FormatException ||
+                ex is OverflowException ||
+                ex is ArgumentNullException)
             { }
 
             try
@@ -111,7 +127,7 @@ namespace JKang.IpcServiceFramework.Services
                 destValue = JsonConvert.DeserializeObject(JsonConvert.SerializeObject(origValue), destType);
                 return true;
             }
-            catch
+            catch (JsonException)
             { }
 
             destValue = null;

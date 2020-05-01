@@ -1,4 +1,5 @@
-﻿using System;
+﻿using JKang.IpcServiceFramework.Services;
+using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -24,14 +25,14 @@ namespace JKang.IpcServiceFramework.IO
         }
 
         public async Task WriteAsync(IpcRequest request,
-            CancellationToken cancellationToken = default(CancellationToken))
+            CancellationToken cancellationToken = default)
         {
             byte[] binary = _serializer.SerializeRequest(request);
             await WriteMessageAsync(binary, cancellationToken).ConfigureAwait(false);
         }
 
         public async Task WriteAsync(IpcResponse response,
-            CancellationToken cancellationToken = default(CancellationToken))
+            CancellationToken cancellationToken = default)
         {
             byte[] binary = _serializer.SerializeResponse(response);
             await WriteMessageAsync(binary, cancellationToken).ConfigureAwait(false);
