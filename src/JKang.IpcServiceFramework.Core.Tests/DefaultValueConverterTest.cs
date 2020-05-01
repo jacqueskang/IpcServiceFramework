@@ -203,19 +203,19 @@ namespace JKang.IpcServiceFramework.Core.Tests
             PerformRoundTripTest(ParseTestData<DateTime>(valueData), assertAreEqual: (x, y) => Assert.AreEqual(DateTime.SpecifyKind(x, DateTimeKind.Unspecified), DateTime.SpecifyKind(y, DateTimeKind.Unspecified)));
         }
 
-        interface IComplexType
+        public interface IComplexType
         {
             int Int32Value { get; }
             string StringValue { get; }
         }
 
-        class ComplexType : IComplexType
+        public class ComplexType : IComplexType
         {
             public int Int32Value { get; set; }
             public string StringValue { get; set; }
         }
 
-        enum EnumType
+        public enum EnumType
         {
             FirstOption,
             SecondOption
