@@ -7,7 +7,7 @@ namespace JKang.IpcServiceFramework.Services
     {
         private static readonly JsonSerializerSettings _settings = new JsonSerializerSettings
         {
-            TypeNameHandling = TypeNameHandling.None
+            TypeNameHandling = TypeNameHandling.Objects
         };
 
         public IpcRequest DeserializeRequest(byte[] binary)
@@ -33,7 +33,7 @@ namespace JKang.IpcServiceFramework.Services
         private T Deserialize<T>(byte[] binary)
         {
             string json = Encoding.UTF8.GetString(binary);
-            return JsonConvert.DeserializeObject<T>(json);
+            return JsonConvert.DeserializeObject<T>(json, _settings);
         }
 
         private byte[] Serialize(object obj)

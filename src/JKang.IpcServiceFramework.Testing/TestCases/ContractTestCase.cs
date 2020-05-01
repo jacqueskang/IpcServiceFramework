@@ -144,5 +144,15 @@ namespace JKang.IpcServiceFramework.Testing.TestCases
             Assert.Contains(expected.Message, exception.Message);
             Assert.DoesNotContain(IpcServerException.ServerFailureDetails, exception.ToString());
         }
+
+        public async Task Abstraction(TestDto input, TestDto expected)
+        {
+            _serviceMock
+                .Setup(x => x.Abstraction(It.Is<TestDto>(o => o.Value == input.Value)))
+                .Returns(expected);
+
+            ITestDto actual = await _client.InvokeAsync(x => x.Abstraction(input));
+            Assert.Equal(expected.Value, actual.Value);
+        }
     }
 }
