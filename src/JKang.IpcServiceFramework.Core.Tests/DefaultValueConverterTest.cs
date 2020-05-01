@@ -175,29 +175,29 @@ namespace JKang.IpcServiceFramework.Core.Tests
         }
 
         [Theory]
-        [DataRow(nameof(Guid.Empty))]
-        [DataRow(nameof(Guid.NewGuid))]
+        [InlineData(nameof(Guid.Empty))]
+        [InlineData(nameof(Guid.NewGuid))]
         public void TryConvert_RoundTripGuid(string valueData)
         {
             PerformRoundTripTest(ParseTestData<Guid>(valueData));
         }
 
         [Theory]
-        [DataRow(nameof(TimeSpan.Zero))]
-        [DataRow(nameof(TimeSpan.MinValue))]
-        [DataRow(nameof(TimeSpan.MaxValue))]
-        [DataRow("-00:00:05.9167374")]
+        [InlineData(nameof(TimeSpan.Zero))]
+        [InlineData(nameof(TimeSpan.MinValue))]
+        [InlineData(nameof(TimeSpan.MaxValue))]
+        [InlineData("-00:00:05.9167374")]
         public void TryConvert_RoundTripTimeSpan(string valueData)
         {
             PerformRoundTripTest(ParseTestData<TimeSpan>(valueData));
         }
 
         [Theory]
-        [DataRow(nameof(DateTime.Now))]
-        [DataRow(nameof(DateTime.Today))]
-        [DataRow(nameof(DateTime.MinValue))]
-        [DataRow(nameof(DateTime.MaxValue))]
-        [DataRow("2020-02-05 3:10:27 PM")]
+        [InlineData(nameof(DateTime.Now))]
+        [InlineData(nameof(DateTime.Today))]
+        [InlineData(nameof(DateTime.MinValue))]
+        [InlineData(nameof(DateTime.MaxValue))]
+        [InlineData("2020-02-05 3:10:27 PM")]
         public void TryConvert_RoundTripDateTime(string valueData)
         {
             PerformRoundTripTest(ParseTestData<DateTime>(valueData), assertAreEqual: (x, y) => Assert.AreEqual(DateTime.SpecifyKind(x, DateTimeKind.Unspecified), DateTime.SpecifyKind(y, DateTimeKind.Unspecified)));
