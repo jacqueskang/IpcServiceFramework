@@ -200,7 +200,7 @@ namespace JKang.IpcServiceFramework.Core.Tests
         [InlineData("2020-02-05 3:10:27 PM")]
         public void TryConvert_RoundTripDateTime(string valueData)
         {
-            PerformRoundTripTest(ParseTestData<DateTime>(valueData), assertAreEqual: (x, y) => Assert.AreEqual(DateTime.SpecifyKind(x, DateTimeKind.Unspecified), DateTime.SpecifyKind(y, DateTimeKind.Unspecified)));
+            PerformRoundTripTest(ParseTestData<DateTime>(valueData), assertAreEqual: (x, y) => Assert.Equal(DateTime.SpecifyKind(x, DateTimeKind.Unspecified), DateTime.SpecifyKind(y, DateTimeKind.Unspecified)));
         }
 
         public interface IComplexType
