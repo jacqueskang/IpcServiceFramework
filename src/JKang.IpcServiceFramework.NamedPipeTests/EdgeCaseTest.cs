@@ -3,6 +3,7 @@ using JKang.IpcServiceFramework.Testing.Fixtures;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Diagnostics;
+using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -30,6 +31,30 @@ namespace JKang.IpcServiceFramework.NamedPipeTests
             });
 
             Assert.True(sw.ElapsedMilliseconds < timeout * 2); // makesure timeout works with marge
+        }
+
+        [Fact]
+        public void ConnectionCancelled_Throw()
+        {
+            IIpcClient<ITestService> client = new ServiceCollection()
+                .AddNamedPipeIpcClient<ITestService>(options =>
+                {
+                    options.PipeName = "inexisted-pipe";
+                })
+                .BuildServiceProvider()
+                .GetRequiredService<IIpcClient<ITestService>>();
+
+            using var cts = new CancellationTokenSource();
+
+            Task.WaitAll(
+                Task.Run(async () =>
+                {
+                    await Assert.ThrowsAsync<OperationCanceledException>(async () =>
+                    {
+                        await client.InvokeAsync(x => x.ReturnVoid(), cts.Token);
+                    });
+                }),
+                Task.Run(() => cts.CancelAfter(1000)));
         }
     }
 }
