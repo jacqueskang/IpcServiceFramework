@@ -31,6 +31,8 @@ namespace JKang.IpcServiceFramework.Client.Tcp
             if (!_client.ConnectAsync(_options.ServerIp, _options.ServerPort)
                 .Wait(_options.ConnectionTimeout, cancellationToken))
             {
+                _client.Close();
+                cancellationToken.ThrowIfCancellationRequested();
                 throw new TimeoutException();
             }
 
