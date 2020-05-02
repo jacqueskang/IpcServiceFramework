@@ -1,4 +1,4 @@
-﻿namespace JKang.IpcServiceFramework.Testing.Fixtures
+﻿namespace JKang.IpcServiceFramework.NamedPipeTests.Fixtures
 {
     public interface ITestDto
     {

@@ -1,9 +1,8 @@
 ﻿using JKang.IpcServiceFramework.Client;
-using JKang.IpcServiceFramework.Testing.Fixtures;
+using JKang.IpcServiceFramework.TcpTests.Fixtures;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Diagnostics;
-using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
@@ -55,7 +54,7 @@ namespace JKang.IpcServiceFramework.TcpTests
                 {
                     await Assert.ThrowsAsync<OperationCanceledException>(async () =>
                     {
-                        await client.InvokeAsync(x => x.ReturnVoid(), cts.Token);
+                        await client.InvokeAsync(x => x.StringType(string.Empty), cts.Token);
                     });
                 }),
                 Task.Run(() => cts.CancelAfter(1000)));
