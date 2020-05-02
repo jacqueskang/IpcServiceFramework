@@ -3,13 +3,9 @@ using JKang.IpcServiceFramework.Client;
 using JKang.IpcServiceFramework.Hosting;
 using JKang.IpcServiceFramework.Testing;
 using JKang.IpcServiceFramework.Testing.Fixtures;
-using JKang.IpcServiceFramework.Testing.TestCases;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Numerics;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -17,14 +13,23 @@ namespace JKang.IpcServiceFramework.NamedPipeTests
 {
     public class StreamTranslatorTest : IClassFixture<IpcApplicationFactory<ITestService>>
     {
-        private readonly ContractTestCase _testCase;
+        private readonly Mock<ITestService> _serviceMock = new Mock<ITestService>();
+        private readonly IpcApplicationFactory<ITestService> _factory;
 
         public StreamTranslatorTest(IpcApplicationFactory<ITestService> factory)
         {
-            string pipeName = Guid.NewGuid().ToString();
-            var serviceMock = new Mock<ITestService>();
-            IIpcClient<ITestService> client = factory
-                .WithServiceImplementation(_ => serviceMock.Object)
+            _factory = factory;
+        }
+
+        [Theory, AutoData]
+        public async Task StreamTranslator_HappyPath(string pipeName, string input, string expected)
+        {
+            _serviceMock
+                .Setup(x => x.StringType(input))
+                .Returns(expected);
+
+            IIpcClient<ITestService> client = _factory
+                .WithServiceImplementation(_ => _serviceMock.Object)
                 .WithIpcHostConfiguration(hostBuilder =>
                 {
                     hostBuilder.AddNamedPipeEndpoint<ITestService>(options =>
@@ -41,11 +46,10 @@ namespace JKang.IpcServiceFramework.NamedPipeTests
                         options.StreamTranslator = x => new XorStream(x);
                     });
                 });
-            _testCase = new ContractTestCase(serviceMock, client);
-        }
 
-        [Theory, AutoData]
-        public Task StreamTranslator_HappyPath(string input, string expected)
-            => _testCase.StringType(input, expected);
+            string actual = await client.InvokeAsync(x => x.StringType(input));
+
+            Assert.Equal(expected, actual);
+        }
     }
 }

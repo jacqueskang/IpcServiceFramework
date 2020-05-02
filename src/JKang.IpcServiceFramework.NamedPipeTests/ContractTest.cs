@@ -3,7 +3,6 @@ using JKang.IpcServiceFramework.Client;
 using JKang.IpcServiceFramework.Hosting;
 using JKang.IpcServiceFramework.Testing;
 using JKang.IpcServiceFramework.Testing.Fixtures;
-using JKang.IpcServiceFramework.Testing.TestCases;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using System;
@@ -17,14 +16,14 @@ namespace JKang.IpcServiceFramework.NamedPipeTests
 {
     public class ContractTest : IClassFixture<IpcApplicationFactory<ITestService>>
     {
-        private readonly ContractTestCase _testCase;
+        private readonly Mock<ITestService> _serviceMock = new Mock<ITestService>();
+        private readonly IIpcClient<ITestService> _client;
 
         public ContractTest(IpcApplicationFactory<ITestService> factory)
         {
             string pipeName = Guid.NewGuid().ToString();
-            var serviceMock = new Mock<ITestService>();
-            IIpcClient<ITestService> client = factory
-                .WithServiceImplementation(_ => serviceMock.Object)
+            _client = factory
+                .WithServiceImplementation(_ => _serviceMock.Object)
                 .WithIpcHostConfiguration(hostBuilder =>
                 {
                     hostBuilder.AddNamedPipeEndpoint<ITestService>(pipeName);
@@ -33,56 +32,134 @@ namespace JKang.IpcServiceFramework.NamedPipeTests
                 {
                     services.AddNamedPipeIpcClient<ITestService>(pipeName);
                 });
-            _testCase = new ContractTestCase(serviceMock, client);
         }
 
         [Theory, AutoData]
-        public Task PrimitiveTypes(bool a, byte b, sbyte c, char d, decimal e, double f, float g, int h, uint i,
+        public async Task PrimitiveTypes(bool a, byte b, sbyte c, char d, decimal e, double f, float g, int h, uint i,
            long j, ulong k, short l, ushort m, int expected)
-            => _testCase.PrimitiveTypes(a, b, c, d, e, f, g, h, i, j, k, l, m, expected);
+        {
+            _serviceMock
+                .Setup(x => x.PrimitiveTypes(a, b, c, d, e, f, g, h, i, j, k, l, m))
+                .Returns(expected);
+
+            int actual = await _client
+                .InvokeAsync(x => x.PrimitiveTypes(a, b, c, d, e, f, g, h, i, j, k, l, m));
+
+            Assert.Equal(expected, actual);
+        }
 
         [Theory, AutoData]
-        public Task StringType(string input, string expected)
-            => _testCase.StringType(input, expected);
+        public async Task StringType(string input, string expected)
+        {
+            _serviceMock
+                .Setup(x => x.StringType(input))
+                .Returns(expected);
+
+            string actual = await _client
+                .InvokeAsync(x => x.StringType(input));
+
+            Assert.Equal(expected, actual);
+        }
 
         [Theory, AutoData]
-        public Task ComplexType(Complex input, Complex expected)
-            => _testCase.ComplexType(input, expected);
+        public async Task ComplexType(Complex input, Complex expected)
+        {
+            _serviceMock.Setup(x => x.ComplexType(input)).Returns(expected);
+
+            Complex actual = await _client
+                .InvokeAsync(x => x.ComplexType(input));
+
+            Assert.Equal(expected, actual);
+        }
 
         [Theory, AutoData]
-        public Task ComplexTypeArray(IEnumerable<Complex> input, IEnumerable<Complex> expected)
-            => _testCase.ComplexTypeArray(input, expected);
+        public async Task ComplexTypeArray(IEnumerable<Complex> input, IEnumerable<Complex> expected)
+        {
+            _serviceMock
+                .Setup(x => x.ComplexTypeArray(input))
+                .Returns(expected);
+
+            IEnumerable<Complex> actual = await _client
+                .InvokeAsync(x => x.ComplexTypeArray(input));
+
+            Assert.Equal(expected, actual);
+        }
 
         [Fact]
-        public Task ReturnVoid()
-            => _testCase.ReturnVoid();
+        public async Task ReturnVoid()
+        {
+            await _client.InvokeAsync(x => x.ReturnVoid());
+        }
 
         [Theory, AutoData]
-        public Task DateTime(DateTime input, DateTime expected)
-            => _testCase.DateTime(input, expected);
+        public async Task DateTime(DateTime input, DateTime expected)
+        {
+            _serviceMock.Setup(x => x.DateTime(input)).Returns(expected);
+
+            DateTime actual = await _client
+                .InvokeAsync(x => x.DateTime(input));
+
+            Assert.Equal(expected, actual);
+        }
 
         [Theory, AutoData]
-        public Task EnumType(DateTimeStyles input, DateTimeStyles expected)
-            => _testCase.EnumType(input, expected);
+        public async Task EnumType(DateTimeStyles input, DateTimeStyles expected)
+        {
+            _serviceMock.Setup(x => x.EnumType(input)).Returns(expected);
+
+            DateTimeStyles actual = await _client
+                .InvokeAsync(x => x.EnumType(input));
+
+            Assert.Equal(expected, actual);
+        }
 
         [Theory, AutoData]
-        public Task ByteArray(byte[] input, byte[] expected)
-            => _testCase.ByteArray(input, expected);
+        public async Task ByteArray(byte[] input, byte[] expected)
+        {
+            _serviceMock.Setup(x => x.ByteArray(input)).Returns(expected);
+
+            byte[] actual = await _client
+                .InvokeAsync(x => x.ByteArray(input));
+
+            Assert.Equal(expected, actual);
+        }
 
         [Theory, AutoData]
-        public Task GenericMethod(decimal input, decimal expected)
-            => _testCase.GenericMethod(input, expected);
+        public async Task GenericMethod(decimal input, decimal expected)
+        {
+            _serviceMock
+                .Setup(x => x.GenericMethod<decimal>(input))
+                .Returns(expected);
+
+            decimal actual = await _client
+                .InvokeAsync(x => x.GenericMethod<decimal>(input));
+
+            Assert.Equal(expected, actual);
+        }
 
         [Theory, AutoData]
-        public Task AsyncMethod(int expected)
-            => _testCase.AsyncMethod(expected);
+        public async Task AsyncMethod(int expected)
+        {
+            _serviceMock
+                .Setup(x => x.AsyncMethod())
+                .ReturnsAsync(expected);
+
+            int actual = await _client
+                .InvokeAsync(x => x.AsyncMethod());
+
+            Assert.Equal(expected, actual);
+        }
 
         [Theory, AutoData]
-        public Task ThrowException(Exception expected)
-            => _testCase.ThrowException(expected);
+        public async Task Abstraction(TestDto input, TestDto expected)
+        {
+            _serviceMock
+                .Setup(x => x.Abstraction(It.Is<TestDto>(o => o.Value == input.Value)))
+                .Returns(expected);
 
-        [Theory, AutoData]
-        public Task Abstraction(TestDto input, TestDto expected)
-            => _testCase.Abstraction(input, expected);
+            ITestDto actual = await _client.InvokeAsync(x => x.Abstraction(input));
+
+            Assert.Equal(expected.Value, actual.Value);
+        }
     }
 }
