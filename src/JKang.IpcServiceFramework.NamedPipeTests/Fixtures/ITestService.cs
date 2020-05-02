@@ -3,9 +3,8 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Numerics;
 using System.Threading.Tasks;
-using Xunit.Abstractions;
 
-namespace JKang.IpcServiceFramework.Testing.Fixtures
+namespace JKang.IpcServiceFramework.NamedPipeTests.Fixtures
 {
     public interface ITestService
     {

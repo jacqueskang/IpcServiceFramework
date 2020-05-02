@@ -1,8 +1,8 @@
 ﻿using AutoFixture.Xunit2;
 using JKang.IpcServiceFramework.Client;
 using JKang.IpcServiceFramework.Hosting;
+using JKang.IpcServiceFramework.TcpTests.Fixtures;
 using JKang.IpcServiceFramework.Testing;
-using JKang.IpcServiceFramework.Testing.Fixtures;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using System;

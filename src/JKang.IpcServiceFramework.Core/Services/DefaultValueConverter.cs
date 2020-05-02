@@ -13,8 +13,8 @@ namespace JKang.IpcServiceFramework.Services
             {
                 throw new ArgumentNullException(nameof(destType));
             }
-            
-            var destConcreteType = Nullable.GetUnderlyingType(destType);
+
+            Type destConcreteType = Nullable.GetUnderlyingType(destType);
 
             if (origValue == null)
             {
@@ -23,7 +23,9 @@ namespace JKang.IpcServiceFramework.Services
             }
 
             if (destConcreteType != null)
+            {
                 destType = destConcreteType;
+            }
 
             if (destType.IsAssignableFrom(origValue.GetType()))
             {
@@ -65,19 +67,19 @@ namespace JKang.IpcServiceFramework.Services
 
             if (origValue is string origStringValue)
             {
-                if ((destType == typeof(Guid)) && Guid.TryParse(origStringValue, out var guidResult))
+                if ((destType == typeof(Guid)) && Guid.TryParse(origStringValue, out Guid guidResult))
                 {
                     destValue = guidResult;
                     return true;
                 }
 
-                if ((destType == typeof(TimeSpan)) && TimeSpan.TryParse(origStringValue, CultureInfo.InvariantCulture, out var timeSpanResult))
+                if ((destType == typeof(TimeSpan)) && TimeSpan.TryParse(origStringValue, CultureInfo.InvariantCulture, out TimeSpan timeSpanResult))
                 {
                     destValue = timeSpanResult;
                     return true;
                 }
 
-                if ((destType == typeof(DateTime)) && DateTime.TryParse(origStringValue, CultureInfo.InvariantCulture, DateTimeStyles.None, out var dateTimeResult))
+                if ((destType == typeof(DateTime)) && DateTime.TryParse(origStringValue, CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime dateTimeResult))
                 {
                     destValue = dateTimeResult;
                     return true;
@@ -86,13 +88,13 @@ namespace JKang.IpcServiceFramework.Services
 
             if ((origValue is TimeSpan timeSpan) && (destType == typeof(string)))
             {
-                destValue = timeSpan.ToString("c");
+                destValue = timeSpan.ToString("c", CultureInfo.InvariantCulture);
                 return true;
             }
 
             if ((origValue is DateTime dateTime) && (destType == typeof(string)))
             {
-                destValue = dateTime.ToString("o");
+                destValue = dateTime.ToString("o", CultureInfo.InvariantCulture);
                 return true;
             }
 

@@ -1,13 +1,11 @@
 ﻿using AutoFixture.Xunit2;
 using JKang.IpcServiceFramework.Client;
 using JKang.IpcServiceFramework.Hosting;
+using JKang.IpcServiceFramework.NamedPipeTests.Fixtures;
 using JKang.IpcServiceFramework.Testing;
-using JKang.IpcServiceFramework.Testing.Fixtures;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using System;
-using System.Diagnostics;
-using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 
