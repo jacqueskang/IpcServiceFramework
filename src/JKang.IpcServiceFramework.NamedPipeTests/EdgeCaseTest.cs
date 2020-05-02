@@ -1,28 +1,41 @@
-﻿using JKang.IpcServiceFramework.Client;
+﻿using AutoFixture.Xunit2;
+using JKang.IpcServiceFramework.Client;
+using JKang.IpcServiceFramework.Hosting;
+using JKang.IpcServiceFramework.Testing;
 using JKang.IpcServiceFramework.Testing.Fixtures;
 using Microsoft.Extensions.DependencyInjection;
+using Moq;
 using System;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 
+
 namespace JKang.IpcServiceFramework.NamedPipeTests
 {
-    public class EdgeCaseTest
+    public class EdgeCaseTest : IClassFixture<IpcApplicationFactory<ITestService>>
     {
+        private readonly IpcApplicationFactory<ITestService> _factory;
+
+        public EdgeCaseTest(IpcApplicationFactory<ITestService> factory)
+        {
+            _factory = factory;
+        }
+
         [Fact]
         public async Task ServerIsOff_Timeout()
         {
             int timeout = 1000; // 1s
-            IIpcClient<ITestService> client = new ServiceCollection()
-                .AddNamedPipeIpcClient<ITestService>(options =>
+            IIpcClient<ITestService> client = _factory
+                .CreateClient(services =>
                 {
-                    options.PipeName = "inexisted-pipe";
-                    options.ConnectionTimeout = timeout;
-                })
-                .BuildServiceProvider()
-                .GetRequiredService<IIpcClient<ITestService>>();
+                    services.AddNamedPipeIpcClient<ITestService>(options =>
+                    {
+                        options.PipeName = "inexisted-pipe";
+                        options.ConnectionTimeout = timeout;
+                    });
+                });
 
             var sw = Stopwatch.StartNew();
             await Assert.ThrowsAsync<TimeoutException>(async () =>
@@ -36,13 +49,15 @@ namespace JKang.IpcServiceFramework.NamedPipeTests
         [Fact]
         public void ConnectionCancelled_Throw()
         {
-            IIpcClient<ITestService> client = new ServiceCollection()
-                .AddNamedPipeIpcClient<ITestService>(options =>
+            IIpcClient<ITestService> client = _factory
+                .CreateClient(services =>
                 {
-                    options.PipeName = "inexisted-pipe";
-                })
-                .BuildServiceProvider()
-                .GetRequiredService<IIpcClient<ITestService>>();
+                    services.AddNamedPipeIpcClient<ITestService>(options =>
+                    {
+                        options.PipeName = "inexisted-pipe";
+                        options.ConnectionTimeout = Timeout.Infinite;
+                    });
+                });
 
             using var cts = new CancellationTokenSource();
 
