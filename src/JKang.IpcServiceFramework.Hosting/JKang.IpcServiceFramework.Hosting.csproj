@@ -15,7 +15,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\JKang.IpcServiceFramework.Core\JKang.IpcServiceFramework.Core.csproj" />
-    <ProjectReference Include="..\JKang.IpcServiceFramework.Hosting.Abstractions\JKang.IpcServiceFramework.Hosting.Abstractions.csproj" />
   </ItemGroup>
 
 </Project>
