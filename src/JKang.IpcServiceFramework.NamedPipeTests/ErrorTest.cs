@@ -6,6 +6,7 @@ using JKang.IpcServiceFramework.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using System;
+using System.Net;
 using System.Threading.Tasks;
 using Xunit;
 
