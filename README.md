@@ -75,10 +75,17 @@ Named pipeline and TCP support out-of-the-box, extensible with other protocols.
  1. Invoke the server
 
     ```csharp
-    IIpcClient<IInterProcessService> client = new ServiceCollection()
-	    .AddNamedPipeIpcClient<IInterProcessService>("my-pipe")
-	    .BuildServiceProvider()
-	    .GetRequiredService<IIpcClient<IInterProcessService>>();
+    // register IPC clients
+    ServiceProvider serviceProvider = new ServiceCollection()
+        .AddNamedPipeIpcClient<IInterProcessService>("client1", pipeName: "pipeinternal")
+        .BuildServiceProvider();
+
+    // resolve IPC client factory
+    IIpcClientFactory<IInterProcessService> clientFactory = serviceProvider
+        .GetRequiredService<IIpcClientFactory<IInterProcessService>>();
+
+    // create client
+    IIpcClient<IInterProcessService> client = clientFactory.CreateClient("client1");
 
     string output = await client.InvokeAsync(x => x.ReverseString(input));
     ```
