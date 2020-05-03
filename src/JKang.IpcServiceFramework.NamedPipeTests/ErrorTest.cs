@@ -89,7 +89,7 @@ namespace JKang.IpcServiceFramework.NamedPipeTests
         }
 
         [Theory, AutoData]
-        public async Task SerializationError_Throw(string pipeName, IPAddress input)
+        public async Task UnserializableInput_ThrowSerializationException(string pipeName)
         {
             IIpcClient<ITestService> client = _factory
                 .WithIpcHostConfiguration(hostBuilder =>
@@ -103,7 +103,7 @@ namespace JKang.IpcServiceFramework.NamedPipeTests
 
             await Assert.ThrowsAnyAsync<IpcSerializationException>(async () =>
             {
-                await client.InvokeAsync(x => x.NotSerializable(input));
+                await client.InvokeAsync(x => x.UnserializableInput(UnserializableObject.Create()));
             });
         }
     }

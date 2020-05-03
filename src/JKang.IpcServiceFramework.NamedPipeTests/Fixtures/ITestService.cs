@@ -22,6 +22,6 @@ namespace JKang.IpcServiceFramework.NamedPipeTests.Fixtures
         Task<int> AsyncMethod();
         void ThrowException();
         ITestDto Abstraction(ITestDto input);
-        void NotSerializable(IPAddress input);
+        void UnserializableInput(UnserializableObject input);
     }
 }
