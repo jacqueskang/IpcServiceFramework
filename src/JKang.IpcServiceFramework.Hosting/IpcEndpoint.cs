@@ -81,45 +81,79 @@ namespace JKang.IpcServiceFramework.Hosting
             {
                 try
                 {
-                    _logger.LogDebug($"Client connected, reading request...");
-                    IpcRequest request = await reader.ReadIpcRequestAsync(stoppingToken).ConfigureAwait(false);
-
-                    stoppingToken.ThrowIfCancellationRequested();
-                    _logger.LogDebug($"Request received, invoking '{request.MethodName}'...");
-                    IpcResponse response;
-                    using (IServiceScope scope = _serviceProvider.CreateScope())
+                    IpcRequest request;
+                    try
                     {
-                        response = await GetReponseAsync(request, scope).ConfigureAwait(false);
+                        _logger.LogDebug($"Client connected, reading request...");
+                        request = await reader.ReadIpcRequestAsync(stoppingToken).ConfigureAwait(false);
+                    }
+                    catch (IpcSerializationException ex)
+                    {
+                        throw new IpcFaultException(IpcStatus.BadRequest, "Failed to deserialize request.", ex);
                     }
 
                     stoppingToken.ThrowIfCancellationRequested();
-                    _logger.LogDebug($"Sending response...");
-                    await writer.WriteAsync(response, stoppingToken).ConfigureAwait(false);
+
+                    IpcResponse response;
+                    try
+                    {
+                        _logger.LogDebug($"Request received, invoking '{request.MethodName}'...");
+                        using (IServiceScope scope = _serviceProvider.CreateScope())
+                        {
+                            response = await GetReponseAsync(request, scope).ConfigureAwait(false);
+                        }
+                    }
+                    catch (Exception ex) when (!(ex is IpcException))
+                    {
+                        throw new IpcFaultException(IpcStatus.InternalServerError,
+                            "Unexpected exception raised from user code", ex);
+                    }
+
+                    stoppingToken.ThrowIfCancellationRequested();
+
+                    try
+                    {
+                        _logger.LogDebug($"Sending response...");
+                        await writer.WriteAsync(response, stoppingToken).ConfigureAwait(false);
+                    }
+                    catch (IpcSerializationException ex)
+                    {
+                        throw new IpcFaultException(IpcStatus.InternalServerError,
+                            "Failed to serialize response.", ex);
+                    }
 
                     _logger.LogDebug($"Process finished.");
                 }
                 catch (IpcCommunicationException ex)
                 {
                     _logger.LogError(ex, "Communication error occurred.");
+                    // if communication error occurred, client will probably not receive any response 
                 }
-                catch (IpcSerializationException ex)
+                catch (OperationCanceledException ex)
                 {
-                    _logger.LogError(ex, "Serialization error occurred.");
-                }
-                catch (IpcFaultException ex) // thrown by user
-                {
-                    _logger.LogWarning(ex, "Exception raised from user code");
+                    _logger.LogWarning(ex, "IPC request process cancelled");
                     IpcResponse response = _options.IncludeFailureDetailsInResponse
-                        ? IpcResponse.InternalServerError("Exception raised from user code", ex)
+                        ? IpcResponse.InternalServerError("IPC request process cancelled")
                         : IpcResponse.InternalServerError();
                     await writer.WriteAsync(response, stoppingToken).ConfigureAwait(false);
                 }
-                catch (Exception ex) when (!(ex is IpcException))
+                catch (IpcFaultException ex)
                 {
-                    _logger.LogError(ex, "Unexpected exception raised from user code");
-                    IpcResponse response = _options.IncludeFailureDetailsInResponse
-                        ? IpcResponse.InternalServerError("Unexpected error occurred", ex)
-                        : IpcResponse.InternalServerError();
+                    _logger.LogError(ex, "Failed to process IPC request.");
+                    IpcResponse response;
+                    switch (ex.Status)
+                    {
+                        case IpcStatus.BadRequest:
+                            response = _options.IncludeFailureDetailsInResponse
+                                ? IpcResponse.BadRequest(ex.Message, ex.InnerException)
+                                : IpcResponse.BadRequest();
+                            break;
+                        default:
+                            response = _options.IncludeFailureDetailsInResponse
+                                ? IpcResponse.InternalServerError(ex.Message, ex.InnerException)
+                                : IpcResponse.InternalServerError();
+                            break;
+                    }
                     await writer.WriteAsync(response, stoppingToken).ConfigureAwait(false);
                 }
             }
@@ -130,34 +164,30 @@ namespace JKang.IpcServiceFramework.Hosting
             object service = scope.ServiceProvider.GetService<TContract>();
             if (service == null)
             {
-                return _options.IncludeFailureDetailsInResponse
-                    ? IpcResponse.BadRequest($"No implementation of interface '{typeof(TContract).FullName}' found.")
-                    : IpcResponse.BadRequest();
+                throw new IpcFaultException(IpcStatus.BadRequest,
+                    $"No implementation of interface '{typeof(TContract).FullName}' found.");
             }
 
             MethodInfo method = GetUnambiguousMethod(request, service);
 
             if (method == null)
             {
-                return _options.IncludeFailureDetailsInResponse
-                    ? IpcResponse.BadRequest($"Method '{request.MethodName}' not found in interface '{typeof(TContract).FullName}'.")
-                    : IpcResponse.BadRequest();
+                throw new IpcFaultException(IpcStatus.BadRequest,
+                    $"Method '{request.MethodName}' not found in interface '{typeof(TContract).FullName}'.");
             }
 
             ParameterInfo[] paramInfos = method.GetParameters();
             if (paramInfos.Length != request.Parameters.Length)
             {
-                return _options.IncludeFailureDetailsInResponse
-                    ? IpcResponse.BadRequest("Parameter mismatch.")
-                    : IpcResponse.BadRequest();
+                throw new IpcFaultException(IpcStatus.BadRequest,
+                    $"Method '{request.MethodName}' expects {paramInfos.Length} parameters.");
             }
 
             Type[] genericArguments = method.GetGenericArguments();
             if (genericArguments.Length != request.GenericArguments.Length)
             {
-                return _options.IncludeFailureDetailsInResponse
-                    ? IpcResponse.BadRequest($"Generic arguments mismatch.")
-                    : IpcResponse.BadRequest();
+                throw new IpcFaultException(IpcStatus.BadRequest,
+                    $"Generic arguments mismatch.");
             }
 
             object[] args = new object[paramInfos.Length];
@@ -176,9 +206,8 @@ namespace JKang.IpcServiceFramework.Hosting
                 }
                 else
                 {
-                    return _options.IncludeFailureDetailsInResponse
-                        ? IpcResponse.BadRequest($"Cannot convert value of parameter '{paramInfos[i].Name}' ({origValue}) from {origValue.GetType().Name} to {destType.Name}.")
-                        : IpcResponse.BadRequest();
+                    throw new IpcFaultException(IpcStatus.BadRequest,
+                        $"Cannot convert value of parameter '{paramInfos[i].Name}' ({origValue}) from {origValue.GetType().Name} to {destType.Name}.");
                 }
             }
 

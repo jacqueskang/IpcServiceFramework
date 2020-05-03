@@ -23,5 +23,6 @@ namespace JKang.IpcServiceFramework.NamedPipeTests.Fixtures
         void ThrowException();
         ITestDto Abstraction(ITestDto input);
         void UnserializableInput(UnserializableObject input);
+        UnserializableObject UnserializableOutput();
     }
 }

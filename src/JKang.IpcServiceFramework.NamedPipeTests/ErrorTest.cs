@@ -106,5 +106,30 @@ namespace JKang.IpcServiceFramework.NamedPipeTests
                 await client.InvokeAsync(x => x.UnserializableInput(UnserializableObject.Create()));
             });
         }
+
+        [Theory, AutoData]
+        public async Task UnserializableOutput_ThrowFaultException(string pipeName)
+        {
+            _serviceMock
+                .Setup(x => x.UnserializableOutput())
+                .Returns(UnserializableObject.Create());
+
+            IIpcClient<ITestService> client = _factory
+                .WithIpcHostConfiguration(hostBuilder =>
+                {
+                    hostBuilder.AddNamedPipeEndpoint<ITestService>(pipeName);
+                })
+                .CreateClient(services =>
+                {
+                    services.AddNamedPipeIpcClient<ITestService>(pipeName);
+                });
+
+            IpcFaultException exception = await Assert.ThrowsAnyAsync<IpcFaultException>(async () =>
+            {
+                await client.InvokeAsync(x => x.UnserializableOutput());
+            });
+
+            Assert.Equal(IpcStatus.InternalServerError, exception.Status);
+        }
     }
 }

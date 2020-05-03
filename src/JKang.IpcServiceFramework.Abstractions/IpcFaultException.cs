@@ -3,7 +3,7 @@
 namespace JKang.IpcServiceFramework
 {
     /// <summary>
-    /// Represent an exception from server
+    /// An exception that can be transfered from server to client
     /// </summary>
     public class IpcFaultException : IpcException
     {
