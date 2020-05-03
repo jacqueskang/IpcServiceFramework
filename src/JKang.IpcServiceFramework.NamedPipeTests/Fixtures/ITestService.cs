@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Net;
 using System.Numerics;
 using System.Threading.Tasks;
 
@@ -21,5 +22,6 @@ namespace JKang.IpcServiceFramework.NamedPipeTests.Fixtures
         Task<int> AsyncMethod();
         void ThrowException();
         ITestDto Abstraction(ITestDto input);
+        void NotSerializable(IPAddress input);
     }
 }

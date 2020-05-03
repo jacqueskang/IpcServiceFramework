@@ -28,81 +28,79 @@ namespace JKang.IpcServiceFramework.Client
             _converter = converter;
         }
 
+        /// <exception cref="IpcSerializationException">If unable to serialize request</exception>
+        /// <exception cref="IpcCommunicationException">If communication is broken</exception>
+        /// <exception cref="IpcFaultException">If error occurred in server</exception>
         public async Task InvokeAsync(Expression<Action<TInterface>> exp,
             CancellationToken cancellationToken = default)
         {
             IpcRequest request = GetRequest(exp, new MyInterceptor());
             IpcResponse response = await GetResponseAsync(request, cancellationToken).ConfigureAwait(false);
 
-            if (response.Succeed)
+            if (!response.Succeed())
             {
-                return;
-            }
-            else
-            {
-                throw response.GetException();
+                throw response.CreateFaultException();
             }
         }
 
+        /// <exception cref="IpcSerializationException">If unable to serialize request</exception>
+        /// <exception cref="IpcCommunicationException">If communication is broken</exception>
+        /// <exception cref="IpcFaultException">If error occurred in server</exception>
         public async Task<TResult> InvokeAsync<TResult>(Expression<Func<TInterface, TResult>> exp,
             CancellationToken cancellationToken = default)
         {
             IpcRequest request = GetRequest(exp, new MyInterceptor<TResult>());
             IpcResponse response = await GetResponseAsync(request, cancellationToken).ConfigureAwait(false);
 
-            if (response.Succeed)
+            if (!response.Succeed())
             {
-                if (_converter.TryConvert(response.Data, typeof(TResult), out object @return))
-                {
-                    return (TResult)@return;
-                }
-                else
-                {
-                    throw new InvalidOperationException($"Unable to convert returned value to '{typeof(TResult).Name}'.");
-                }
+                throw response.CreateFaultException();
             }
-            else
+
+            if (!_converter.TryConvert(response.Data, typeof(TResult), out object @return))
             {
-                throw response.GetException();
+                throw new IpcSerializationException($"Unable to convert returned value to '{typeof(TResult).Name}'.");
             }
+
+            return (TResult)@return;
         }
 
+        /// <exception cref="IpcSerializationException">If unable to serialize request</exception>
+        /// <exception cref="IpcCommunicationException">If communication is broken</exception>
+        /// <exception cref="IpcFaultException">If error occurred in server</exception>
         public async Task InvokeAsync(Expression<Func<TInterface, Task>> exp,
             CancellationToken cancellationToken = default)
         {
             IpcRequest request = GetRequest(exp, new MyInterceptor<Task>());
             IpcResponse response = await GetResponseAsync(request, cancellationToken).ConfigureAwait(false);
 
-            if (response.Succeed)
+            if (!response.Succeed())
             {
-                return;
-            }
-            else
-            {
-                throw response.GetException();
+                throw response.CreateFaultException();
             }
         }
 
+        /// <exception cref="IpcSerializationException">If unable to serialize request</exception>
+        /// <exception cref="IpcCommunicationException">If communication is broken</exception>
+        /// <exception cref="IpcFaultException">If error occurred in server</exception>
         public async Task<TResult> InvokeAsync<TResult>(Expression<Func<TInterface, Task<TResult>>> exp,
             CancellationToken cancellationToken = default)
         {
             IpcRequest request = GetRequest(exp, new MyInterceptor<Task<TResult>>());
             IpcResponse response = await GetResponseAsync(request, cancellationToken).ConfigureAwait(false);
 
-            if (response.Succeed)
+            if (!response.Succeed())
             {
-                if (_converter.TryConvert(response.Data, typeof(TResult), out object @return))
-                {
-                    return (TResult)@return;
-                }
-                else
-                {
-                    throw new InvalidOperationException($"Unable to convert returned value to '{typeof(TResult).Name}'.");
-                }
+                throw response.CreateFaultException();
+            }
+
+            if (_converter.TryConvert(response.Data, typeof(TResult), out object @return))
+            {
+                return (TResult)@return;
             }
             else
             {
-                throw response.GetException();
+                throw new IpcSerializationException($"Unable to convert returned value to '{typeof(TResult).Name}'.");
             }
         }
 

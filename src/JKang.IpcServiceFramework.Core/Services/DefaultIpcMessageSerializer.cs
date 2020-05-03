@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using System;
 using System.Text;
 
 namespace JKang.IpcServiceFramework.Services
@@ -32,14 +33,33 @@ namespace JKang.IpcServiceFramework.Services
 
         private T Deserialize<T>(byte[] binary)
         {
-            string json = Encoding.UTF8.GetString(binary);
-            return JsonConvert.DeserializeObject<T>(json, _settings);
+            try
+            {
+                string json = Encoding.UTF8.GetString(binary);
+                return JsonConvert.DeserializeObject<T>(json, _settings);
+            }
+            catch (Exception ex) when (
+                ex is JsonSerializationException ||
+                ex is ArgumentException ||
+                ex is EncoderFallbackException)
+            {
+                throw new IpcSerializationException("Failed to deserialize IPC message", ex);
+            }
         }
 
         private byte[] Serialize(object obj)
         {
-            string json = JsonConvert.SerializeObject(obj, _settings);
-            return Encoding.UTF8.GetBytes(json);
+            try
+            {
+                string json = JsonConvert.SerializeObject(obj, _settings);
+                return Encoding.UTF8.GetBytes(json);
+            }
+            catch (Exception ex) when (
+                ex is JsonSerializationException ||
+                ex is EncoderFallbackException)
+            {
+                throw new IpcSerializationException("Failed to serialize IPC message", ex);
+            }
         }
     }
 }

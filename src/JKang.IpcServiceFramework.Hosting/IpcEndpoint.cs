@@ -98,10 +98,28 @@ namespace JKang.IpcServiceFramework.Hosting
 
                     _logger.LogDebug($"Process finished.");
                 }
-                catch (Exception ex) when (!(ex is IpcServerException))
+                catch (IpcCommunicationException ex)
                 {
-                    var response = IpcResponse.Fail(ex, _options.IncludeFailureDetailsInResponse);
-                    _logger.LogError(ex, response.Failure);
+                    _logger.LogError(ex, "Communication error occurred.");
+                }
+                catch (IpcSerializationException ex)
+                {
+                    _logger.LogError(ex, "Serialization error occurred.");
+                }
+                catch (IpcFaultException ex) // thrown by user
+                {
+                    _logger.LogWarning(ex, "Exception raised from user code");
+                    IpcResponse response = _options.IncludeFailureDetailsInResponse
+                        ? IpcResponse.InternalServerError("Exception raised from user code", ex)
+                        : IpcResponse.InternalServerError();
+                    await writer.WriteAsync(response, stoppingToken).ConfigureAwait(false);
+                }
+                catch (Exception ex) when (!(ex is IpcException))
+                {
+                    _logger.LogError(ex, "Unexpected exception raised from user code");
+                    IpcResponse response = _options.IncludeFailureDetailsInResponse
+                        ? IpcResponse.InternalServerError("Unexpected error occurred", ex)
+                        : IpcResponse.InternalServerError();
                     await writer.WriteAsync(response, stoppingToken).ConfigureAwait(false);
                 }
             }
@@ -109,39 +127,37 @@ namespace JKang.IpcServiceFramework.Hosting
 
         private async Task<IpcResponse> GetReponseAsync(IpcRequest request, IServiceScope scope)
         {
-            if (request is null)
-            {
-                throw new ArgumentNullException(nameof(request));
-            }
-
-            if (scope is null)
-            {
-                throw new ArgumentNullException(nameof(scope));
-            }
-
             object service = scope.ServiceProvider.GetService<TContract>();
             if (service == null)
             {
-                return IpcResponse.Fail($"No implementation of interface '{typeof(TContract).FullName}' found.");
+                return _options.IncludeFailureDetailsInResponse
+                    ? IpcResponse.BadRequest($"No implementation of interface '{typeof(TContract).FullName}' found.")
+                    : IpcResponse.BadRequest();
             }
 
             MethodInfo method = GetUnambiguousMethod(request, service);
 
             if (method == null)
             {
-                return IpcResponse.Fail($"Method '{request.MethodName}' not found in interface '{typeof(TContract).FullName}'.");
+                return _options.IncludeFailureDetailsInResponse
+                    ? IpcResponse.BadRequest($"Method '{request.MethodName}' not found in interface '{typeof(TContract).FullName}'.")
+                    : IpcResponse.BadRequest();
             }
 
             ParameterInfo[] paramInfos = method.GetParameters();
             if (paramInfos.Length != request.Parameters.Length)
             {
-                return IpcResponse.Fail($"Parameter mismatch.");
+                return _options.IncludeFailureDetailsInResponse
+                    ? IpcResponse.BadRequest("Parameter mismatch.")
+                    : IpcResponse.BadRequest();
             }
 
             Type[] genericArguments = method.GetGenericArguments();
             if (genericArguments.Length != request.GenericArguments.Length)
             {
-                return IpcResponse.Fail($"Generic arguments mismatch.");
+                return _options.IncludeFailureDetailsInResponse
+                    ? IpcResponse.BadRequest($"Generic arguments mismatch.")
+                    : IpcResponse.BadRequest();
             }
 
             object[] args = new object[paramInfos.Length];
@@ -160,46 +176,29 @@ namespace JKang.IpcServiceFramework.Hosting
                 }
                 else
                 {
-                    return IpcResponse.Fail($"Cannot convert value of parameter '{paramInfos[i].Name}' ({origValue}) from {origValue.GetType().Name} to {destType.Name}.");
+                    return _options.IncludeFailureDetailsInResponse
+                        ? IpcResponse.BadRequest($"Cannot convert value of parameter '{paramInfos[i].Name}' ({origValue}) from {origValue.GetType().Name} to {destType.Name}.")
+                        : IpcResponse.BadRequest();
                 }
             }
 
-            try
+            if (method.IsGenericMethod)
             {
-                if (method.IsGenericMethod)
-                {
-                    method = method.MakeGenericMethod(request.GenericArguments);
-                }
-
-                object @return;
-                try
-                {
-                    @return = method.Invoke(service, args);
-                }
-#pragma warning disable CA1031 // Do not catch general exception types
-                catch (Exception ex)
-#pragma warning restore CA1031 // Do not catch general exception types
-                {
-                    return IpcResponse.Fail(ex, _options.IncludeFailureDetailsInResponse, true);
-                }
-
-                if (@return is Task task)
-                {
-                    await task.ConfigureAwait(false);
-
-                    PropertyInfo resultProperty = @return.GetType().GetProperty("Result");
-                    return IpcResponse.Success(resultProperty?.GetValue(@return));
-                }
-                else
-                {
-                    return IpcResponse.Success(@return);
-                }
+                method = method.MakeGenericMethod(request.GenericArguments);
             }
-            catch (Exception ex) when (!(ex is IpcServerException))
+
+            object @return = method.Invoke(service, args);
+
+            if (@return is Task task)
             {
-                var response = IpcResponse.Fail(ex, _options.IncludeFailureDetailsInResponse);
-                _logger.LogError(ex, response.Failure);
-                return response;
+                await task.ConfigureAwait(false);
+
+                PropertyInfo resultProperty = @return.GetType().GetProperty("Result");
+                return IpcResponse.Success(resultProperty?.GetValue(@return));
+            }
+            else
+            {
+                return IpcResponse.Success(@return);
             }
         }
 

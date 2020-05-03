@@ -8,7 +8,6 @@ namespace JKang.IpcServiceFramework.IO
 {
     public class IpcReader : IDisposable
     {
-        private readonly byte[] _lengthBuffer = new byte[4];
         private readonly Stream _stream;
         private readonly IIpcMessageSerializer _serializer;
         private readonly bool _leaveOpen;
@@ -24,12 +23,16 @@ namespace JKang.IpcServiceFramework.IO
             _leaveOpen = leaveOpen;
         }
 
+        /// <exception cref="IpcCommunicationException"></exception>
+        /// <exception cref="IpcSerializationException"></exception>
         public async Task<IpcRequest> ReadIpcRequestAsync(CancellationToken cancellationToken = default)
         {
             byte[] binary = await ReadMessageAsync(cancellationToken).ConfigureAwait(false);
             return _serializer.DeserializeRequest(binary);
         }
 
+        /// <exception cref="IpcCommunicationException"></exception>
+        /// <exception cref="IpcSerializationException"></exception>
         public async Task<IpcResponse> ReadIpcResponseAsync(CancellationToken cancellationToken = default)
         {
             byte[] binary = await ReadMessageAsync(cancellationToken).ConfigureAwait(false);
@@ -38,47 +41,40 @@ namespace JKang.IpcServiceFramework.IO
 
         private async Task<byte[]> ReadMessageAsync(CancellationToken cancellationToken)
         {
+            byte[] lengthBuffer = new byte[4];
             int headerLength = await _stream
-                .ReadAsync(_lengthBuffer, 0, _lengthBuffer.Length, cancellationToken)
+                .ReadAsync(lengthBuffer, 0, lengthBuffer.Length, cancellationToken)
                 .ConfigureAwait(false);
 
             if (headerLength != 4)
             {
-                throw new ArgumentOutOfRangeException($"Header length must be 4 but was {headerLength}");
+                throw new IpcCommunicationException($"Invalid message header length must be 4 but was {headerLength}");
             }
 
-            int expectedLength = _lengthBuffer[0] | _lengthBuffer[1] << 8 | _lengthBuffer[2] << 16 | _lengthBuffer[3] << 24;
-            byte[] bytes = new byte[expectedLength];
-            int totalBytesReceived = 0;
-            int remainingBytes = expectedLength;
+            int remainingBytes = lengthBuffer[0] | lengthBuffer[1] << 8 | lengthBuffer[2] << 16 | lengthBuffer[3] << 24;
+
+            byte[] buffer = new byte[65536];
+            int offset = 0;
 
             using (var ms = new MemoryStream())
             {
-                while (totalBytesReceived < expectedLength)
+                while (remainingBytes > 0)
                 {
-                    int dataLength = await _stream
-                        .ReadAsync(bytes, 0, remainingBytes, cancellationToken)
+                    int count = Math.Min(buffer.Length, remainingBytes);
+                    int actualCount = await _stream
+                        .ReadAsync(buffer, offset, count, cancellationToken)
                         .ConfigureAwait(false);
 
-                    if (dataLength == 0)
+                    if (actualCount < count)
                     {
-                        break;             // end of stream or stream shut down.
+                        throw new IpcCommunicationException("Stream closed unexpectedly.");
                     }
 
-                    ms.Write(bytes, 0, dataLength);
-                    totalBytesReceived += dataLength;
-                    remainingBytes -= dataLength;
+                    ms.Write(buffer, 0, count);
+                    remainingBytes -= count;
                 }
-
-                bytes = ms.ToArray();
+                return ms.ToArray();
             }
-
-            if (totalBytesReceived != expectedLength)
-            {
-                throw new System.ArgumentOutOfRangeException($"Data length must be {expectedLength} but was {totalBytesReceived}");
-            }
-
-            return bytes;
         }
 
         #region IDisposible
