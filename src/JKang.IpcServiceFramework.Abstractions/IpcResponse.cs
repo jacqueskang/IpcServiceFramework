@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Runtime.Serialization;
 
 namespace JKang.IpcServiceFramework
 {
+    [DataContract]
     public class IpcResponse
     {
         public static IpcResponse Success(object data)
@@ -37,12 +39,16 @@ namespace JKang.IpcServiceFramework
             InnerException = innerException;
         }
 
+        [DataMember]
         public IpcStatus Status { get; }
 
+        [DataMember]
         public object Data { get; }
 
+        [DataMember]
         public string ErrorMessage { get; set; }
 
+        [DataMember]
         public Exception InnerException { get; }
 
         public bool Succeed() => Status == IpcStatus.Ok;
