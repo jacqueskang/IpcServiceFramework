@@ -6,6 +6,7 @@ using JKang.IpcServiceFramework.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using System;
+using System.Net;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -46,12 +47,12 @@ namespace JKang.IpcServiceFramework.NamedPipeTests
                     });
                 });
 
-            IpcServerUserCodeException actual = await Assert.ThrowsAsync<IpcServerUserCodeException>(async () =>
+            IpcFaultException actual = await Assert.ThrowsAsync<IpcFaultException>(async () =>
             {
                 await client.InvokeAsync(x => x.ThrowException());
             });
 
-            Assert.Null(actual.FailureDetails);
+            Assert.Null(actual.InnerException);
         }
 
         [Theory, AutoData]
@@ -77,12 +78,58 @@ namespace JKang.IpcServiceFramework.NamedPipeTests
                     });
                 });
 
-            IpcServerUserCodeException actual = await Assert.ThrowsAsync<IpcServerUserCodeException>(async () =>
+            IpcFaultException actual = await Assert.ThrowsAsync<IpcFaultException>(async () =>
             {
                 await client.InvokeAsync(x => x.ThrowException());
             });
 
-            Assert.Contains(details, actual.FailureDetails);
+            Assert.NotNull(actual.InnerException);
+            Assert.NotNull(actual.InnerException.InnerException);
+            Assert.Equal(details, actual.InnerException.InnerException.Message);
+        }
+
+        [Theory, AutoData]
+        public async Task UnserializableInput_ThrowSerializationException(string pipeName)
+        {
+            IIpcClient<ITestService> client = _factory
+                .WithIpcHostConfiguration(hostBuilder =>
+                {
+                    hostBuilder.AddNamedPipeEndpoint<ITestService>(pipeName);
+                })
+                .CreateClient(services =>
+                {
+                    services.AddNamedPipeIpcClient<ITestService>(pipeName);
+                });
+
+            await Assert.ThrowsAnyAsync<IpcSerializationException>(async () =>
+            {
+                await client.InvokeAsync(x => x.UnserializableInput(UnserializableObject.Create()));
+            });
+        }
+
+        [Theory, AutoData]
+        public async Task UnserializableOutput_ThrowFaultException(string pipeName)
+        {
+            _serviceMock
+                .Setup(x => x.UnserializableOutput())
+                .Returns(UnserializableObject.Create());
+
+            IIpcClient<ITestService> client = _factory
+                .WithIpcHostConfiguration(hostBuilder =>
+                {
+                    hostBuilder.AddNamedPipeEndpoint<ITestService>(pipeName);
+                })
+                .CreateClient(services =>
+                {
+                    services.AddNamedPipeIpcClient<ITestService>(pipeName);
+                });
+
+            IpcFaultException exception = await Assert.ThrowsAnyAsync<IpcFaultException>(async () =>
+            {
+                await client.InvokeAsync(x => x.UnserializableOutput());
+            });
+
+            Assert.Equal(IpcStatus.InternalServerError, exception.Status);
         }
     }
 }
