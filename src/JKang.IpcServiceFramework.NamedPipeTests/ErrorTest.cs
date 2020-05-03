@@ -6,7 +6,6 @@ using JKang.IpcServiceFramework.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using System;
-using System.Net;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -39,9 +38,9 @@ namespace JKang.IpcServiceFramework.NamedPipeTests
                         options.IncludeFailureDetailsInResponse = false;
                     });
                 })
-                .CreateClient(services =>
+                .CreateClient((name, services) =>
                 {
-                    services.AddNamedPipeIpcClient<ITestService>(options =>
+                    services.AddNamedPipeIpcClient<ITestService>(name, (_, options) =>
                     {
                         options.PipeName = pipeName;
                     });
@@ -70,9 +69,9 @@ namespace JKang.IpcServiceFramework.NamedPipeTests
                         options.IncludeFailureDetailsInResponse = true;
                     });
                 })
-                .CreateClient(services =>
+                .CreateClient((name, services) =>
                 {
-                    services.AddNamedPipeIpcClient<ITestService>(options =>
+                    services.AddNamedPipeIpcClient<ITestService>(name, (_, options) =>
                     {
                         options.PipeName = pipeName;
                     });
@@ -96,9 +95,9 @@ namespace JKang.IpcServiceFramework.NamedPipeTests
                 {
                     hostBuilder.AddNamedPipeEndpoint<ITestService>(pipeName);
                 })
-                .CreateClient(services =>
+                .CreateClient((name, services) =>
                 {
-                    services.AddNamedPipeIpcClient<ITestService>(pipeName);
+                    services.AddNamedPipeIpcClient<ITestService>(name, pipeName);
                 });
 
             await Assert.ThrowsAnyAsync<IpcSerializationException>(async () =>
@@ -119,9 +118,9 @@ namespace JKang.IpcServiceFramework.NamedPipeTests
                 {
                     hostBuilder.AddNamedPipeEndpoint<ITestService>(pipeName);
                 })
-                .CreateClient(services =>
+                .CreateClient((name, services) =>
                 {
-                    services.AddNamedPipeIpcClient<ITestService>(pipeName);
+                    services.AddNamedPipeIpcClient<ITestService>(name, pipeName);
                 });
 
             IpcFaultException exception = await Assert.ThrowsAnyAsync<IpcFaultException>(async () =>

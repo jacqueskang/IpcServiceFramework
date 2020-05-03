@@ -1,5 +1,4 @@
-﻿using JKang.IpcServiceFramework.Hosting.Abstractions;
-using System.Net;
+﻿using System.Net;
 using System.Security.Cryptography.X509Certificates;
 
 namespace JKang.IpcServiceFramework.Hosting.Tcp

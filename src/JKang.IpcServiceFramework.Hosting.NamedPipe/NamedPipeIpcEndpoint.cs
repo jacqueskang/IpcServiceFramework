@@ -1,5 +1,4 @@
-﻿using JKang.IpcServiceFramework.Services;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using System;
 using System.IO;
 using System.IO.Pipes;
@@ -15,11 +14,9 @@ namespace JKang.IpcServiceFramework.Hosting.NamedPipe
 
         public NamedPipeIpcEndpoint(
             NamedPipeIpcEndpointOptions options,
-            IIpcMessageSerializer serializer,
-            IValueConverter valueConverter,
             ILogger<NamedPipeIpcEndpoint<TContract>> logger,
             IServiceProvider serviceProvider)
-            : base(options, serviceProvider, serializer, valueConverter, logger)
+            : base(options, serviceProvider, logger)
         {
             _options = options;
         }

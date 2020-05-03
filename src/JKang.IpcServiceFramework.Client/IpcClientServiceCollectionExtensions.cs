@@ -1,30 +1,20 @@
 ﻿using JKang.IpcServiceFramework.Client;
-using JKang.IpcServiceFramework.Services;
-using System;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
     public static class IpcClientServiceCollectionExtensions
     {
-        public static IServiceCollection AddIpcClient<TContract>(this IServiceCollection services,
-            Func<IIpcMessageSerializer, IValueConverter, IIpcClient<TContract>> factory)
+        public static IServiceCollection AddIpcClient<TContract, TIpcClientOptions>(
+            this IServiceCollection services,
+            IpcClientRegistration<TContract, TIpcClientOptions> registration)
             where TContract : class
+            where TIpcClientOptions : IpcClientOptions
         {
-            if (factory is null)
-            {
-                throw new ArgumentNullException(nameof(factory));
-            }
-
             services
-                .TryAddIpcInternalServices()
-                ;
+                .TryAddScoped<IIpcClientFactory<TContract>, IpcClientFactory<TContract, TIpcClientOptions>>();
 
-            services.AddScoped(serviceProvider =>
-            {
-                IIpcMessageSerializer serializer = serviceProvider.GetRequiredService<IIpcMessageSerializer>();
-                IValueConverter valueConverter = serviceProvider.GetRequiredService<IValueConverter>();
-                return factory(serializer, valueConverter);
-            });
+            services.AddSingleton(registration);
 
             return services;
         }

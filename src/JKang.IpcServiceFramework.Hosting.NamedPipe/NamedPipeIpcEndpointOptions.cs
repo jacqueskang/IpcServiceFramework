@@ -1,6 +1,4 @@
-﻿using JKang.IpcServiceFramework.Hosting.Abstractions;
-
-namespace JKang.IpcServiceFramework.Hosting.NamedPipe
+﻿namespace JKang.IpcServiceFramework.Hosting.NamedPipe
 {
     public class NamedPipeIpcEndpointOptions : IpcEndpointOptions
     {

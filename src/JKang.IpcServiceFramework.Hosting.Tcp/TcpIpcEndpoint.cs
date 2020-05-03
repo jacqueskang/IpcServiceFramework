@@ -17,11 +17,9 @@ namespace JKang.IpcServiceFramework.Hosting.Tcp
 
         public TcpIpcEndpoint(
             TcpIpcEndpointOptions options,
-            IIpcMessageSerializer serializer,
-            IValueConverter valueConverter,
             ILogger<TcpIpcEndpoint<TContract>> logger,
             IServiceProvider serviceProvider)
-            : base(options, serviceProvider, serializer, valueConverter, logger)
+            : base(options, serviceProvider, logger)
         {
             _options = options ?? throw new ArgumentNullException(nameof(options));
             _listener = new TcpListener(_options.IpEndpoint, _options.Port);
