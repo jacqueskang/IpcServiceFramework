@@ -26,8 +26,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JKang.IpcServiceFramework.H
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JKang.IpcServiceFramework.Client.Tcp", "JKang.IpcServiceFramework.Client.Tcp\JKang.IpcServiceFramework.Client.Tcp.csproj", "{E1EE30C2-EF31-47C9-B9FC-D55A94911C40}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JKang.IpcServiceFramework.Abstractions", "JKang.IpcServiceFramework.Abstractions\JKang.IpcServiceFramework.Abstractions.csproj", "{F8E7A89B-F863-42FF-9FE0-77A107938454}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JKang.IpcServiceFramework.Client", "JKang.IpcServiceFramework.Client\JKang.IpcServiceFramework.Client.csproj", "{46465A56-CF19-4403-A78C-9871BFD8B49E}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JKang.IpcServiceFramework.Core", "JKang.IpcServiceFramework.Core\JKang.IpcServiceFramework.Core.csproj", "{0713BDCA-E193-4333-988E-B8EE196BA0E6}"
@@ -66,10 +64,6 @@ Global
 		{E1EE30C2-EF31-47C9-B9FC-D55A94911C40}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E1EE30C2-EF31-47C9-B9FC-D55A94911C40}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E1EE30C2-EF31-47C9-B9FC-D55A94911C40}.Release|Any CPU.Build.0 = Release|Any CPU
-		{F8E7A89B-F863-42FF-9FE0-77A107938454}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{F8E7A89B-F863-42FF-9FE0-77A107938454}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{F8E7A89B-F863-42FF-9FE0-77A107938454}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{F8E7A89B-F863-42FF-9FE0-77A107938454}.Release|Any CPU.Build.0 = Release|Any CPU
 		{46465A56-CF19-4403-A78C-9871BFD8B49E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{46465A56-CF19-4403-A78C-9871BFD8B49E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{46465A56-CF19-4403-A78C-9871BFD8B49E}.Release|Any CPU.ActiveCfg = Release|Any CPU
