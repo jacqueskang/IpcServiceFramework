@@ -13,7 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\JKang.IpcServiceFramework.Client.Abstractions\JKang.IpcServiceFramework.Client.Abstractions.csproj" />
+    <ProjectReference Include="..\JKang.IpcServiceFramework.Client\JKang.IpcServiceFramework.Client.csproj" />
     <ProjectReference Include="..\JKang.IpcServiceFramework.Hosting\JKang.IpcServiceFramework.Hosting.csproj" />
   </ItemGroup>
 
