@@ -2,7 +2,6 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <RootNamespace>JKang.IpcServiceFramework</RootNamespace>
     <PackageTags>ipc,interprocess,communication,wcf,client</PackageTags>
   </PropertyGroup>
 

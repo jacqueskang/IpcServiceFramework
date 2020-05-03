@@ -1,5 +1,4 @@
-﻿using JKang.IpcServiceFramework.Services;
-using System;
+﻿using System;
 using System.IO;
 using System.Net.Security;
 using System.Net.Sockets;
@@ -15,11 +14,8 @@ namespace JKang.IpcServiceFramework.Client.Tcp
         private readonly TcpClient _client = new TcpClient();
         private bool _isDisposed;
 
-        public TcpIpcClient(
-            TcpIpcClientOptions options,
-            IIpcMessageSerializer serializer,
-            IValueConverter converter)
-            : base(options, serializer, converter)
+        public TcpIpcClient(string name, TcpIpcClientOptions options)
+            : base(name, options)
         {
             _options = options ?? throw new ArgumentNullException(nameof(options));
         }

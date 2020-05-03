@@ -1,5 +1,4 @@
-﻿using JKang.IpcServiceFramework.Services;
-using System.IO;
+﻿using System.IO;
 using System.IO.Pipes;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,10 +11,9 @@ namespace JKang.IpcServiceFramework.Client.NamedPipe
         private readonly NamedPipeIpcClientOptions _options;
 
         public NamedPipeIpcClient(
-            NamedPipeIpcClientOptions options,
-            IIpcMessageSerializer serializer,
-            IValueConverter converter)
-            : base(options, serializer, converter)
+            string name,
+            NamedPipeIpcClientOptions options)
+            : base(name, options)
         {
             _options = options;
         }

@@ -34,7 +34,7 @@ namespace JKang.IpcServiceFramework.Testing
             return this;
         }
 
-        public IIpcClient<TContract> CreateClient(Action<IServiceCollection> clientConfig)
+        public IIpcClient<TContract> CreateClient(Action<string, IServiceCollection> clientConfig)
         {
             if (clientConfig is null)
             {
@@ -48,11 +48,13 @@ namespace JKang.IpcServiceFramework.Testing
 
             _host.StartAsync().Wait();
 
+            string clientName = Guid.NewGuid().ToString();
             var services = new ServiceCollection();
-            clientConfig.Invoke(services);
+            clientConfig.Invoke(clientName, services);
 
             return services.BuildServiceProvider()
-                .GetRequiredService<IIpcClient<TContract>>();
+                .GetRequiredService<IIpcClientFactory<TContract>>()
+                .CreateClient(clientName);
         }
 
         public void Dispose()

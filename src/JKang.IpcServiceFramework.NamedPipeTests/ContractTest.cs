@@ -28,9 +28,9 @@ namespace JKang.IpcServiceFramework.NamedPipeTests
                 {
                     hostBuilder.AddNamedPipeEndpoint<ITestService>(pipeName);
                 })
-                .CreateClient(services =>
+                .CreateClient((name, services) =>
                 {
-                    services.AddNamedPipeIpcClient<ITestService>(pipeName);
+                    services.AddNamedPipeIpcClient<ITestService>(name, pipeName);
                 });
         }
 

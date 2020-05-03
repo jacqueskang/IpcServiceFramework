@@ -1,6 +1,5 @@
 ﻿using Castle.DynamicProxy;
 using JKang.IpcServiceFramework.IO;
-using JKang.IpcServiceFramework.Services;
 using System;
 using System.IO;
 using System.Linq;
@@ -15,18 +14,16 @@ namespace JKang.IpcServiceFramework.Client
     {
         private static readonly ProxyGenerator _proxyGenerator = new ProxyGenerator();
         private readonly IpcClientOptions _options;
-        private readonly IIpcMessageSerializer _serializer;
-        private readonly IValueConverter _converter;
 
         protected IpcClient(
-            IpcClientOptions options,
-            IIpcMessageSerializer serializer,
-            IValueConverter converter)
+            string name,
+            IpcClientOptions options)
         {
+            Name = name;
             _options = options;
-            _serializer = serializer;
-            _converter = converter;
         }
+
+        public string Name { get; }
 
         /// <exception cref="IpcSerializationException">If unable to serialize request</exception>
         /// <exception cref="IpcCommunicationException">If communication is broken</exception>
@@ -57,7 +54,7 @@ namespace JKang.IpcServiceFramework.Client
                 throw response.CreateFaultException();
             }
 
-            if (!_converter.TryConvert(response.Data, typeof(TResult), out object @return))
+            if (!_options.ValueConverter.TryConvert(response.Data, typeof(TResult), out object @return))
             {
                 throw new IpcSerializationException($"Unable to convert returned value to '{typeof(TResult).Name}'.");
             }
@@ -94,7 +91,7 @@ namespace JKang.IpcServiceFramework.Client
                 throw response.CreateFaultException();
             }
 
-            if (_converter.TryConvert(response.Data, typeof(TResult), out object @return))
+            if (_options.ValueConverter.TryConvert(response.Data, typeof(TResult), out object @return))
             {
                 return (TResult)@return;
             }
@@ -140,8 +137,8 @@ namespace JKang.IpcServiceFramework.Client
         {
             using (Stream client = await ConnectToServerAsync(cancellationToken).ConfigureAwait(false))
             using (Stream client2 = _options.StreamTranslator == null ? client : _options.StreamTranslator(client))
-            using (var writer = new IpcWriter(client2, _serializer, leaveOpen: true))
-            using (var reader = new IpcReader(client2, _serializer, leaveOpen: true))
+            using (var writer = new IpcWriter(client2, _options.Serializer, leaveOpen: true))
+            using (var reader = new IpcReader(client2, _options.Serializer, leaveOpen: true))
             {
                 // send request
                 await writer.WriteAsync(request, cancellationToken).ConfigureAwait(false);

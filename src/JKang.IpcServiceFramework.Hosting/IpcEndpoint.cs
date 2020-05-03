@@ -1,6 +1,4 @@
-﻿using JKang.IpcServiceFramework.Hosting.Abstractions;
-using JKang.IpcServiceFramework.IO;
-using JKang.IpcServiceFramework.Services;
+﻿using JKang.IpcServiceFramework.IO;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
@@ -18,22 +16,16 @@ namespace JKang.IpcServiceFramework.Hosting
     {
         private readonly IpcEndpointOptions _options;
         private readonly IServiceProvider _serviceProvider;
-        private readonly IIpcMessageSerializer _serializer;
-        private readonly IValueConverter _valueConverter;
         private readonly ILogger _logger;
         private readonly SemaphoreSlim _semaphore;
 
         protected IpcEndpoint(
             IpcEndpointOptions options,
             IServiceProvider serviceProvider,
-            IIpcMessageSerializer serializer,
-            IValueConverter valueConverter,
             ILogger logger)
         {
             _options = options ?? throw new ArgumentNullException(nameof(options));
             _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
-            _serializer = serializer ?? throw new ArgumentNullException(nameof(serializer));
-            _valueConverter = valueConverter ?? throw new ArgumentNullException(nameof(valueConverter));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _semaphore = new SemaphoreSlim(options.MaxConcurrentCalls);
         }
@@ -72,8 +64,8 @@ namespace JKang.IpcServiceFramework.Hosting
                 server = _options.StreamTranslator(server);
             }
 
-            using (var writer = new IpcWriter(server, _serializer, leaveOpen: true))
-            using (var reader = new IpcReader(server, _serializer, leaveOpen: true))
+            using (var writer = new IpcWriter(server, _options.Serializer, leaveOpen: true))
+            using (var reader = new IpcReader(server, _options.Serializer, leaveOpen: true))
             using (IDisposable loggingScope = _logger.BeginScope(new Dictionary<string, object>
             {
                 { "threadId", Thread.CurrentThread.ManagedThreadId }
@@ -177,14 +169,16 @@ namespace JKang.IpcServiceFramework.Hosting
             }
 
             ParameterInfo[] paramInfos = method.GetParameters();
-            if (paramInfos.Length != request.Parameters.Length)
+            object[] requestParameters = request.Parameters?.ToArray() ?? Array.Empty<object>();
+            if (paramInfos.Length != requestParameters.Length)
             {
                 throw new IpcFaultException(IpcStatus.BadRequest,
                     $"Method '{request.MethodName}' expects {paramInfos.Length} parameters.");
             }
 
             Type[] genericArguments = method.GetGenericArguments();
-            if (genericArguments.Length != request.GenericArguments.Length)
+            Type[] requestGenericArguments = request.GenericArguments?.ToArray() ?? Array.Empty<Type>();
+            if (genericArguments.Length != requestGenericArguments.Length)
             {
                 throw new IpcFaultException(IpcStatus.BadRequest,
                     $"Generic arguments mismatch.");
@@ -193,14 +187,14 @@ namespace JKang.IpcServiceFramework.Hosting
             object[] args = new object[paramInfos.Length];
             for (int i = 0; i < args.Length; i++)
             {
-                object origValue = request.Parameters[i];
+                object origValue = requestParameters[i];
                 Type destType = paramInfos[i].ParameterType;
                 if (destType.IsGenericParameter)
                 {
-                    destType = request.GenericArguments[destType.GenericParameterPosition];
+                    destType = requestGenericArguments[destType.GenericParameterPosition];
                 }
 
-                if (_valueConverter.TryConvert(origValue, destType, out object arg))
+                if (_options.ValueConverter.TryConvert(origValue, destType, out object arg))
                 {
                     args[i] = arg;
                 }
@@ -213,7 +207,7 @@ namespace JKang.IpcServiceFramework.Hosting
 
             if (method.IsGenericMethod)
             {
-                method = method.MakeGenericMethod(request.GenericArguments);
+                method = method.MakeGenericMethod(requestGenericArguments);
             }
 
             object @return = method.Invoke(service, args);
@@ -233,33 +227,42 @@ namespace JKang.IpcServiceFramework.Hosting
 
         private static MethodInfo GetUnambiguousMethod(IpcRequest request, object service)
         {
-            if (request == null || service == null)
+            if (request is null)
             {
-                return null;
+                throw new ArgumentNullException(nameof(request));
+            }
+
+            if (service is null)
+            {
+                throw new ArgumentNullException(nameof(service));
             }
 
             MethodInfo method = null;     // disambiguate - can't just call as before with generics - MethodInfo method = service.GetType().GetMethod(request.MethodName);
 
             Type[] types = service.GetType().GetInterfaces();
 
-            System.Collections.Generic.IEnumerable<MethodInfo> allMethods = types.SelectMany(t => t.GetMethods());
+            IEnumerable<MethodInfo> allMethods = types.SelectMany(t => t.GetMethods());
 
             var serviceMethods = allMethods.Where(t => t.Name == request.MethodName).ToList();
+
+            object[] requestParameters = request.Parameters?.ToArray() ?? Array.Empty<object>();
+            Type[] requestGenericArguments = request.GenericArguments?.ToArray() ?? Array.Empty<Type>();
+            Type[] requestParameterTypes = request.ParameterTypes?.ToArray() ?? Array.Empty<Type>();
 
             foreach (MethodInfo serviceMethod in serviceMethods)
             {
                 ParameterInfo[] serviceMethodParameters = serviceMethod.GetParameters();
                 int parameterTypeMatches = 0;
 
-                if (serviceMethodParameters.Length == request.Parameters.Length && serviceMethod.GetGenericArguments().Length == request.GenericArguments.Length)
+                if (serviceMethodParameters.Length == requestParameters.Length && serviceMethod.GetGenericArguments().Length == requestGenericArguments.Length)
                 {
                     for (int parameterIndex = 0; parameterIndex < serviceMethodParameters.Length; parameterIndex++)
                     {
                         Type serviceParameterType = serviceMethodParameters[parameterIndex].ParameterType.IsGenericParameter ?
-                                            request.GenericArguments[serviceMethodParameters[parameterIndex].ParameterType.GenericParameterPosition] :
+                                            requestGenericArguments[serviceMethodParameters[parameterIndex].ParameterType.GenericParameterPosition] :
                                             serviceMethodParameters[parameterIndex].ParameterType;
 
-                        if (serviceParameterType == request.ParameterTypes[parameterIndex])
+                        if (serviceParameterType == requestParameterTypes[parameterIndex])
                         {
                             parameterTypeMatches++;
                         }

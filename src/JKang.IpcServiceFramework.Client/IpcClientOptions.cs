@@ -1,4 +1,5 @@
-﻿using System;
+﻿using JKang.IpcServiceFramework.Services;
+using System;
 using System.IO;
 
 namespace JKang.IpcServiceFramework.Client
@@ -12,5 +13,9 @@ namespace JKang.IpcServiceFramework.Client
         /// the connection times out. Default value is 60000.
         /// </summary>
         public int ConnectionTimeout { get; set; } = 60000;
+
+        public IIpcMessageSerializer Serializer { get; set; } = new DefaultIpcMessageSerializer();
+
+        public IValueConverter ValueConverter { get; set; } = new DefaultValueConverter();
     }
 }

@@ -1,5 +1,4 @@
 ﻿using JKang.IpcServiceFramework.Hosting.NamedPipe;
-using JKang.IpcServiceFramework.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
@@ -27,12 +26,10 @@ namespace JKang.IpcServiceFramework.Hosting
 
             builder.AddIpcEndpoint(serviceProvider =>
             {
-                IIpcMessageSerializer serializer = serviceProvider.GetRequiredService<IIpcMessageSerializer>();
-                IValueConverter valueConverter = serviceProvider.GetRequiredService<IValueConverter>();
                 ILogger<NamedPipeIpcEndpoint<TContract>> logger = serviceProvider
                     .GetRequiredService<ILogger<NamedPipeIpcEndpoint<TContract>>>();
 
-                return new NamedPipeIpcEndpoint<TContract>(options, serializer, valueConverter, logger, serviceProvider);
+                return new NamedPipeIpcEndpoint<TContract>(options, logger, serviceProvider);
             });
 
             return builder;

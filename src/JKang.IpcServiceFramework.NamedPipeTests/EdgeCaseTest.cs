@@ -25,9 +25,9 @@ namespace JKang.IpcServiceFramework.NamedPipeTests
         {
             int timeout = 1000; // 1s
             IIpcClient<ITestService> client = _factory
-                .CreateClient(services =>
+                .CreateClient((name, services) =>
                 {
-                    services.AddNamedPipeIpcClient<ITestService>(options =>
+                    services.AddNamedPipeIpcClient<ITestService>(name, (_, options) =>
                     {
                         options.PipeName = "inexisted-pipe";
                         options.ConnectionTimeout = timeout;
@@ -47,9 +47,9 @@ namespace JKang.IpcServiceFramework.NamedPipeTests
         public void ConnectionCancelled_Throw()
         {
             IIpcClient<ITestService> client = _factory
-                .CreateClient(services =>
+                .CreateClient((name, services) =>
                 {
-                    services.AddNamedPipeIpcClient<ITestService>(options =>
+                    services.AddNamedPipeIpcClient<ITestService>(name, (_, options) =>
                     {
                         options.PipeName = "inexisted-pipe";
                         options.ConnectionTimeout = Timeout.Infinite;

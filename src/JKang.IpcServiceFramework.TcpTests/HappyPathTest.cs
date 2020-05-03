@@ -27,9 +27,9 @@ namespace JKang.IpcServiceFramework.TcpTests
                 {
                     hostBuilder.AddTcpEndpoint<ITestService>(IPAddress.Loopback, port);
                 })
-                .CreateClient(services =>
+                .CreateClient((name, services) =>
                 {
-                    services.AddTcpIpcClient<ITestService>(IPAddress.Loopback, port);
+                    services.AddTcpIpcClient<ITestService>(name, IPAddress.Loopback, port);
                 });
         }
 

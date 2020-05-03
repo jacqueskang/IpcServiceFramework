@@ -38,9 +38,9 @@ namespace JKang.IpcServiceFramework.NamedPipeTests
                         options.StreamTranslator = x => new XorStream(x);
                     });
                 })
-                .CreateClient(services =>
+                .CreateClient((name, services) =>
                 {
-                    services.AddNamedPipeIpcClient<ITestService>(options =>
+                    services.AddNamedPipeIpcClient<ITestService>(name, (_, options) =>
                     {
                         options.PipeName = pipeName;
                         options.StreamTranslator = x => new XorStream(x);

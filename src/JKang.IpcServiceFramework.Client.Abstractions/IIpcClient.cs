@@ -8,6 +8,8 @@ namespace JKang.IpcServiceFramework.Client
     public interface IIpcClient<TInterface>
         where TInterface : class
     {
+        string Name { get; }
+
         Task InvokeAsync(
             Expression<Action<TInterface>> exp,
             CancellationToken cancellationToken = default);
