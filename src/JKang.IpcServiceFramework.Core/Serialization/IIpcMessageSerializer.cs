@@ -1,4 +1,4 @@
-﻿namespace JKang.IpcServiceFramework.Services
+﻿namespace JKang.IpcServiceFramework.Serialization
 {
     public interface IIpcMessageSerializer
     {

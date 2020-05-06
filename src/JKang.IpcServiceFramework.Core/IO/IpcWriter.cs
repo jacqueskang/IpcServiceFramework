@@ -1,4 +1,4 @@
-﻿using JKang.IpcServiceFramework.Services;
+﻿using JKang.IpcServiceFramework.Serialization;
 using System;
 using System.IO;
 using System.Threading;

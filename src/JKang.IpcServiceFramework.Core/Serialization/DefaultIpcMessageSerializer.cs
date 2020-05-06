@@ -2,7 +2,7 @@
 using System;
 using System.Text;
 
-namespace JKang.IpcServiceFramework.Services
+namespace JKang.IpcServiceFramework.Serialization
 {
     public class DefaultIpcMessageSerializer : IIpcMessageSerializer
     {
