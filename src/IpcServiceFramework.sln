@@ -38,6 +38,12 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JKang.IpcServiceFramework.T
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JKang.IpcServiceFramework.NamedPipeTests", "JKang.IpcServiceFramework.NamedPipeTests\JKang.IpcServiceFramework.NamedPipeTests.csproj", "{62A037D0-4FC0-4EF8-A87F-ABC93209EB46}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JKang.IpcServiceFramework.Serialization.Protobuf", "JKang.IpcServiceFramework.Serialization.Protobuf\JKang.IpcServiceFramework.Serialization.Protobuf.csproj", "{E155C6A9-A782-43ED-B6D6-22C598975D40}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Serialization", "Serialization", "{B07D1931-3D2D-4F29-83F4-2A38AC37973C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JKang.IpcServiceFramework.Serialization.Protobuf.Tests", "JKang.IpcServiceFramework.Serialization.Protobuf.Tests\JKang.IpcServiceFramework.Serialization.Protobuf.Tests.csproj", "{43769F51-5C72-4608-A406-036D9903D538}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -88,6 +94,14 @@ Global
 		{62A037D0-4FC0-4EF8-A87F-ABC93209EB46}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{62A037D0-4FC0-4EF8-A87F-ABC93209EB46}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{62A037D0-4FC0-4EF8-A87F-ABC93209EB46}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E155C6A9-A782-43ED-B6D6-22C598975D40}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E155C6A9-A782-43ED-B6D6-22C598975D40}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E155C6A9-A782-43ED-B6D6-22C598975D40}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E155C6A9-A782-43ED-B6D6-22C598975D40}.Release|Any CPU.Build.0 = Release|Any CPU
+		{43769F51-5C72-4608-A406-036D9903D538}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{43769F51-5C72-4608-A406-036D9903D538}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{43769F51-5C72-4608-A406-036D9903D538}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{43769F51-5C72-4608-A406-036D9903D538}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -99,6 +113,8 @@ Global
 		{E1EE30C2-EF31-47C9-B9FC-D55A94911C40} = {7A7B0FCA-ADE5-4C7A-9640-9E10821D251C}
 		{C6625102-AC1B-4D86-8BF8-B2096F701AC2} = {7A7B0FCA-ADE5-4C7A-9640-9E10821D251C}
 		{62A037D0-4FC0-4EF8-A87F-ABC93209EB46} = {7ED117EC-C390-4D2E-94D3-C00010B63535}
+		{E155C6A9-A782-43ED-B6D6-22C598975D40} = {B07D1931-3D2D-4F29-83F4-2A38AC37973C}
+		{43769F51-5C72-4608-A406-036D9903D538} = {B07D1931-3D2D-4F29-83F4-2A38AC37973C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {F87E0D46-F461-4E41-9A3B-64710A6DFB2F}

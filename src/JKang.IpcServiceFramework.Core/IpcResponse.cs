@@ -39,17 +39,17 @@ namespace JKang.IpcServiceFramework
             InnerException = innerException;
         }
 
-        [DataMember]
-        public IpcStatus Status { get; }
+        [DataMember(Order = 0)]
+        public IpcStatus Status { get; set; }
 
-        [DataMember]
-        public object Data { get; }
+        [DataMember(Order = 10)]
+        public dynamic Data { get; set; }
 
-        [DataMember]
+        [DataMember(Order = 20)]
         public string ErrorMessage { get; set; }
 
-        [DataMember]
-        public Exception InnerException { get; }
+        [DataMember(Order = 30)]
+        public Exception InnerException { get; set; }
 
         public bool Succeed() => Status == IpcStatus.Ok;
 
