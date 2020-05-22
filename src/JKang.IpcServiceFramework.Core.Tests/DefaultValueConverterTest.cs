@@ -1,194 +1,221 @@
+using AutoFixture.Xunit2;
+using JKang.IpcServiceFramework.Core.Tests.Fixtures;
 using JKang.IpcServiceFramework.Services;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using Xunit;
 
 namespace JKang.IpcServiceFramework.Core.Tests
 {
-    [TestClass]
     public class DefaultValueConverterTest
     {
-        private DefaultValueConverter _sut;
+        private readonly DefaultValueConverter _sut = new DefaultValueConverter();
 
-        [TestInitialize]
-        public void Init()
+        [Theory, AutoData]
+        public void TryConvert_FloatToDouble(float expected)
         {
-            _sut = new DefaultValueConverter();
-        }
-
-        [TestMethod]
-        public void TryConvert_FloatToDouble()
-        {
-            float expected = 123.4f;
-
             bool succeed = _sut.TryConvert(expected, typeof(double), out object actual);
 
-            Assert.IsTrue(succeed);
-            Assert.IsInstanceOfType(actual, typeof(double));
-            Assert.AreEqual((double)expected, actual);
+            Assert.True(succeed);
+            Assert.IsType<double>(actual);
+            Assert.Equal((double)expected, actual);
         }
 
-        [TestMethod]
-        public void TryConvert_Int32ToInt64()
+        [Theory, AutoData]
+        public void TryConvert_Int32ToInt64(int expected)
         {
-            int expected = 123;
-
             bool succeed = _sut.TryConvert(expected, typeof(long), out object actual);
 
-            Assert.IsTrue(succeed);
-            Assert.IsInstanceOfType(actual, typeof(long));
-            Assert.AreEqual((long)expected, actual);
+            Assert.True(succeed);
+            Assert.IsType<long>(actual);
+            Assert.Equal((long)expected, actual);
         }
 
-        [TestMethod]
-        public void TryConvert_SameType()
+        [Theory, AutoData]
+        public void TryConvert_SameType(DateTime expected)
         {
-            DateTime expected = DateTime.UtcNow;
-
             bool succeed = _sut.TryConvert(expected, typeof(DateTime), out object actual);
 
-            Assert.IsTrue(succeed);
-            Assert.IsInstanceOfType(actual, typeof(DateTime));
-            Assert.AreEqual(expected, actual);
+            Assert.True(succeed);
+            Assert.IsType<DateTime>(actual);
+            Assert.Equal(expected, actual);
         }
 
-        [TestMethod]
-        public void TryConvert_JObjectToComplexType()
+        [Theory, AutoData]
+        public void TryConvert_JObjectToComplexType(ComplexType expected)
         {
-            var expected = new ComplexType
-            {
-                Int32Value = 123,
-                StringValue = "hello"
-            };
             object jObj = JsonConvert.DeserializeObject(JsonConvert.SerializeObject(expected));
 
             bool succeed = _sut.TryConvert(jObj, typeof(ComplexType), out object actual);
 
-            Assert.IsTrue(succeed);
-            Assert.IsInstanceOfType(actual, typeof(ComplexType));
-            Assert.AreEqual(expected.Int32Value, ((ComplexType)actual).Int32Value);
-            Assert.AreEqual(expected.StringValue, ((ComplexType)actual).StringValue);
+            Assert.True(succeed);
+            Assert.IsType<ComplexType>(actual);
+            Assert.Equal(expected.Int32Value, ((ComplexType)actual).Int32Value);
+            Assert.Equal(expected.StringValue, ((ComplexType)actual).StringValue);
         }
 
-        [TestMethod]
-        public void TryConvert_Int32Array()
+        [Theory, AutoData]
+        public void TryConvert_Int32Array(int[] expected)
         {
-            int[] expected = new[] { 1, 2 };
             object jObj = JsonConvert.DeserializeObject(JsonConvert.SerializeObject(expected));
 
             bool succeed = _sut.TryConvert(jObj, typeof(int[]), out object actual);
 
-            Assert.IsTrue(succeed);
-            Assert.IsInstanceOfType(actual, typeof(int[]));
-            var actualArray = actual as int[];
-            Assert.AreEqual(expected.Length, actualArray.Length);
-            for (int i = 0; i < expected.Length; i++)
-            {
-                Assert.AreEqual(expected[i], actualArray[i]);
-            }
+            Assert.True(succeed);
+            Assert.IsType<int[]>(actual);
+            Assert.Equal(expected, actual as int[]);
         }
 
-        [TestMethod]
-        public void TryConvert_Int32List()
+        [Theory, AutoData]
+        public void TryConvert_Int32List(List<int> expected)
         {
-            var expected = new List<int> { 1, 2 };
             object jObj = JsonConvert.DeserializeObject(JsonConvert.SerializeObject(expected));
 
             bool succeed = _sut.TryConvert(jObj, typeof(List<int>), out object actual);
 
-            Assert.IsTrue(succeed);
-            Assert.IsInstanceOfType(actual, typeof(List<int>));
-            var actualList = actual as List<int>;
-            Assert.AreEqual(expected.Count, actualList.Count);
-            for (int i = 0; i < expected.Count; i++)
-            {
-                Assert.AreEqual(expected[i], actualList[i]);
-            }
+            Assert.True(succeed);
+            Assert.IsType<List<int>>(actual);
+            Assert.Equal(expected, actual as List<int>);
         }
 
-        [TestMethod]
-        public void TryConvert_ComplexTypeArray()
+        [Theory, AutoData]
+        public void TryConvert_ComplexTypeArray(ComplexType[] expected)
         {
-            ComplexType[] expected = new[]
-            {
-                new ComplexType { Int32Value = 123, StringValue = "abc" },
-                new ComplexType { Int32Value = 456, StringValue = "edf" },
-            };
             object jObj = JsonConvert.DeserializeObject(JsonConvert.SerializeObject(expected));
 
             bool succeed = _sut.TryConvert(jObj, typeof(ComplexType[]), out object actual);
 
-            Assert.IsTrue(succeed);
-            Assert.IsInstanceOfType(actual, typeof(ComplexType[]));
+            Assert.True(succeed);
+            Assert.IsType<ComplexType[]>(actual);
             var actualArray = actual as ComplexType[];
-            Assert.AreEqual(expected.Length, actualArray.Length);
+            Assert.Equal(expected.Length, actualArray.Length);
             for (int i = 0; i < expected.Length; i++)
             {
-                Assert.IsNotNull(actualArray[i]);
-                Assert.AreEqual(expected[i].Int32Value, actualArray[i].Int32Value);
-                Assert.AreEqual(expected[i].StringValue, actualArray[i].StringValue);
+                Assert.NotNull(actualArray[i]);
+                Assert.Equal(expected[i].Int32Value, actualArray[i].Int32Value);
+                Assert.Equal(expected[i].StringValue, actualArray[i].StringValue);
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void TryConvert_DerivedTypeToBaseType()
         {
             bool succeed = _sut.TryConvert(new ComplexType(), typeof(IComplexType), out object actual);
 
-            Assert.IsTrue(succeed);
-            Assert.IsInstanceOfType(actual, typeof(ComplexType));
+            Assert.True(succeed);
+            Assert.IsType<ComplexType>(actual);
         }
 
-        [TestMethod]
-        public void TryConvert_StringToEnum()
+        [Theory, AutoData]
+        public void TryConvert_StringToEnum(EnumType expected)
         {
-            EnumType expected = EnumType.SecondOption;
-
             bool succeed = _sut.TryConvert(expected.ToString(), typeof(EnumType), out object actual);
 
-            Assert.IsTrue(succeed);
-            Assert.IsInstanceOfType(actual, typeof(EnumType));
-            Assert.AreEqual(expected, actual);
+            Assert.True(succeed);
+            Assert.IsType<EnumType>(actual);
+            Assert.Equal(expected, actual);
         }
 
-        [TestMethod]
-        public void TryConvert_Int32ToEnum()
+        [Theory, AutoData]
+        public void TryConvert_Int32ToEnum(EnumType expected)
         {
-            EnumType expected = EnumType.SecondOption;
-
             bool succeed = _sut.TryConvert((int)expected, typeof(EnumType), out object actual);
 
-            Assert.IsTrue(succeed);
-            Assert.IsInstanceOfType(actual, typeof(EnumType));
-            Assert.AreEqual(expected, actual);
+            Assert.True(succeed);
+            Assert.IsType<EnumType>(actual);
+            Assert.Equal(expected, actual);
         }
 
-        [TestMethod]
-        public void TryConvert_StringToGuid()
+        [Theory, AutoData]
+        public void TryConvert_StringToGuid(Guid expected)
         {
-            var expected = Guid.NewGuid();
-
             bool succeed = _sut.TryConvert(expected.ToString(), typeof(Guid), out object actual);
 
-            Assert.IsTrue(succeed);
-            Assert.IsInstanceOfType(actual, typeof(Guid));
-            Assert.AreEqual(expected, actual);
+            Assert.True(succeed);
+            Assert.IsType<Guid>(actual);
+            Assert.Equal(expected, actual);
         }
 
-        interface IComplexType
+        private T ParseTestData<T>(string valueData)
+        {
+            if (typeof(T).GetMember(valueData).FirstOrDefault() is MemberInfo member)
+            {
+                if (member is FieldInfo field)
+                    return (T)field.GetValue(null);
+                else if (member is PropertyInfo property)
+                    return (T)property.GetValue(null);
+                else if (member is MethodInfo method)
+                    return (T)method.Invoke(null, null);
+            }
+
+            var parseMethod = typeof(T).GetMethod("Parse", new[] { typeof(string) });
+
+            return (T)parseMethod.Invoke(null, new[] { valueData });
+        }
+
+        private void PerformRoundTripTest<T>(T value, Action<T, T> assertAreEqual = null)
+        {
+            // Act
+            bool succeed = _sut.TryConvert(value, typeof(string), out object intermediate);
+            bool succeed2 = _sut.TryConvert(intermediate, typeof(T), out object final);
+
+            // Assert
+            Assert.True(succeed);
+            Assert.True(succeed2);
+
+            Assert.IsType<T>(final);
+
+            if (assertAreEqual != null)
+                assertAreEqual(value, (T)final);
+            else
+                Assert.Equal(value, final);
+        }
+
+        [Theory]
+        [InlineData(nameof(Guid.Empty))]
+        [InlineData(nameof(Guid.NewGuid))]
+        public void TryConvert_RoundTripGuid(string valueData)
+        {
+            PerformRoundTripTest(ParseTestData<Guid>(valueData));
+        }
+
+        [Theory]
+        [InlineData(nameof(TimeSpan.Zero))]
+        [InlineData(nameof(TimeSpan.MinValue))]
+        [InlineData(nameof(TimeSpan.MaxValue))]
+        [InlineData("-00:00:05.9167374")]
+        public void TryConvert_RoundTripTimeSpan(string valueData)
+        {
+            PerformRoundTripTest(ParseTestData<TimeSpan>(valueData));
+        }
+
+        [Theory]
+        [InlineData(nameof(DateTime.Now))]
+        [InlineData(nameof(DateTime.Today))]
+        [InlineData(nameof(DateTime.MinValue))]
+        [InlineData(nameof(DateTime.MaxValue))]
+        [InlineData("2020-02-05 3:10:27 PM")]
+        public void TryConvert_RoundTripDateTime(string valueData)
+        {
+            PerformRoundTripTest(ParseTestData<DateTime>(valueData), assertAreEqual: (x, y) => Assert.Equal(DateTime.SpecifyKind(x, DateTimeKind.Unspecified), DateTime.SpecifyKind(y, DateTimeKind.Unspecified)));
+        }
+
+        public interface IComplexType
         {
             int Int32Value { get; }
             string StringValue { get; }
         }
 
-        class ComplexType : IComplexType
+        public class ComplexType : IComplexType
         {
             public int Int32Value { get; set; }
             public string StringValue { get; set; }
         }
 
-        enum EnumType
+        public enum EnumType
         {
             FirstOption,
             SecondOption
