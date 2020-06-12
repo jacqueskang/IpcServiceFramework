@@ -2,6 +2,11 @@
 |----------|--------------|
 |[![Build Status](https://dev.azure.com/jacques-kang/IpcServiceFramework/_apis/build/status/IpcServiceFramework%20CI?branchName=develop)](https://dev.azure.com/jacques-kang/IpcServiceFramework/_build/latest?definitionId=9&branchName=develop)|[![Build Status](https://dev.azure.com/jacques-kang/IpcServiceFramework/_apis/build/status/IpcServiceFramework?branchName=master)](https://dev.azure.com/jacques-kang/IpcServiceFramework/_build/latest?definitionId=14&branchName=master)|
 
+# IpcServiceFramework
+
+A .NET Core 3.1 based lightweight framework for efficient inter-process communication.
+Named pipeline and TCP support out-of-the-box, extensible with other protocols.
+
 ## NuGet packages
  - JKang.IpcServiceFramework.Core [![NuGet version](https://badge.fury.io/nu/JKang.IpcServiceFramework.Core.svg)](https://badge.fury.io/nu/JKang.IpcServiceFramework.Core)
  - JKang.IpcServiceFramework.Client [![NuGet version](https://badge.fury.io/nu/JKang.IpcServiceFramework.Client.svg)](https://badge.fury.io/nu/JKang.IpcServiceFramework.Client)
@@ -12,10 +17,6 @@
  - JKang.IpcServiceFramework.Hosting.NamedPipe [![NuGet version](https://badge.fury.io/nu/JKang.IpcServiceFramework.Hosting.NamedPipe.svg)](https://badge.fury.io/nu/JKang.IpcServiceFramework.Hosting.NamedPipe)
  - JKang.IpcServiceFramework.Hosting.Tcp [![NuGet version](https://badge.fury.io/nu/JKang.IpcServiceFramework.Hosting.Tcp.svg)](https://badge.fury.io/nu/JKang.IpcServiceFramework.Hosting.Tcp)
 
-# IpcServiceFramework
-
-A .NET Core 3.1 based lightweight framework for efficient inter-process communication.
-Named pipeline and TCP support out-of-the-box, extensible with other protocols.
 
 ## Usage
 
@@ -101,15 +102,6 @@ Named pipeline and TCP support out-of-the-box, extensible with other protocols.
 
     string output = await client.InvokeAsync(x => x.ReverseString(input));
     ```
-
-## Downloads
-
-IpcServiceFramework is available via NuGet packages:
-
- - [JKang.IpcServiceFramework.Hosting.NamedPipe](https://www.nuget.org/packages/JKang.IpcServiceFramework.Hosting.NamedPipe/)
- - [JKang.IpcServiceFramework.Client.NamedPipe](https://www.nuget.org/packages/JKang.IpcServiceFramework.Client.NamedPipe/)
- - [JKang.IpcServiceFramework.Hosting.Tcp](https://www.nuget.org/packages/JKang.IpcServiceFramework.Hosting.Tcp/)
- - [JKang.IpcServiceFramework.Client.Tcp](https://www.nuget.org/packages/JKang.IpcServiceFramework.Client.Tcp/)
 
 ## FAQs
 
