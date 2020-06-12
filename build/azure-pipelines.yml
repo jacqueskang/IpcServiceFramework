@@ -7,10 +7,11 @@ parameters:
 
 variables:
 - template: version.yml
+- name: quality
   ${{ if parameters.stable }}:
-    quality: 'stable'
+    value: 'stable'
   ${{ if not(parameters.stable) }}:
-    quality: 'preview'
+    value: 'preview'
 
 
 name: $(version)-$(quality)$(Rev:.r)
