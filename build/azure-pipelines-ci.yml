@@ -6,12 +6,11 @@ parameters:
 
 variables:
   buildConfiguration: 'Release'
-  ${{ if parameters.stable }}:
-    suffix: ''
-  ${{ if eq(parameters.stable, false) }}:
-    suffix: '-preview'
 
-name: 3.0.0$(Rev:.r)$(suffix)
+${{ if parameters.stable }}:
+  name: 3.0.0
+${{ if eq(parameters.stable, false) }}:
+  name: 3.0.0-preview$(Rev:.r)
 
 trigger:
   branches:
