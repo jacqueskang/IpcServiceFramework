@@ -9,11 +9,11 @@ steps:
   inputs:
     command: 'build'
     projects: 'src/*.sln'
-    arguments: '--configuration $(buildConfiguration)'
+    arguments: '--configuration $(parameters.buildConfiguration)'
 
 - task: DotNetCoreCLI@2
   displayName: Test
   inputs:
     command: 'test'
     projects: 'src/*Tests/*.csproj'
-    arguments: '--configuration $(buildConfiguration)'
+    arguments: '--configuration $(parameters.buildConfiguration)'
