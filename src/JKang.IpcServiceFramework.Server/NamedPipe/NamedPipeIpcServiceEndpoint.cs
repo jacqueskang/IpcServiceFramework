@@ -31,7 +31,7 @@ namespace JKang.IpcServiceFramework.NamedPipe
             var threads = new Thread[options.ThreadCount];
             for (int i = 0; i < threads.Length; i++)
             {
-                threads[i] = new Thread(StartServerThread);
+                threads[i] = new Thread((a) => { StartServerThread(a).ConfigureAwait(false).GetAwaiter().GetResult(); });
                 threads[i].Start(cancellationToken);
             }
 
@@ -47,7 +47,7 @@ namespace JKang.IpcServiceFramework.NamedPipe
                         if (threads[i].Join(250))
                         {
                             // thread is finished, starting a new thread
-                            threads[i] = new Thread(StartServerThread);
+                            threads[i] = new Thread((a) => { StartServerThread(a).ConfigureAwait(false).GetAwaiter().GetResult(); });
                             threads[i].Start(cancellationToken);
                         }
                     }
@@ -55,7 +55,7 @@ namespace JKang.IpcServiceFramework.NamedPipe
             });
         }
 
-        private void StartServerThread(object obj)
+        private async Task StartServerThread(object obj)
         {
             var token = (CancellationToken)obj;
             try
@@ -63,8 +63,8 @@ namespace JKang.IpcServiceFramework.NamedPipe
                 using (var server = new NamedPipeServerStream(PipeName, PipeDirection.InOut, _options.ThreadCount,
                     PipeTransmissionMode.Byte, PipeOptions.Asynchronous))
                 {
-                    server.WaitForConnectionAsync(token).Wait();
-                    ProcessAsync(server, _logger, token).Wait();
+                    await server.WaitForConnectionAsync(token).ConfigureAwait(false);
+                    await ProcessAsync(server, _logger, token).ConfigureAwait(false);
                 }
             }
             catch when (token.IsCancellationRequested)

@@ -28,7 +28,7 @@ namespace JKang.IpcServiceFramework
             CancellationToken cancellationToken = default(CancellationToken))
         {
             IpcRequest request = GetRequest(exp, new MyInterceptor());
-            IpcResponse response = await GetResponseAsync(request, cancellationToken);
+            IpcResponse response = await GetResponseAsync(request, cancellationToken).ConfigureAwait(false);
 
             if (response.Succeed)
             {
@@ -44,7 +44,7 @@ namespace JKang.IpcServiceFramework
             CancellationToken cancellationToken = default(CancellationToken))
         {
             IpcRequest request = GetRequest(exp, new MyInterceptor<TResult>());
-            IpcResponse response = await GetResponseAsync(request, cancellationToken);
+            IpcResponse response = await GetResponseAsync(request, cancellationToken).ConfigureAwait(false);
 
             if (response.Succeed)
             {
@@ -67,7 +67,7 @@ namespace JKang.IpcServiceFramework
             CancellationToken cancellationToken = default(CancellationToken))
         {
             IpcRequest request = GetRequest(exp, new MyInterceptor<Task>());
-            IpcResponse response = await GetResponseAsync(request, cancellationToken);
+            IpcResponse response = await GetResponseAsync(request, cancellationToken).ConfigureAwait(false);
 
             if (response.Succeed)
             {
@@ -83,7 +83,7 @@ namespace JKang.IpcServiceFramework
             CancellationToken cancellationToken = default(CancellationToken))
         {
             IpcRequest request = GetRequest(exp, new MyInterceptor<Task<TResult>>());
-            IpcResponse response = await GetResponseAsync(request, cancellationToken);
+            IpcResponse response = await GetResponseAsync(request, cancellationToken).ConfigureAwait(false);
 
             if (response.Succeed)
             {
@@ -131,7 +131,7 @@ namespace JKang.IpcServiceFramework
 
         private async Task<IpcResponse> GetResponseAsync(IpcRequest request, CancellationToken cancellationToken)
         {
-            using (Stream client = await ConnectToServerAsync(cancellationToken))
+            using (Stream client = await ConnectToServerAsync(cancellationToken).ConfigureAwait(false))
             using (var writer = new IpcWriter(client, _serializer, leaveOpen: true))
             using (var reader = new IpcReader(client, _serializer, leaveOpen: true))
             {

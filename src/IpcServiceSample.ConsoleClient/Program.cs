@@ -22,13 +22,12 @@ namespace IpcServiceSample.ConsoleClient
         {
             try
             {
-                Console.WriteLine("Press any key to stop.");
+                Console.WriteLine("Press any key to cancel.");
                 var source = new CancellationTokenSource();
 
                 await Task.WhenAll(RunTestsAsync(source.Token), Task.Run(() =>
                 {
                     Console.ReadKey();
-                    Console.WriteLine("Cancelling...");
                     source.Cancel();
                 }));
             }
@@ -137,6 +136,8 @@ namespace IpcServiceSample.ConsoleClient
             // test 14: use a translated stream to log data to a text file
             generatedId = await loggedClient.InvokeAsync(x => x.GenerateId(), cancellationToken);
             Console.WriteLine($"[TEST 14] Called method using stream translator for logging, generated ID is: {generatedId}");
+
+            Console.WriteLine("All test finished. Press any key to exit.");
         }
     }
 }
