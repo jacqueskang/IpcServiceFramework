@@ -1,4 +1,6 @@
-[![Build Status](https://dev.azure.com/jacques-kang/IpcServiceFramework/_apis/build/status/IpcServiceFramework%20CI?branchName=develop)](https://dev.azure.com/jacques-kang/IpcServiceFramework/_build/latest?definitionId=9&branchName=develop)
+| CI build | Stable build |
+|----------|--------------|
+|[![Build Status](https://dev.azure.com/jacques-kang/IpcServiceFramework/_apis/build/status/IpcServiceFramework%20CI?branchName=develop)](https://dev.azure.com/jacques-kang/IpcServiceFramework/_build/latest?definitionId=9&branchName=develop)|[![Build Status](https://dev.azure.com/jacques-kang/IpcServiceFramework/_apis/build/status/IpcServiceFramework?branchName=master)](https://dev.azure.com/jacques-kang/IpcServiceFramework/_build/latest?definitionId=14&branchName=master)|
 
 # IpcServiceFramework
 
