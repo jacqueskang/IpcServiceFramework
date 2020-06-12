@@ -5,13 +5,14 @@ parameters:
   default: false
 
 variables:
+  nugetVersion: 3.0.0
   buildConfiguration: 'Release'
   ${{ if parameters.stable }}:
-    nugetVersion: 3.0.0
+    suffix: -stable
   ${{ if eq(parameters.stable, false) }}:
-    nugetVersion: 3.0.0-preview.$(Date:yyyyMMdd)$(Rev:.r)
+    suffix: -preview
 
-name: $(nugetVersion)
+name: $(nugetVersion)$(suffix).$(Date:yyyyMMdd)$(Rev:.r)
 
 trigger:
   branches:
@@ -45,7 +46,10 @@ steps:
     packagesToPack: 'src/**/*.csproj'
     nobuild: true
     versioningScheme: 'byEnvVar'
-    versionEnvVar: 'Build.BuildNumber'
+    ${{ if parameters.stable }}:
+      versionEnvVar: 'nugetVersion'
+    ${{ if eq(parameters.stable, false) }}:
+      versionEnvVar: 'Build.BuildNumber'
 
 - task: PublishBuildArtifacts@1
   inputs:
