@@ -8,14 +8,12 @@ A .NET Core 3.1 based lightweight framework for efficient inter-process communic
 Named pipeline and TCP support out-of-the-box, extensible with other protocols.
 
 ## NuGet packages
- - JKang.IpcServiceFramework.Core [![NuGet version](https://badge.fury.io/nu/JKang.IpcServiceFramework.Core.svg)](https://badge.fury.io/nu/JKang.IpcServiceFramework.Core)
- - JKang.IpcServiceFramework.Client [![NuGet version](https://badge.fury.io/nu/JKang.IpcServiceFramework.Client.svg)](https://badge.fury.io/nu/JKang.IpcServiceFramework.Client)
- - JKang.IpcServiceFramework.Client.NamedPipe [![NuGet version](https://badge.fury.io/nu/JKang.IpcServiceFramework.Client.NamedPipe.svg)](https://badge.fury.io/nu/JKang.IpcServiceFramework.Client.NamedPipe)
- - JKang.IpcServiceFramework.Client.Tcp [![NuGet version](https://badge.fury.io/nu/JKang.IpcServiceFramework.Client.Tcp.svg)](https://badge.fury.io/nu/JKang.IpcServiceFramework.Client.Tcp)
- - JKang.IpcServiceFramework.Client.Tcp [![NuGet version](https://badge.fury.io/nu/JKang.IpcServiceFramework.Client.Tcp.svg)](https://badge.fury.io/nu/JKang.IpcServiceFramework.Client.Tcp)
- - JKang.IpcServiceFramework.Hosting [![NuGet version](https://badge.fury.io/nu/JKang.IpcServiceFramework.Hosting.svg)](https://badge.fury.io/nu/JKang.IpcServiceFramework.Hosting)
- - JKang.IpcServiceFramework.Hosting.NamedPipe [![NuGet version](https://badge.fury.io/nu/JKang.IpcServiceFramework.Hosting.NamedPipe.svg)](https://badge.fury.io/nu/JKang.IpcServiceFramework.Hosting.NamedPipe)
- - JKang.IpcServiceFramework.Hosting.Tcp [![NuGet version](https://badge.fury.io/nu/JKang.IpcServiceFramework.Hosting.Tcp.svg)](https://badge.fury.io/nu/JKang.IpcServiceFramework.Hosting.Tcp)
+| Name | Purpose | Status |
+| ---- | ------- | ------ |
+| JKang.IpcServiceFramework.Client.NamedPipe | Client SDK to consume IPC service over Named pipe | [![NuGet version](https://badge.fury.io/nu/JKang.IpcServiceFramework.Client.NamedPipe.svg)](https://badge.fury.io/nu/JKang.IpcServiceFramework.Client.NamedPipe) |
+| JKang.IpcServiceFramework.Client.Tcp | Client SDK to consume IPC service over TCP | [![NuGet version](https://badge.fury.io/nu/JKang.IpcServiceFramework.Client.Tcp.svg)](https://badge.fury.io/nu/JKang.IpcServiceFramework.Client.Tcp) |
+| JKang.IpcServiceFramework.Hosting.NamedPipe | Server SDK to run Named pipe IPC service endpoint | [![NuGet version](https://badge.fury.io/nu/JKang.IpcServiceFramework.Hosting.NamedPipe.svg)](https://badge.fury.io/nu/JKang.IpcServiceFramework.Hosting.NamedPipe) |
+| JKang.IpcServiceFramework.Hosting.Tcp | Server SDK to run TCP IPC service endpoint | [![NuGet version](https://badge.fury.io/nu/JKang.IpcServiceFramework.Hosting.Tcp.svg)](https://badge.fury.io/nu/JKang.IpcServiceFramework.Hosting.Tcp) |
 
 
 ## Usage
