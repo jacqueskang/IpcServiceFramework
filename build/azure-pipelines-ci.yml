@@ -44,7 +44,8 @@ steps:
     command: 'pack'
     packagesToPack: 'src/**/*.csproj'
     nobuild: true
-    versioningScheme: 'byBuildNumber'
+    versioningScheme: 'byEnvVar'
+    versionEnvVar: 'Build.BuildNumber'
 
 - task: PublishBuildArtifacts@1
   inputs:
