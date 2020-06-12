@@ -1,15 +1,14 @@
-variables:
-  nugetVersion: 3.0.0
-  buildConfiguration: 'Release'
-
-name: 3.0.0-ci-$(Date:yyyyMMdd)$(Rev:.r)
+name: 3.0.0
 
 trigger:
   branches:
     include:
-    - develop
+    - master
 
 pr: none
+
+variables:
+  buildConfiguration: 'Release'
 
 pool:
   vmImage: 'ubuntu-16.04'
