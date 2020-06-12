@@ -14,9 +14,6 @@ pool:
   vmImage: 'ubuntu-16.04'
 
 steps:
-- checkout: self
-  persistCredentials: true
-
 - template: templates/build-test.yml
   parameters:
     buildConfiguration: Release

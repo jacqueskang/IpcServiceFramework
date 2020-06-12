@@ -14,6 +14,9 @@ pool:
   vmImage: 'ubuntu-16.04'
 
 steps:
+- checkout: self
+  persistCredentials: true
+
 - template: templates/build-test.yml
   parameters:
     buildConfiguration: Release
@@ -25,5 +28,4 @@ steps:
     git config --global user.email "fake@dev.azure.com"
     git tag -a $(Build.BuildNumber) -m "v$(Build.BuildNumber)"
     git push origin $(Build.BuildNumber)
-  workingDirectory: $(Build.SourcesDirectory)
   displayName: Tag source
