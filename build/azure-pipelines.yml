@@ -1,4 +1,7 @@
-name: 3.0.0
+variables:
+- template: version.yml
+
+name: $(version)
 
 trigger:
   branches:
@@ -7,38 +10,20 @@ trigger:
 
 pr: none
 
-variables:
-  buildConfiguration: 'Release'
-
 pool:
   vmImage: 'ubuntu-16.04'
 
 steps:
-- task: DotNetCoreCLI@2
-  displayName: Build
-  inputs:
-    command: 'build'
-    projects: 'src/*.sln'
-    arguments: '--configuration $(buildConfiguration)'
+- template: templates/build-test.yml
+  parameters:
+    buildConfiguration: Release
 
-- task: DotNetCoreCLI@2
-  displayName: Test
-  inputs:
-    command: 'test'
-    projects: 'src/*Tests/*.csproj'
-    arguments: '--configuration $(buildConfiguration)'
+- template: templates/pack-publish.yml
 
-- task: DotNetCoreCLI@2
-  displayName: Pack
-  inputs:
-    command: 'pack'
-    packagesToPack: 'src/**/*.csproj'
-    nobuild: true
-    versioningScheme: 'byEnvVar'
-    versionEnvVar: 'Build.BuildNumber'
-
-- task: PublishBuildArtifacts@1
-  inputs:
-    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
-    ArtifactName: 'drop'
-    publishLocation: 'Container'
+- script: |
+    git config --global user.name "Azure DevOps"
+    git config --global user.email "fake@dev.azure.com"
+    git tag -a $(Build.BuildNumber) -m "v$(Build.BuildNumber)"
+    git push origin $(Build.BuildNumber)
+  workingDirectory: $(Build.SourcesDirectory)
+  displayName: Tag source
