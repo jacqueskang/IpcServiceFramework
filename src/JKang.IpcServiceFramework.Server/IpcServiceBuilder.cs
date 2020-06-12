@@ -27,5 +27,12 @@ namespace JKang.IpcServiceFramework
             Services.AddScoped<TInterface, TImplementation>(implementationFactory);
             return this;
         }
+
+        public IIpcServiceBuilder AddService<TInterface>(Func<IServiceProvider, TInterface> implementationFactory)
+            where TInterface : class
+        {
+            Services.AddScoped(implementationFactory);
+            return this;
+        }
     }
 }

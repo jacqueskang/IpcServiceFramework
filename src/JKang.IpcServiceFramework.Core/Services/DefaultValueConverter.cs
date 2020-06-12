@@ -8,6 +8,12 @@ namespace JKang.IpcServiceFramework.Services
     {
         public bool TryConvert(object origValue, Type destType, out object destValue)
         {
+            if (origValue == null)
+            {
+                destValue = null;
+                return destType.IsClass || (Nullable.GetUnderlyingType(destType) != null);
+            }
+
             if (destType.IsAssignableFrom(origValue.GetType()))
             {
                 // copy value directly if it can be assigned to destType

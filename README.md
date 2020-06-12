@@ -4,7 +4,7 @@
 
 A .NET Core lightweight inter-process communication framework allowing invoking a service via named pipeline and/or TCP (in a similar way as WCF, which is currently unavailable for .NET Core). Secure communication over SSL is also supported.
 
-Support using primitive or complexe types in service contract.
+Support using primitive or complex types in service contract.
 
 Support multi-threading on server side with configurable number of threads (named pipeline endpoint only).
 
@@ -12,8 +12,8 @@ Support multi-threading on server side with configurable number of threads (name
 
 ## Usage
  1. Create an interface as service contract and package it in an assembly to be shared between server and client.
- 2. Implement the service and host it in an console or web applciation
- 3. Invoke the service with framework provided proxy client
+ 2. Implement the service and host it in an console or web applciation.
+ 3. Invoke the service with framework provided proxy client.
 
 ## Downloads
 
