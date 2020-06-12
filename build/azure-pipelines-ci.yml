@@ -49,7 +49,9 @@ steps:
   displayName: Publish artifacts
 
 - script: |
-     git tag -a $(Build.BuildNumber) -m "v$(Build.BuildNumber)"
-     git push origin $(Build.BuildNumber)
+    git config --global user.name "CI Build"
+    git config --global user.email "fake@dev.azure.com"
+    git tag -a $(Build.BuildNumber) -m "v$(Build.BuildNumber)"
+    git push origin $(Build.BuildNumber)
   workingDirectory: $(Build.SourcesDirectory)
   displayName: Tag source
