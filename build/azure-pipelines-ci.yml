@@ -1,8 +1,7 @@
 variables:
-  nugetVersion: 3.0.0
-  buildConfiguration: 'Release'
+- template: version.yml
 
-name: 3.0.0-ci-$(Date:yyyyMMdd)$(Rev:.r)
+name: $(version)-ci-$(Date:yyyyMMdd)$(Rev:.r)
 
 trigger:
   branches:
@@ -15,43 +14,8 @@ pool:
   vmImage: 'ubuntu-16.04'
 
 steps:
-- checkout: self
-  persistCredentials: true
+- template: templates/build-test.yml
+  parameters:
+    buildConfiguration: Release
 
-- task: DotNetCoreCLI@2
-  displayName: Build
-  inputs:
-    command: 'build'
-    projects: 'src/*.sln'
-    arguments: '--configuration $(buildConfiguration)'
-
-- task: DotNetCoreCLI@2
-  displayName: Test
-  inputs:
-    command: 'test'
-    projects: 'src/*Tests/*.csproj'
-    arguments: '--configuration $(buildConfiguration)'
-
-- task: DotNetCoreCLI@2
-  displayName: Pack
-  inputs:
-    command: 'pack'
-    packagesToPack: 'src/**/*.csproj'
-    nobuild: true
-    versioningScheme: 'byEnvVar'
-    versionEnvVar: 'Build.BuildNumber'
-
-- task: PublishBuildArtifacts@1
-  inputs:
-    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
-    ArtifactName: 'drop'
-    publishLocation: 'Container'
-  displayName: Publish artifacts
-
-- script: |
-    git config --global user.name "CI Build"
-    git config --global user.email "fake@dev.azure.com"
-    git tag -a $(Build.BuildNumber) -m "v$(Build.BuildNumber)"
-    git push origin $(Build.BuildNumber)
-  workingDirectory: $(Build.SourcesDirectory)
-  displayName: Tag source
+- template: templates/pack-publish.yml

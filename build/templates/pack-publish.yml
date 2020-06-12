@@ -1,0 +1,17 @@
+steps:
+- task: DotNetCoreCLI@2
+  displayName: Pack
+  inputs:
+    command: 'pack'
+    packagesToPack: 'src/**/*.csproj'
+    nobuild: true
+    versioningScheme: 'byEnvVar'
+    versionEnvVar: 'Build.BuildNumber'
+
+- task: PublishBuildArtifacts@1
+  inputs:
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+    ArtifactName: 'drop'
+    publishLocation: 'Container'
+  displayName: Publish artifacts
+
