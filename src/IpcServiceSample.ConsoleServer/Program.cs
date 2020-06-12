@@ -3,6 +3,9 @@ using JKang.IpcServiceFramework;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Net;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace IpcServiceSample.ConsoleServer
 {
@@ -10,15 +13,22 @@ namespace IpcServiceSample.ConsoleServer
     {
         static void Main(string[] args)
         {
-            // build service provider
+            // configure DI
             IServiceCollection services = ConfigureServices(new ServiceCollection());
-            ServiceProvider serviceProvider = services.BuildServiceProvider();
 
-            // TODO start IPC service host
-            IpcServiceHostBuilder
-                .Buid("pipeName", serviceProvider as IServiceProvider)
-                .Run();
+            // build and run service host
+            IIpcServiceHost host = new IpcServiceHostBuilder(services.BuildServiceProvider())
+                .AddNamedPipeEndpoint<IComputingService>("computingEndpoint", "pipeName")
+                .AddTcpEndpoint<ISystemService>("systemEndpoint", IPAddress.Loopback, 45684)
+                .Build();
 
+            var source = new CancellationTokenSource();
+            Task.WaitAll(host.RunAsync(source.Token), Task.Run(() =>
+            {
+                Console.WriteLine("Press any key to shutdown.");
+                Console.ReadKey();
+                source.Cancel();
+            }));
         }
 
         private static IServiceCollection ConfigureServices(IServiceCollection services)
@@ -31,12 +41,13 @@ namespace IpcServiceSample.ConsoleServer
                 });
 
             services
-                .AddIpc(options =>
+                .AddIpc()
+                .AddNamedPipe(options =>
                 {
                     options.ThreadCount = 2;
                 })
                 .AddService<IComputingService, ComputingService>()
-                ;
+                .AddService<ISystemService, SystemService>();
 
             return services;
         }

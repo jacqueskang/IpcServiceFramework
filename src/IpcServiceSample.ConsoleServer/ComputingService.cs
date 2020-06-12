@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Globalization;
-using IpcServiceSample.ServiceContracts;
+﻿using IpcServiceSample.ServiceContracts;
 using Microsoft.Extensions.Logging;
+using System.Collections.Generic;
 
 namespace IpcServiceSample.ConsoleServer
 {
@@ -25,7 +23,7 @@ namespace IpcServiceSample.ConsoleServer
         {
             _logger.LogInformation($"{nameof(AddComplexNumbers)} called.");
             var result = new ComplexNumber(0, 0);
-            foreach (var number in numbers)
+            foreach (ComplexNumber number in numbers)
             {
                 result = new ComplexNumber(result.A + number.A, result.B + number.B);
             }
@@ -36,27 +34,6 @@ namespace IpcServiceSample.ConsoleServer
         {
             _logger.LogInformation($"{nameof(AddFloat)} called.");
             return x + y;
-        }
-
-        public string ConvertText(string text, TextStyle style)
-        {
-            switch (style)
-            {
-                case TextStyle.TitleCase:
-                    return CultureInfo.InvariantCulture.TextInfo.ToTitleCase(text);
-                case TextStyle.Upper:
-                    return CultureInfo.InvariantCulture.TextInfo.ToUpper(text);
-                default:
-                    return text;
-            }
-        }
-
-        public void DoNothing()
-        { }
-
-        public Guid GenerateId()
-        {
-            return Guid.NewGuid();
         }
     }
 }

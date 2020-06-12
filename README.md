@@ -2,11 +2,11 @@
 
 # IpcServiceFramework
 
-A .NET Core lightweight inter-process communication framework allowing invoking a service via named pipeline (in a similar way as WCF, which is currently unavailable for .NET Core).
+A .NET Core lightweight inter-process communication framework allowing invoking a service via named pipeline and/or TCP (in a similar way as WCF, which is currently unavailable for .NET Core).
 
 Support using primitive or complexe types in service contract.
 
-Support multi-threading on server side with configurable number of threads.
+Support multi-threading on server side with configurable number of threads (named pipeline endpoint only).
 
 [ASP.NET Core Dependency Injection framework](https://docs.microsoft.com/en-us/aspnet/core/fundamentals/dependency-injection) friendly.
 
@@ -48,25 +48,28 @@ IpcServiceFramework is available via NuGet:
 ### Step 3 - Host the service in Console application
 
 ```csharp
-   class Program
+    class Program
     {
         static void Main(string[] args)
         {
             // configure DI
             IServiceCollection services = ConfigureServices(new ServiceCollection());
 
-            // run IPC service host
-            IpcServiceHostBuilder
-                .Buid("pipeName", services.BuildServiceProvider())
+            // build and run service host
+            new IpcServiceHostBuilder(services.BuildServiceProvider())
+                .AddNamedPipeEndpoint<IComputingService>(name: "endpoint1", pipeName: "pipeName")
+                .AddTcpEndpoint<IComputingService>(name: "endpoint2", ipEndpoint: IPAddress.Loopback, port: 45684)
+                .Build()
                 .Run();
         }
 
         private static IServiceCollection ConfigureServices(IServiceCollection services)
         {
             return services
-                .AddIpc(options =>
+                .AddIpc()
+                .AddNamedPipe(options =>
                 {
-                    options.ThreadCount = 4;
+                    options.ThreadCount = 2;
                 })
                 .AddService<IComputingService, ComputingService>();
         }
@@ -77,8 +80,11 @@ It's possible to host IPC service in web application, please check out the sampl
 ### Step 4 - Invoke the service from client process
 
 ```csharp
-    var proxy = new IpcServiceClient<IComputingService>("pipeName");
-    float result = await proxy.InvokeAsync(x => x.AddFloat(1.23f, 4.56f));
+    IpcServiceClient<IComputingService> client = new IpcServiceClientBuilder<IComputingService>()
+        .UseNamedPipe("pipeName") // or .UseTcp(IPAddress.Loopback, 45684) to invoke using TCP
+        .Build();
+
+    float result = await client.InvokeAsync(x => x.AddFloat(1.23f, 4.56f));
 ```
 
 __Please feel free to download, fork and/or provide any feedback!__

@@ -2,36 +2,33 @@
 using JKang.IpcServiceFramework.IO;
 using JKang.IpcServiceFramework.Services;
 using System;
-using System.IO.Pipes;
+using System.IO;
 using System.Linq.Expressions;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace JKang.IpcServiceFramework
 {
-    public class IpcServiceClient<TInterface>
+    public abstract class IpcServiceClient<TInterface>
         where TInterface : class
     {
-        private readonly string _pipeName;
+        private static readonly ProxyGenerator _proxyGenerator = new ProxyGenerator();
         private readonly IIpcMessageSerializer _serializer;
         private readonly IValueConverter _converter;
 
-        public IpcServiceClient(string pipeName)
-            : this(pipeName, new DefaultIpcMessageSerializer(), new DefaultValueConverter())
-        { }
-
-        internal IpcServiceClient(string pipeName,
+        protected IpcServiceClient(
             IIpcMessageSerializer serializer,
             IValueConverter converter)
         {
-            _pipeName = pipeName;
             _serializer = serializer;
             _converter = converter;
         }
 
-        public async Task InvokeAsync(Expression<Action<TInterface>> exp)
+        public async Task InvokeAsync(Expression<Action<TInterface>> exp,
+            CancellationToken cancellationToken = default(CancellationToken))
         {
             IpcRequest request = GetRequest(exp, new MyInterceptor());
-            IpcResponse response = await GetResponseAsync(request);
+            IpcResponse response = await GetResponseAsync(request, cancellationToken);
 
             if (response.Succeed)
             {
@@ -43,10 +40,11 @@ namespace JKang.IpcServiceFramework
             }
         }
 
-        public async Task<TResult> InvokeAsync<TResult>(Expression<Func<TInterface, TResult>> exp)
+        public async Task<TResult> InvokeAsync<TResult>(Expression<Func<TInterface, TResult>> exp,
+            CancellationToken cancellationToken = default(CancellationToken))
         {
             IpcRequest request = GetRequest(exp, new MyInterceptor<TResult>());
-            IpcResponse response = await GetResponseAsync(request);
+            IpcResponse response = await GetResponseAsync(request, cancellationToken);
 
             if (response.Succeed)
             {
@@ -77,32 +75,30 @@ namespace JKang.IpcServiceFramework
                 throw new ArgumentException("Only support calling method, ex: x => x.GetData(a, b)");
             }
 
-            var proxyGenerator = new ProxyGenerator();
-            TInterface proxy = proxyGenerator.CreateInterfaceProxyWithoutTarget<TInterface>(interceptor);
+            TInterface proxy = _proxyGenerator.CreateInterfaceProxyWithoutTarget<TInterface>(interceptor);
             Delegate @delegate = lamdaExp.Compile();
             @delegate.DynamicInvoke(proxy);
 
             return new IpcRequest
             {
-                InterfaceName = typeof(TInterface).AssemblyQualifiedName,
                 MethodName = interceptor.LastInvocation.Method.Name,
                 Parameters = interceptor.LastInvocation.Arguments,
             };
         }
 
-        private async Task<IpcResponse> GetResponseAsync(IpcRequest request)
+        protected abstract Task<Stream> ConnectToServerAsync(CancellationToken cancellationToken);
+
+        private async Task<IpcResponse> GetResponseAsync(IpcRequest request, CancellationToken cancellationToken)
         {
-            using (var client = new NamedPipeClientStream(".", _pipeName, PipeDirection.InOut, PipeOptions.None))
+            using (Stream client = await ConnectToServerAsync(cancellationToken))
             using (var writer = new IpcWriter(client, _serializer, leaveOpen: true))
             using (var reader = new IpcReader(client, _serializer, leaveOpen: true))
             {
-                await client.ConnectAsync();
-
                 // send request
-                writer.Write(request);
+                await writer.WriteAsync(request, cancellationToken).ConfigureAwait(false);
 
                 // receive response
-                return reader.ReadIpcResponse();
+                return await reader.ReadIpcResponseAsync(cancellationToken).ConfigureAwait(false);
             }
         }
 

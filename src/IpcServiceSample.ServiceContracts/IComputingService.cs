@@ -8,9 +8,6 @@ namespace IpcServiceSample.ServiceContracts
         float AddFloat(float x, float y);
         ComplexNumber AddComplexNumber(ComplexNumber x, ComplexNumber y);
         ComplexNumber AddComplexNumbers(IEnumerable<ComplexNumber> numbers);
-        void DoNothing();
-        string ConvertText(string text, TextStyle style);
-        Guid GenerateId();
     }
 
     public class ComplexNumber
