@@ -29,27 +29,28 @@ namespace IpcServiceSample.ConsoleServer
                 Console.ReadKey();
                 source.Cancel();
             }));
+
+            Console.WriteLine("Server stopped.");
         }
 
         private static IServiceCollection ConfigureServices(IServiceCollection services)
         {
-            services
+            return services
                 .AddLogging(builder =>
                 {
                     builder.AddConsole();
                     builder.SetMinimumLevel(LogLevel.Debug);
-                });
-
-            services
-                .AddIpc()
-                .AddNamedPipe(options =>
-                {
-                    options.ThreadCount = 2;
                 })
-                .AddService<IComputingService, ComputingService>()
-                .AddService<ISystemService, SystemService>();
-
-            return services;
+                .AddIpc(builder =>
+                {
+                    builder
+                        .AddNamedPipe(options =>
+                        {
+                            options.ThreadCount = 2;
+                        })
+                        .AddService<IComputingService, ComputingService>()
+                        .AddService<ISystemService, SystemService>();
+                });
         }
     }
 }

@@ -37,7 +37,7 @@ namespace JKang.IpcServiceFramework.NamedPipe
 
             return Task.Factory.StartNew(() =>
             {
-                _logger.LogDebug($"Listening named pipe endpoint '{Name}'...");
+                _logger.LogDebug($"Endpoint '{Name}' listening on pipe '{PipeName}'...");
                 while (!cancellationToken.IsCancellationRequested)
                 {
                     Thread.Sleep(100);
@@ -52,7 +52,6 @@ namespace JKang.IpcServiceFramework.NamedPipe
                         }
                     }
                 }
-                _logger.LogDebug($"Shutting down named pipe endpoint '{Name}'...");
             });
         }
 

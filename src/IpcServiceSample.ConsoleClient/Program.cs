@@ -62,6 +62,9 @@ namespace IpcServiceSample.ConsoleClient
                 byte[] reversed = await systemClient.InvokeAsync(x => x.ReverseBytes(input));
                 Console.WriteLine($"[TEST 7] reversed bytes are: {Convert.ToBase64String(reversed)}");
 
+                // test 8: call IPC service method with generic parameter
+                string print = await systemClient.InvokeAsync(x => x.Printout(DateTime.UtcNow));
+                Console.WriteLine($"[TEST 8] print out value: {print}");
             }
             catch (Exception ex)
             {

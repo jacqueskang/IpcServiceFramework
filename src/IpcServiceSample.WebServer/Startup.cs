@@ -13,10 +13,13 @@ namespace IpcServiceSample.WebServer
         public void ConfigureServices(IServiceCollection services)
         {
             services
-                .AddIpc()
-                .AddNamedPipe()
-                .AddService<IComputingService, ComputingService>()
-                .AddService<ISystemService, SystemService>();
+                .AddIpc(builder =>
+                {
+                    builder
+                        .AddNamedPipe()
+                        .AddService<IComputingService, ComputingService>()
+                        .AddService<ISystemService, SystemService>();
+                });
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
