@@ -1,13 +1,21 @@
+parameters:
+- name: buildConfiguration
+  type: string
+
+- name: versionEnvVar
+  type: string
+
+  
 steps:
 - task: DotNetCoreCLI@2
   displayName: Pack
   inputs:
     command: 'pack'
     packagesToPack: 'src/**/*.csproj'
-    configuration: Release
+    configuration: ${{parameters.buildConfiguration}}
     nobuild: true
     versioningScheme: 'byEnvVar'
-    versionEnvVar: 'Build.BuildNumber'
+    versionEnvVar: ${{parameters.versionEnvVar}}
 
 - task: PublishBuildArtifacts@1
   inputs:

@@ -19,3 +19,6 @@ steps:
     buildConfiguration: Release
 
 - template: templates/pack-publish.yml
+  parameters:
+    buildConfiguration: Release
+    versionEnvVar: Build.BuildNumber
