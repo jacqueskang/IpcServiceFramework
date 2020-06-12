@@ -60,7 +60,8 @@ namespace JKang.IpcServiceFramework.NamedPipe
             var token = (CancellationToken)obj;
             try
             {
-                using (var server = new NamedPipeServerStream(PipeName, PipeDirection.InOut, _options.ThreadCount))
+                using (var server = new NamedPipeServerStream(PipeName, PipeDirection.InOut, _options.ThreadCount,
+                    PipeTransmissionMode.Byte, PipeOptions.Asynchronous))
                 {
                     server.WaitForConnectionAsync(token).Wait();
                     ProcessAsync(server, _logger, token).Wait();

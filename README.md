@@ -19,21 +19,30 @@ Support multi-threading on server side with configurable number of threads (name
 
 IpcServiceFramework is available via NuGet:
 
- - [JKang.IpcServiceFramework.Core](https://www.nuget.org/packages/JKang.IpcServiceFramework.Core/)
  - [JKang.IpcServiceFramework.Server](https://www.nuget.org/packages/JKang.IpcServiceFramework.Server/)
  - [JKang.IpcServiceFramework.Client](https://www.nuget.org/packages/JKang.IpcServiceFramework.Client/)
 
 ## Quick Start:
 
-### Step 1 - Create service contract
+### Step 1: Create service contract
 ```csharp
     public interface IComputingService
     {
         float AddFloat(float x, float y);
     }
 ```
+_Note: This interface is ideally to be placed in a library assembly to be shared between server and client._
 
-### Step 2: Implement the service
+### Step 2: Implement the server
+
+1. Create a console application with the following 2 NuGet packages installed:
+
+```
+> Install-Package Microsoft.Extensions.DependencyInjection
+> Install-Package JKang.IpcServiceFramework.Server
+```
+
+2. Add an class that implements the service contract
 
 ```csharp
     class ComputingService : IComputingService
@@ -45,7 +54,7 @@ IpcServiceFramework is available via NuGet:
     }
 ```
 
-### Step 3 - Host the service in Console application
+3. Configure and run the server
 
 ```csharp
     class Program
@@ -78,9 +87,18 @@ IpcServiceFramework is available via NuGet:
         }
     }
 ```
-It's possible to host IPC service in web application, please check out the sample project *IpcServiceSample.WebServer*
+_Note: It's possible to host IPC service in web application, please check out the sample project *IpcServiceSample.WebServer*_
 
-### Step 4 - Invoke the service from client process
+### Step 3: Invoke the service from client process
+
+1. Install the following package in client application:
+```bash
+$ dotnet add package JKang.IpcServiceFramework.Client
+```
+
+2. Add reference to the assembly created in step 1 which contains `IComputingService` interface.
+
+3. Invoke the server
 
 ```csharp
     IpcServiceClient<IComputingService> client = new IpcServiceClientBuilder<IComputingService>()
@@ -90,4 +108,4 @@ It's possible to host IPC service in web application, please check out the sampl
     float result = await client.InvokeAsync(x => x.AddFloat(1.23f, 4.56f));
 ```
 
-__Please feel free to download, fork and/or provide any feedback!__
+__Welcome to raise any issue or even provide any suggestion/PR to participate this project!__
