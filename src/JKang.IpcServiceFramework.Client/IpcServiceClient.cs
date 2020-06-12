@@ -3,6 +3,7 @@ using JKang.IpcServiceFramework.IO;
 using JKang.IpcServiceFramework.Services;
 using System;
 using System.IO;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -36,7 +37,7 @@ namespace JKang.IpcServiceFramework
             }
             else
             {
-                throw new InvalidOperationException(response.Failure);
+                throw response.GetException();
             }
         }
 
@@ -59,7 +60,7 @@ namespace JKang.IpcServiceFramework
             }
             else
             {
-                throw new InvalidOperationException(response.Failure);
+                throw response.GetException();
             }
         }
 
@@ -75,7 +76,7 @@ namespace JKang.IpcServiceFramework
             }
             else
             {
-                throw new InvalidOperationException(response.Failure);
+                throw response.GetException();
             }
         }
 
@@ -98,31 +99,37 @@ namespace JKang.IpcServiceFramework
             }
             else
             {
-                throw new InvalidOperationException(response.Failure);
+                throw response.GetException();
             }
         }
 
 
         private static IpcRequest GetRequest(Expression exp, MyInterceptor interceptor)
         {
-            if (!(exp is LambdaExpression lamdaExp))
+            if (!(exp is LambdaExpression lambdaExp))
             {
-                throw new ArgumentException("Only support lamda expresion, ex: x => x.GetData(a, b)");
+                throw new ArgumentException("Only support lambda expression, ex: x => x.GetData(a, b)");
             }
 
-            if (!(lamdaExp.Body is MethodCallExpression methodCallExp))
+            if (!(lambdaExp.Body is MethodCallExpression methodCallExp))
             {
                 throw new ArgumentException("Only support calling method, ex: x => x.GetData(a, b)");
             }
 
             TInterface proxy = _proxyGenerator.CreateInterfaceProxyWithoutTarget<TInterface>(interceptor);
-            Delegate @delegate = lamdaExp.Compile();
+            Delegate @delegate = lambdaExp.Compile();
             @delegate.DynamicInvoke(proxy);
 
             return new IpcRequest
             {
                 MethodName = interceptor.LastInvocation.Method.Name,
                 Parameters = interceptor.LastInvocation.Arguments,
+
+                ParameterTypes = interceptor.LastInvocation.Method.GetParameters()
+                              .Select(p => p.ParameterType)
+                              .ToArray(),
+
+
                 GenericArguments = interceptor.LastInvocation.GenericArguments,
             };
         }

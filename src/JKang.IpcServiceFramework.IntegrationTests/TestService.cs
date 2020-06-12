@@ -44,7 +44,7 @@ namespace JKang.IpcServiceFramework.IntegrationTests
 
         public T GetDefaultValue<T>()
         {
-            return default;
+            return default(T);
         }
 
         public async Task<long> WaitAsync(int milliseconds)
@@ -52,6 +52,16 @@ namespace JKang.IpcServiceFramework.IntegrationTests
             var sw = Stopwatch.StartNew();
             await Task.Delay(milliseconds);
             return sw.ElapsedMilliseconds;
+        }
+
+        int ITestService.ExplicitInterfaceMember()
+        {
+            return 0;
+        }
+        
+        public void ThrowException(string message)
+        {
+            throw new Exception(message);
         }
     }
 }

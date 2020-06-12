@@ -1,5 +1,4 @@
-﻿using IpcServiceSample.ServiceContracts;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Numerics;
@@ -17,5 +16,7 @@ namespace JKang.IpcServiceFramework.IntegrationTests
         byte[] ReverseBytes(byte[] input);
         T GetDefaultValue<T>();
         Task<long> WaitAsync(int milliseconds);
+        int ExplicitInterfaceMember();
+        void ThrowException(string message);
     }
 }
