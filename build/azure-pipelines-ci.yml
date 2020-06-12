@@ -15,6 +15,9 @@ pool:
   vmImage: 'ubuntu-16.04'
 
 steps:
+- checkout: self
+  persistCredentials: true
+
 - task: DotNetCoreCLI@2
   displayName: Build
   inputs:
@@ -43,3 +46,10 @@ steps:
     PathtoPublish: '$(Build.ArtifactStagingDirectory)'
     ArtifactName: 'drop'
     publishLocation: 'Container'
+  displayName: Publish artifacts
+
+- script: |
+     git tag -a $(Build.BuildNumber) -m "v$(Build.BuildNumber)"
+     git push origin $(Build.BuildNumber)
+  workingDirectory: $(Build.SourcesDirectory)
+  displayName: Tag source
