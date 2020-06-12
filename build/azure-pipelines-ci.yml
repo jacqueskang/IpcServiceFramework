@@ -1,0 +1,21 @@
+variables:
+- template: version.yml
+
+name: $(version)-ci-$(Date:yyyyMMdd)$(Rev:.r)
+
+trigger:
+  branches:
+    include:
+    - develop
+
+pr: none
+
+pool:
+  vmImage: 'ubuntu-16.04'
+
+steps:
+- template: templates/build-test.yml
+  parameters:
+    buildConfiguration: Release
+
+- template: templates/pack-publish.yml

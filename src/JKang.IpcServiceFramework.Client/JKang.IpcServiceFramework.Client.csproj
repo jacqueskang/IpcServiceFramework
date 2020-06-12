@@ -2,12 +2,11 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <RootNamespace>JKang.IpcServiceFramework</RootNamespace>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageTags>ipc,interprocess,communication,wcf,client</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Castle.Core" Version="4.2.1" />
+    <PackageReference Include="Castle.Core" Version="4.4.0" />
   </ItemGroup>
 
   <ItemGroup>

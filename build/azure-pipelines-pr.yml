@@ -1,0 +1,19 @@
+variables:
+- template: version.yml
+
+name: $(version)-pr-$(Date:yyyyMMdd)$(Rev:.r)
+
+trigger: none
+
+pr:
+  branches:
+    include:
+    - '*'
+
+pool:
+  vmImage: 'ubuntu-16.04'
+
+steps:
+- template: templates/build-test.yml
+  parameters:
+    buildConfiguration: Debug

@@ -1,0 +1,31 @@
+variables:
+- template: version.yml
+
+name: $(version)
+
+trigger:
+  branches:
+    include:
+    - master
+
+pr: none
+
+pool:
+  vmImage: 'ubuntu-16.04'
+
+steps:
+- checkout: self
+  persistCredentials: true
+
+- template: templates/build-test.yml
+  parameters:
+    buildConfiguration: Release
+
+- template: templates/pack-publish.yml
+
+- script: |
+    git config --global user.name "Azure DevOps"
+    git config --global user.email "fake@dev.azure.com"
+    git tag -a "v$(Build.BuildNumber)" -m "v$(Build.BuildNumber)"
+    git push origin "v$(Build.BuildNumber)"
+  displayName: Tag source

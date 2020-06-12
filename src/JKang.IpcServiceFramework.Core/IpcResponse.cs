@@ -1,82 +1,71 @@
 ﻿using System;
-using System.Reflection;
-using Newtonsoft.Json;
+using System.Runtime.Serialization;
 
 namespace JKang.IpcServiceFramework
 {
+    [DataContract]
     public class IpcResponse
     {
-        [JsonConstructor]
-        private IpcResponse(bool succeed, object data, string failure, string failureDetails, bool userCodeFailure)
-        {
-            Succeed = succeed;
-            Data = data;
-            Failure = failure;
-            FailureDetails = failureDetails;
-            UserCodeFailure = userCodeFailure;
-        }
-
-        public static IpcResponse Fail(string failure)
-        {
-            return new IpcResponse(false, null, failure, null, false);
-        }
-
-        public static IpcResponse Fail(Exception ex, bool includeDetails, bool userFailure = false)
-        {
-            string message = null;
-            string details = null;
-
-            if (!userFailure)
-            {
-                message = "Internal server error: ";
-            }
-
-            message += GetFirstUsableMessage(ex);
-
-            if (includeDetails)
-            {
-                details = ex.ToString();
-            }
-
-            return new IpcResponse(false, null, message, details, userFailure);
-        }
-
         public static IpcResponse Success(object data)
+            => new IpcResponse(IpcStatus.Ok, data, null, null);
+
+        public static IpcResponse BadRequest()
+            => new IpcResponse(IpcStatus.BadRequest, null, null, null);
+
+        public static IpcResponse BadRequest(string errorDetails)
+            => new IpcResponse(IpcStatus.BadRequest, null, errorDetails, null);
+
+        public static IpcResponse BadRequest(string errorDetails, Exception innerException)
+            => new IpcResponse(IpcStatus.BadRequest, null, errorDetails, innerException);
+
+        public static IpcResponse InternalServerError()
+            => new IpcResponse(IpcStatus.InternalServerError, null, null, null);
+
+        public static IpcResponse InternalServerError(string errorDetails)
+            => new IpcResponse(IpcStatus.BadRequest, null, errorDetails, null);
+
+        public static IpcResponse InternalServerError(string errorDetails, Exception innerException)
+            => new IpcResponse(IpcStatus.BadRequest, null, errorDetails, innerException);
+
+        public IpcResponse(
+            IpcStatus status,
+            object data,
+            string errorMessage,
+            Exception innerException)
         {
-            return new IpcResponse(true, data, null, null, false);
+            Status = status;
+            Data = data;
+            ErrorMessage = errorMessage;
+            InnerException = innerException;
         }
 
-        public bool Succeed { get; }
+        [DataMember]
+        public IpcStatus Status { get; }
+
+        [DataMember]
         public object Data { get; }
-        public string Failure { get; }
-        public string FailureDetails { get; }
-        public bool UserCodeFailure { get; set; }
 
-        public Exception GetException()
+        [DataMember]
+        public string ErrorMessage { get; set; }
+
+        [DataMember]
+        public Exception InnerException { get; }
+
+        public bool Succeed() => Status == IpcStatus.Ok;
+
+        /// <summary>
+        /// Create an exception that contains error information
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="InvalidOperationException">If the status is doesn't represent any error</exception>
+        public IpcFaultException CreateFaultException()
         {
-            if (UserCodeFailure)
+            if (Status <= IpcStatus.Ok)
             {
-                throw new IpcServerUserCodeException(Failure, FailureDetails);
+                throw new InvalidOperationException("The response doesn't contain any error");
             }
 
-            throw new IpcServerException(Failure, FailureDetails);
-        }
-
-        private static string GetFirstUsableMessage(Exception ex)
-        {
-            var e = ex;
-
-            while (e != null)
-            {
-                if (!(e is TargetInvocationException))
-                {
-                    return e.Message;
-                }
-
-                e = e.InnerException;
-            }
-
-            return ex.Message;
+            return new IpcFaultException(Status, ErrorMessage, InnerException);
         }
     }
 }
