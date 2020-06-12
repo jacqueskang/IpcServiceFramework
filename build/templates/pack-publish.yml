@@ -4,6 +4,7 @@ steps:
   inputs:
     command: 'pack'
     packagesToPack: 'src/**/*.csproj'
+    configuration: Release
     nobuild: true
     versioningScheme: 'byEnvVar'
     versionEnvVar: 'Build.BuildNumber'

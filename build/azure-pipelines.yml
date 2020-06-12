@@ -26,6 +26,6 @@ steps:
 - script: |
     git config --global user.name "Azure DevOps"
     git config --global user.email "fake@dev.azure.com"
-    git tag -a $(Build.BuildNumber) -m "v$(Build.BuildNumber)"
-    git push origin $(Build.BuildNumber)
+    git tag -a "v$(Build.BuildNumber)" -m "v$(Build.BuildNumber)"
+    git push origin "v$(Build.BuildNumber)"
   displayName: Tag source
