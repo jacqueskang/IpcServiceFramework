@@ -21,7 +21,7 @@ namespace JKang.IpcServiceFramework.NamedPipe
         protected override async Task<Stream> ConnectToServerAsync(CancellationToken cancellationToken)
         {
             var stream = new NamedPipeClientStream(".", _pipeName, PipeDirection.InOut, PipeOptions.Asynchronous);
-            await stream.ConnectAsync((int)TimeSpan.FromSeconds(3).TotalMilliseconds, cancellationToken).ConfigureAwait(false);
+            await stream.ConnectAsync(cancellationToken).ConfigureAwait(false);
             return stream;
         }
     }
