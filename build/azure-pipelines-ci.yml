@@ -6,11 +6,10 @@ parameters:
 
 variables:
   buildConfiguration: 'Release'
-  version: '3.0.0'
   ${{ if parameters.stable }}:
-    nugetVersion: $(version)
+    nugetVersion: 3.0.0
   ${{ if eq(parameters.stable, false) }}:
-    nugetVersion: '$(version)-rc.$(Date:yyyyMMdd)$(Rev:.r)'
+    nugetVersion: '3.0.0-rc.$(Date:yyyyMMdd)$(Rev:.r)'
 
 name: $(nugetVersion)
 
