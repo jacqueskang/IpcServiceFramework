@@ -6,11 +6,12 @@ parameters:
 
 variables:
   buildConfiguration: 'Release'
+  ${{ if parameters.stable }}:
+    nugetVersion: 3.0.0
+  ${{ if eq(parameters.stable, false) }}:
+    nugetVersion: 3.0.0-preview.$(Date:yyyyMMdd)$(Rev:.r)
 
-${{ if parameters.stable }}:
-  name: 3.0.0
-${{ if eq(parameters.stable, false) }}:
-  name: 3.0.0-preview$(Rev:.r)
+name: $(nugetVersion)
 
 trigger:
   branches:
