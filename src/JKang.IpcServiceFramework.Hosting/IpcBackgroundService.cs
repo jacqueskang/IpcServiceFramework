@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -19,13 +20,9 @@ namespace JKang.IpcServiceFramework.Hosting
             _logger = logger ?? throw new System.ArgumentNullException(nameof(logger));
         }
 
-        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+        protected override Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            foreach (IIpcEndpoint endpoint in _endpoints)
-            {
-                await endpoint.ExecuteAsync(stoppingToken).ConfigureAwait(false);
-            }
-            _logger.LogInformation("IPC background service started.");
+            return Task.WhenAll(_endpoints.Select(x => x.ExecuteAsync(stoppingToken)));
         }
 
         public override void Dispose()
