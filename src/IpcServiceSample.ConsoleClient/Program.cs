@@ -1,7 +1,10 @@
 ﻿using IpcServiceSample.ServiceContracts;
+using IpcServiceSample.ServiceContracts.Helpers;
 using JKang.IpcServiceFramework;
 using System;
 using System.Net;
+using System.Net.Security;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -35,6 +38,20 @@ namespace IpcServiceSample.ConsoleClient
             }
         }
 
+        private static bool InsecureValidationCallback_TESTONLY(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors)
+        {
+            /* WARNING: Using certificate validation callback can be dangerous. Incorrect implementation can lead to serious security issues.
+             * 
+             * For example, unconditionally returning true in this function provides no security whatsoever against an attacker who can perform
+             * man-in-the-middle attacks.
+             * 
+             * This function is used only for test purposes. It validates only that the correct server certificate is used by the server.
+             * However, it does not validate the certificate chain or validate that the certificate common name matches the server domain name.
+             * Do not use this example in a production application.
+            */
+            return certificate.GetCertHashString() == "FA54627C36D3DAEFF69E04B59120992305A7104F";
+        }
+
         private static async Task RunTestsAsync(CancellationToken cancellationToken)
         {
             IpcServiceClient<IComputingService> computingClient = new IpcServiceClientBuilder<IComputingService>()
@@ -43,6 +60,18 @@ namespace IpcServiceSample.ConsoleClient
 
             IpcServiceClient<ISystemService> systemClient = new IpcServiceClientBuilder<ISystemService>()
                 .UseTcp(IPAddress.Loopback, 45684)
+                .Build();
+
+            IpcServiceClient<ITestService> secureClient = new IpcServiceClientBuilder<ITestService>()
+                .UseTcp(IPAddress.Loopback, 44384, "test-ipcsf-secure-server", InsecureValidationCallback_TESTONLY)
+                .Build();
+
+            IpcServiceClient<ITestService> xorTranslatedClient = new IpcServiceClientBuilder<ITestService>()
+                .UseTcp(IPAddress.Loopback, 45454, s => new XorStream(s))
+                .Build();
+
+            IpcServiceClient<ISystemService> loggedClient = new IpcServiceClientBuilder<ISystemService>()
+                .UseTcp(IPAddress.Loopback, 45684, s => new LoggingStream(s, "ipc.log"))
                 .Build();
 
             // test 1: call IPC service method with primitive types
@@ -88,6 +117,26 @@ namespace IpcServiceSample.ConsoleClient
             // test 9: call slow IPC service method 
             await systemClient.InvokeAsync(x => x.SlowOperation(), cancellationToken);
             Console.WriteLine($"[TEST 9] Called slow operation");
+
+            // test 10: call async server method
+            await computingClient.InvokeAsync(x => x.MethodAsync());
+            Console.WriteLine($"[TEST 10] Called async method");
+
+            // test 11: call async server function
+            int sum = await computingClient.InvokeAsync(x => x.SumAsync(1, 1));
+            Console.WriteLine($"[TEST 11] Called async function: {sum}");
+          
+            // test 12: call secure service method
+            generatedId = await secureClient.InvokeAsync(x => x.GenerateId(), cancellationToken);
+            Console.WriteLine($"[TEST 12] Called secure service method, generated ID is: {generatedId}");
+
+            // test 13 call translated service method
+            generatedId = await xorTranslatedClient.InvokeAsync(x => x.GenerateId(), cancellationToken);
+            Console.WriteLine($"[TEST 13] Called translated service method, generated ID is: {generatedId}");
+            
+            // test 14: use a translated stream to log data to a text file
+            generatedId = await loggedClient.InvokeAsync(x => x.GenerateId(), cancellationToken);
+            Console.WriteLine($"[TEST 14] Called method using stream translator for logging, generated ID is: {generatedId}");
         }
     }
 }

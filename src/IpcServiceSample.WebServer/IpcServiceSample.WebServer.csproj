@@ -5,6 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Folder Include="Certificates\" />
     <Folder Include="wwwroot\" />
   </ItemGroup>
 
@@ -16,6 +17,12 @@
     <ProjectReference Include="..\IpcServiceSample.ConsoleServer\IpcServiceSample.ConsoleServer.csproj" />
     <ProjectReference Include="..\IpcServiceSample.ServiceContracts\IpcServiceSample.ServiceContracts.csproj" />
     <ProjectReference Include="..\JKang.IpcServiceFramework.Server\JKang.IpcServiceFramework.Server.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Certificates\server.pfx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>
