@@ -1,19 +1,43 @@
+parameters:
+- name: stable
+  displayName: Is stable
+  type: boolean
+  default: false
+
+
 variables:
 - template: version.yml
+  ${{ if parameters.stable }}:
+    quality: 'stable'
+  ${{ if not(parameters.stable) }}:
+    quality: 'preview'
 
-name: $(version)
+
+name: $(version)-$(quality)$(Rev:.r)
+
 
 trigger:
   branches:
     include:
     - master
 
+
 pr: none
+
 
 pool:
   vmImage: 'ubuntu-16.04'
 
+
 steps:
+- bash: |
+    echo "##vso[task.setvariable variable=nugetVersion]$(version)"
+  condition: ${{ parameters.stable }}
+
+- bash: |
+    echo "##vso[task.setvariable variable=nugetVersion]$(Build.BuildNumber)"
+  condition: not(${{ parameters.stable }})
+
 - checkout: self
   persistCredentials: true
 
@@ -22,10 +46,13 @@ steps:
     buildConfiguration: Release
 
 - template: templates/pack-publish.yml
+  parameters:
+    buildConfiguration: Release
+    versionEnvVar: 'nugetVersion'
 
 - script: |
     git config --global user.name "Azure DevOps"
     git config --global user.email "fake@dev.azure.com"
-    git tag -a "v$(Build.BuildNumber)" -m "v$(Build.BuildNumber)"
-    git push origin "v$(Build.BuildNumber)"
+    git tag -a "v$(nugetVersion)" -m "v$(nugetVersion)"
+    git push origin "v$(nugetVersion)"
   displayName: Tag source
