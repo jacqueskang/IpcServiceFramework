@@ -65,12 +65,14 @@ IpcServiceFramework is available via NuGet:
 
         private static IServiceCollection ConfigureServices(IServiceCollection services)
         {
-            return services
+            services
                 .AddIpc()
                 .AddNamedPipe(options =>
                 {
                     options.ThreadCount = 2;
-                })
+                });
+            
+            return services
                 .AddService<IComputingService, ComputingService>();
         }
     }
