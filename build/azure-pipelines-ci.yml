@@ -7,11 +7,11 @@ parameters:
 variables:
   buildConfiguration: 'Release'
   ${{ if parameters.stable }}:
-    nugetVersion: 3.0.0
+    suffix: ''
   ${{ if eq(parameters.stable, false) }}:
-    nugetVersion: '3.0.0-rc.$(Date:yyyyMMdd)$(Rev:.r)'
+    suffix: '-preview'
 
-name: $(nugetVersion)
+name: 3.0.0$(Rev:.r)$(suffix)
 
 trigger:
   branches:
@@ -44,8 +44,7 @@ steps:
     command: 'pack'
     packagesToPack: 'src/**/*.csproj'
     nobuild: true
-    versioningScheme: 'byEnvVar'
-    versionEnvVar: 'nugetVersion'
+    versioningScheme: 'byBuildNumber'
 
 - task: PublishBuildArtifacts@1
   inputs:
