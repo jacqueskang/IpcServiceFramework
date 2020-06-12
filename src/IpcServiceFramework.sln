@@ -6,8 +6,8 @@ MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{20913218-C740-42E9-9D17-CAD973B676D0}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
-		..\azure-pipelines-ci.yml = ..\azure-pipelines-ci.yml
-		..\azure-pipelines-pr.yml = ..\azure-pipelines-pr.yml
+		..\build\azure-pipelines-ci.yml = ..\build\azure-pipelines-ci.yml
+		..\build\azure-pipelines-pr.yml = ..\build\azure-pipelines-pr.yml
 		Directory.Build.props = Directory.Build.props
 		IpcServiceFramework.snk = IpcServiceFramework.snk
 	EndProjectSection

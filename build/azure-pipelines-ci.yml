@@ -1,9 +1,18 @@
-# ASP.NET Core (.NET Framework)
-# Build and test ASP.NET Core projects targeting the full .NET Framework.
-# Add steps that publish symbols, save build artifacts, and more:
-# https://docs.microsoft.com/azure/devops/pipelines/languages/dotnet-core
+parameters:
+- name: stable
+  displayName: Is stable
+  type: boolean
+  default: false
 
-name: 3.0.0$(Rev:.r)
+variables:
+  buildConfiguration: 'Release'
+  version: '3.0.0'
+  ${{ if parameters.stable }}:
+    nugetVersion: $(version)
+  ${{ if eq(parameters.stable, false) }}:
+    nugetVersion: '$(version)-rc.$(Date:yyyyMMdd)$(Rev:.r)'
+
+name: $(nugetVersion)
 
 trigger:
   branches:
@@ -14,10 +23,6 @@ pr: none
 
 pool:
   vmImage: 'ubuntu-16.04'
-
-variables:
-  buildConfiguration: 'Release'
-  nugetVersion: '$(Build.BuildNumber)-alpha'
 
 steps:
 - task: DotNetCoreCLI@2
