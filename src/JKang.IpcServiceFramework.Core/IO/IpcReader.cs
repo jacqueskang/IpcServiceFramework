@@ -65,13 +65,13 @@ namespace JKang.IpcServiceFramework.IO
                         .ReadAsync(buffer, offset, count, cancellationToken)
                         .ConfigureAwait(false);
 
-                    if (actualCount < count)
+                    if (actualCount == 0)
                     {
                         throw new IpcCommunicationException("Stream closed unexpectedly.");
                     }
 
-                    ms.Write(buffer, 0, count);
-                    remainingBytes -= count;
+                    ms.Write(buffer, 0, actualCount);
+                    remainingBytes -= actualCount;
                 }
                 return ms.ToArray();
             }
