@@ -8,6 +8,7 @@ using Moq;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
 using Xunit;
@@ -83,6 +84,22 @@ namespace JKang.IpcServiceFramework.NamedPipeTests
                 .InvokeAsync(x => x.ComplexTypeArray(input));
 
             Assert.Equal(expected, actual);
+        }
+
+        [Theory, AutoData]
+        public async Task LargeComplexTypeArray(Complex input, Complex expected)
+        {
+            IEnumerable<Complex> largeInput = Enumerable.Repeat(input, 1000);
+            IEnumerable<Complex> largeExpected = Enumerable.Repeat(expected, 100);
+
+            _serviceMock
+                .Setup(x => x.ComplexTypeArray(largeInput))
+                .Returns(largeExpected);
+
+            IEnumerable<Complex> actual = await _client
+                .InvokeAsync(x => x.ComplexTypeArray(largeInput));
+
+            Assert.Equal(largeExpected, actual);
         }
 
         [Fact]

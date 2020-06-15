@@ -7,6 +7,15 @@
 A .NET Core 3.1 based lightweight framework for efficient inter-process communication.
 Named pipeline and TCP support out-of-the-box, extensible with other protocols.
 
+## NuGet packages
+| Name | Purpose | Status |
+| ---- | ------- | ------ |
+| JKang.IpcServiceFramework.Client.NamedPipe | Client SDK to consume IPC service over Named pipe | [![NuGet version](https://badge.fury.io/nu/JKang.IpcServiceFramework.Client.NamedPipe.svg)](https://badge.fury.io/nu/JKang.IpcServiceFramework.Client.NamedPipe) |
+| JKang.IpcServiceFramework.Client.Tcp | Client SDK to consume IPC service over TCP | [![NuGet version](https://badge.fury.io/nu/JKang.IpcServiceFramework.Client.Tcp.svg)](https://badge.fury.io/nu/JKang.IpcServiceFramework.Client.Tcp) |
+| JKang.IpcServiceFramework.Hosting.NamedPipe | Server SDK to run Named pipe IPC service endpoint | [![NuGet version](https://badge.fury.io/nu/JKang.IpcServiceFramework.Hosting.NamedPipe.svg)](https://badge.fury.io/nu/JKang.IpcServiceFramework.Hosting.NamedPipe) |
+| JKang.IpcServiceFramework.Hosting.Tcp | Server SDK to run TCP IPC service endpoint | [![NuGet version](https://badge.fury.io/nu/JKang.IpcServiceFramework.Hosting.Tcp.svg)](https://badge.fury.io/nu/JKang.IpcServiceFramework.Hosting.Tcp) |
+
+
 ## Usage
 
  1. Create an interface as service contract and package it in an assembly to be referenced by server and client applications, for example:
@@ -91,15 +100,6 @@ Named pipeline and TCP support out-of-the-box, extensible with other protocols.
 
     string output = await client.InvokeAsync(x => x.ReverseString(input));
     ```
-
-## Downloads
-
-IpcServiceFramework is available via NuGet packages:
-
- - [JKang.IpcServiceFramework.Hosting.NamedPipe](https://www.nuget.org/packages/JKang.IpcServiceFramework.Hosting.NamedPipe/)
- - [JKang.IpcServiceFramework.Client.NamedPipe](https://www.nuget.org/packages/JKang.IpcServiceFramework.Client.NamedPipe/)
- - [JKang.IpcServiceFramework.Hosting.Tcp](https://www.nuget.org/packages/JKang.IpcServiceFramework.Hosting.Tcp/)
- - [JKang.IpcServiceFramework.Client.Tcp](https://www.nuget.org/packages/JKang.IpcServiceFramework.Client.Tcp/)
 
 ## FAQs
 
