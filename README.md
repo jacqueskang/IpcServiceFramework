@@ -67,7 +67,7 @@ Named pipeline and TCP support out-of-the-box, extensible with other protocols.
                 .ConfigureIpcHost(builder =>
                 {
                     // configure IPC endpoints
-                    builder.AddNamedPipeEndpoint<IInterProcessService>(pipeName: "my-pipe");
+                    builder.AddNamedPipeEndpoint<IInterProcessService>(pipeName: "pipeinternal");
                 })
                 .ConfigureLogging(builder =>
                 {
