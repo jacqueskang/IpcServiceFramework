@@ -1,9 +1,9 @@
-﻿using Castle.DynamicProxy;
-using JKang.IpcServiceFramework.IO;
+﻿using JKang.IpcServiceFramework.IO;
 using System;
 using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -12,7 +12,6 @@ namespace JKang.IpcServiceFramework.Client
     public abstract class IpcClient<TInterface> : IIpcClient<TInterface>
         where TInterface : class
     {
-        private static readonly ProxyGenerator _proxyGenerator = new ProxyGenerator();
         private readonly IpcClientOptions _options;
 
         protected IpcClient(
@@ -31,7 +30,7 @@ namespace JKang.IpcServiceFramework.Client
         public async Task InvokeAsync(Expression<Action<TInterface>> exp,
             CancellationToken cancellationToken = default)
         {
-            IpcRequest request = GetRequest(exp, new MyInterceptor());
+            IpcRequest request = GetRequest(exp, DispatchProxy.Create<TInterface, IpcProxy>());
             IpcResponse response = await GetResponseAsync(request, cancellationToken).ConfigureAwait(false);
 
             if (!response.Succeed())
@@ -46,7 +45,7 @@ namespace JKang.IpcServiceFramework.Client
         public async Task<TResult> InvokeAsync<TResult>(Expression<Func<TInterface, TResult>> exp,
             CancellationToken cancellationToken = default)
         {
-            IpcRequest request = GetRequest(exp, new MyInterceptor<TResult>());
+            IpcRequest request = GetRequest(exp, DispatchProxy.Create<TInterface, IpcProxy<TResult>>());
             IpcResponse response = await GetResponseAsync(request, cancellationToken).ConfigureAwait(false);
 
             if (!response.Succeed())
@@ -68,7 +67,7 @@ namespace JKang.IpcServiceFramework.Client
         public async Task InvokeAsync(Expression<Func<TInterface, Task>> exp,
             CancellationToken cancellationToken = default)
         {
-            IpcRequest request = GetRequest(exp, new MyInterceptor<Task>());
+            IpcRequest request = GetRequest(exp, DispatchProxy.Create<TInterface, IpcProxy<Task>>());
             IpcResponse response = await GetResponseAsync(request, cancellationToken).ConfigureAwait(false);
 
             if (!response.Succeed())
@@ -83,7 +82,7 @@ namespace JKang.IpcServiceFramework.Client
         public async Task<TResult> InvokeAsync<TResult>(Expression<Func<TInterface, Task<TResult>>> exp,
             CancellationToken cancellationToken = default)
         {
-            IpcRequest request = GetRequest(exp, new MyInterceptor<Task<TResult>>());
+            IpcRequest request = GetRequest(exp, DispatchProxy.Create<TInterface, IpcProxy<Task<TResult>>>());
             IpcResponse response = await GetResponseAsync(request, cancellationToken).ConfigureAwait(false);
 
             if (!response.Succeed())
@@ -101,7 +100,7 @@ namespace JKang.IpcServiceFramework.Client
             }
         }
 
-        private static IpcRequest GetRequest(Expression exp, MyInterceptor interceptor)
+        private static IpcRequest GetRequest(Expression exp, TInterface proxy)
         {
             if (!(exp is LambdaExpression lambdaExp))
             {
@@ -113,21 +112,20 @@ namespace JKang.IpcServiceFramework.Client
                 throw new ArgumentException("Only support calling method, ex: x => x.GetData(a, b)");
             }
 
-            TInterface proxy = _proxyGenerator.CreateInterfaceProxyWithoutTarget<TInterface>(interceptor);
             Delegate @delegate = lambdaExp.Compile();
             @delegate.DynamicInvoke(proxy);
 
             return new IpcRequest
             {
-                MethodName = interceptor.LastInvocation.Method.Name,
-                Parameters = interceptor.LastInvocation.Arguments,
+                MethodName = (proxy as IpcProxy).LastInvocation.Method.Name,
+                Parameters = (proxy as IpcProxy).LastInvocation.Arguments,
 
-                ParameterTypes = interceptor.LastInvocation.Method.GetParameters()
+                ParameterTypes = (proxy as IpcProxy).LastInvocation.Method.GetParameters()
                               .Select(p => p.ParameterType)
                               .ToArray(),
 
 
-                GenericArguments = interceptor.LastInvocation.GenericArguments,
+                GenericArguments = (proxy as IpcProxy).LastInvocation.Method.GetGenericArguments(),
             };
         }
 
@@ -148,22 +146,35 @@ namespace JKang.IpcServiceFramework.Client
             }
         }
 
-        private class MyInterceptor : IInterceptor
+        public class IpcProxy : DispatchProxy
         {
-            public IInvocation LastInvocation { get; private set; }
+            public Invocation LastInvocation { get; protected set; }
 
-            public virtual void Intercept(IInvocation invocation)
+            protected override object Invoke(MethodInfo targetMethod, object[] args)
             {
-                LastInvocation = invocation;
+                LastInvocation = new Invocation(targetMethod, args);
+                return null;
+            }
+
+            public class Invocation
+            {
+                public Invocation(MethodInfo method, object[] args)
+                {
+                    Method = method;
+                    Arguments = args;
+                }
+
+                public MethodInfo Method { get; }
+                public object[] Arguments { get; }
             }
         }
 
-        private class MyInterceptor<TResult> : MyInterceptor
+        public class IpcProxy<TResult> : IpcProxy
         {
-            public override void Intercept(IInvocation invocation)
+            protected override object Invoke(MethodInfo targetMethod, object[] args)
             {
-                base.Intercept(invocation);
-                invocation.ReturnValue = default(TResult);
+                LastInvocation = new Invocation(targetMethod, args);
+                return default(TResult);
             }
         }
     }
