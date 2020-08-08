@@ -38,7 +38,8 @@ namespace JKang.IpcServiceFramework.Hosting.NamedPipe
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 PipeSecurity pipeSecurity = new PipeSecurity();
-                PipeAccessRule psRule = new PipeAccessRule(@"Everyone", PipeAccessRights.FullControl, System.Security.AccessControl.AccessControlType.Allow);
+                SecurityIdentifier everyone = new SecurityIdentifier(WellKnownSidType.WorldSid, null);
+                PipeAccessRule psRule = new PipeAccessRule(everyone, PipeAccessRights.FullControl, System.Security.AccessControl.AccessControlType.Allow);
                 pipeSecurity.AddAccessRule(psRule);
                 using (var server = NamedPipeNative.CreateNamedPipe(_options.PipeName, (uint) _options.MaxConcurrentCalls, pipeSecurity))
                 {
