@@ -24,15 +24,13 @@ namespace JKang.IpcServiceFramework.Client.Tcp
         {
             cancellationToken.ThrowIfCancellationRequested();
             _client =  new TcpClient();
-            if (!_client.Connected)
+
+            if (!_client.ConnectAsync(_options.ServerIp, _options.ServerPort)
+                .Wait(_options.ConnectionTimeout, cancellationToken))
             {
-                if (!_client.ConnectAsync(_options.ServerIp, _options.ServerPort)
-                    .Wait(_options.ConnectionTimeout, cancellationToken))
-                {
-                    _client.Close();
-                    cancellationToken.ThrowIfCancellationRequested();
-                    throw new TimeoutException();
-                }
+                _client.Close();
+                cancellationToken.ThrowIfCancellationRequested();
+                throw new TimeoutException();
             }
 
             Stream stream = _client.GetStream();
