@@ -44,6 +44,10 @@ namespace JKang.IpcServiceFramework.TcpTests
                 .InvokeAsync(x => x.StringType(input));
 
             Assert.Equal(expected, actual);
+
+            // Execute the Host method again to validate the socket isn't improperly disposed
+            actual = await _client
+                .InvokeAsync(x => x.StringType(input));
         }
     }
 }

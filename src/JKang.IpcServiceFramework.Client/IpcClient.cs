@@ -130,9 +130,11 @@ namespace JKang.IpcServiceFramework.Client
         }
 
         protected abstract Task<Stream> ConnectToServerAsync(CancellationToken cancellationToken);
+        protected abstract void EndConnectToServer();
 
         private async Task<IpcResponse> GetResponseAsync(IpcRequest request, CancellationToken cancellationToken)
         {
+            IpcResponse response;
             using (Stream client = await ConnectToServerAsync(cancellationToken).ConfigureAwait(false))
             using (Stream client2 = _options.StreamTranslator == null ? client : _options.StreamTranslator(client))
             using (var writer = new IpcWriter(client2, _options.Serializer, leaveOpen: true))
@@ -142,8 +144,11 @@ namespace JKang.IpcServiceFramework.Client
                 await writer.WriteAsync(request, cancellationToken).ConfigureAwait(false);
 
                 // receive response
-                return await reader.ReadIpcResponseAsync(cancellationToken).ConfigureAwait(false);
+                response = await reader.ReadIpcResponseAsync(cancellationToken).ConfigureAwait(false);
             }
+
+            EndConnectToServer();
+            return response;
         }
 
         public class IpcProxy : DispatchProxy

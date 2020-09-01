@@ -11,7 +11,7 @@ namespace JKang.IpcServiceFramework.Client.Tcp
         where TInterface : class
     {
         private readonly TcpIpcClientOptions _options;
-        private readonly TcpClient _client = new TcpClient();
+        private TcpClient _client;
         private bool _isDisposed;
 
         public TcpIpcClient(string name, TcpIpcClientOptions options)
@@ -23,13 +23,16 @@ namespace JKang.IpcServiceFramework.Client.Tcp
         protected override Task<Stream> ConnectToServerAsync(CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
-
-            if (!_client.ConnectAsync(_options.ServerIp, _options.ServerPort)
-                .Wait(_options.ConnectionTimeout, cancellationToken))
+            _client =  new TcpClient();
+            if (!_client.Connected)
             {
-                _client.Close();
-                cancellationToken.ThrowIfCancellationRequested();
-                throw new TimeoutException();
+                if (!_client.ConnectAsync(_options.ServerIp, _options.ServerPort)
+                    .Wait(_options.ConnectionTimeout, cancellationToken))
+                {
+                    _client.Close();
+                    cancellationToken.ThrowIfCancellationRequested();
+                    throw new TimeoutException();
+                }
             }
 
             Stream stream = _client.GetStream();
@@ -58,6 +61,11 @@ namespace JKang.IpcServiceFramework.Client.Tcp
             return Task.FromResult(stream);
         }
 
+        protected override void EndConnectToServer()
+        {
+            _client?.Dispose();
+        }
+
         public void Dispose() => Dispose(true);
 
         protected virtual void Dispose(bool disposing)
@@ -69,7 +77,7 @@ namespace JKang.IpcServiceFramework.Client.Tcp
 
             if (disposing)
             {
-                _client.Dispose();
+                _client?.Dispose();
             }
 
             _isDisposed = true;

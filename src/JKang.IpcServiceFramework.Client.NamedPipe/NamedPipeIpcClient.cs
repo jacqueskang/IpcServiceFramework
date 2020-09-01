@@ -24,5 +24,10 @@ namespace JKang.IpcServiceFramework.Client.NamedPipe
             await stream.ConnectAsync(_options.ConnectionTimeout, cancellationToken).ConfigureAwait(false);
             return stream;
         }
+
+        protected override void EndConnectToServer()
+        {
+            return;
+        }
     }
 }
