@@ -35,9 +35,7 @@ Named pipeline and TCP support out-of-the-box, extensible with other protocols.
         public string ReverseString(string input)
         {
             char[] charArray = input.ToCharArray();
-            // Fix iuuse #160
-            //Array.Reverse(input.ToCharArray());
-            Array.Reverse(charArray);
+            Array.Reverse(input.ToCharArray());
             return new string(charArray);
         }
     }
