@@ -61,7 +61,7 @@ namespace JKang.IpcServiceFramework.Client.Tcp
 
         protected override void EndConnectToServer()
         {
-            _client?.Dispose();
+            _client?.Close();
         }
 
         public void Dispose() => Dispose(true);
