@@ -38,10 +38,11 @@ namespace JKang.IpcServiceFramework.TcpTests
             var sw = Stopwatch.StartNew();
             await Assert.ThrowsAsync<TimeoutException>(async () =>
             {
-                string output = await client.InvokeAsync(x => x.StringType("abc"));
+                var request = TestHelpers.CreateIpcRequest(typeof(ITestService), "StringType", new object[] { "abc" });
+                string output = await client.InvokeAsync<string>(request);
             });
 
-            Assert.True(sw.ElapsedMilliseconds < timeout * 2); // makesure timeout works with marge
+            Assert.True(sw.ElapsedMilliseconds < timeout * 2); // make sure timeout works with marge
         }
 
         [Fact]
@@ -57,17 +58,19 @@ namespace JKang.IpcServiceFramework.TcpTests
                     });
                 });
 
-            using var cts = new CancellationTokenSource();
-
-            Task.WaitAll(
-                Task.Run(async () =>
-                {
-                    await Assert.ThrowsAsync<OperationCanceledException>(async () =>
+            using (var cts = new CancellationTokenSource())
+            {
+                Task.WaitAll(
+                    Task.Run(async () =>
                     {
-                        await client.InvokeAsync(x => x.StringType(string.Empty), cts.Token);
-                    });
-                }),
-                Task.Run(() => cts.CancelAfter(1000)));
+                        await Assert.ThrowsAsync<OperationCanceledException>(async () =>
+                        {
+                            var request = TestHelpers.CreateIpcRequest(typeof(ITestService), "StringType", new object[] { string.Empty });
+                            await client.InvokeAsync(request, cts.Token);
+                        });
+                    }),
+                    Task.Run(() => cts.CancelAfter(1000)));
+            }
         }
     }
 }

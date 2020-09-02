@@ -47,9 +47,18 @@ namespace JKang.IpcServiceFramework.NamedPipeTests
                     });
                 });
 
+#if !DISABLE_DYNAMIC_CODE_GENERATION
             string actual = await client.InvokeAsync(x => x.StringType(input));
 
             Assert.Equal(expected, actual);
+#endif
+
+            var request = TestHelpers.CreateIpcRequest(typeof(ITestService), "StringType", new object[] { input });
+            var actual2 = await client.InvokeAsync<string>(request);
+
+            Assert.Equal(expected, actual2);
+
         }
+
     }
 }

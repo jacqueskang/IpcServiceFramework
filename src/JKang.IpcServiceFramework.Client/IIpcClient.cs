@@ -10,6 +10,7 @@ namespace JKang.IpcServiceFramework.Client
     {
         string Name { get; }
 
+#if !DISABLE_DYNAMIC_CODE_GENERATION
         Task InvokeAsync(
             Expression<Action<TInterface>> exp,
             CancellationToken cancellationToken = default);
@@ -25,5 +26,12 @@ namespace JKang.IpcServiceFramework.Client
         Task<TResult> InvokeAsync<TResult>(
             Expression<Func<TInterface, Task<TResult>>> exp,
             CancellationToken cancellationToken = default);
+#endif
+
+        Task<TResult> InvokeAsync<TResult>(IpcRequest request,
+           CancellationToken cancellationToken = default(CancellationToken));
+
+        Task InvokeAsync(IpcRequest request,
+            CancellationToken cancellationToken = default(CancellationToken));
     }
 }

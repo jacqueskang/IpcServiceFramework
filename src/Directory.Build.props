@@ -11,4 +11,8 @@
     <AssemblyOriginatorKeyFile>..\IpcServiceFramework.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(DisableDynamicCodeGeneration)' == 'true'">
+    <DefineConstants>DISABLE_DYNAMIC_CODE_GENERATION</DefineConstants>
+  </PropertyGroup>
+
 </Project>

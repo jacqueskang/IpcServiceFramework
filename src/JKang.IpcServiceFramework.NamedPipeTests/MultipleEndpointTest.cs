@@ -1,7 +1,9 @@
 using AutoFixture.Xunit2;
+using Castle.DynamicProxy.Generators.Emitters.SimpleAST;
 using JKang.IpcServiceFramework.Client;
 using JKang.IpcServiceFramework.Hosting;
 using JKang.IpcServiceFramework.NamedPipeTests.Fixtures;
+using JKang.IpcServiceFramework.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Moq;
@@ -43,15 +45,36 @@ namespace JKang.IpcServiceFramework.NamedPipeTests
                 .GetRequiredService<IIpcClientFactory<ITestService>>()
                 .CreateClient("client1");
 
+#if !DISABLE_DYNAMIC_CODE_GENERATION
             await client1.InvokeAsync(x => x.ReturnVoid());
             service1.Verify(x => x.ReturnVoid(), Times.Once);
+#endif
+
+            var request = TestHelpers.CreateIpcRequest("ReturnVoid");
+            await client1.InvokeAsync(request);
+#if !DISABLE_DYNAMIC_CODE_GENERATION
+            service1.Verify(x => x.ReturnVoid(), Times.Exactly(2));
+#else
+            service1.Verify(x => x.ReturnVoid(), Times.Once);
+#endif
 
             IIpcClient<ITestService2> client2 = clientServiceProvider
                 .GetRequiredService<IIpcClientFactory<ITestService2>>()
                 .CreateClient("client2");
+
+#if !DISABLE_DYNAMIC_CODE_GENERATION
             await client2.InvokeAsync(x => x.SomeMethod());
             service2.Verify(x => x.SomeMethod(), Times.Once);
+#endif
 
+            request = TestHelpers.CreateIpcRequest("SomeMethod");
+            await client2.InvokeAsync(request);
+
+#if !DISABLE_DYNAMIC_CODE_GENERATION
+            service2.Verify(x => x.SomeMethod(), Times.Exactly(2));
+#else
+            service2.Verify(x => x.SomeMethod(), Times.Once);
+#endif
         }
     }
 }
