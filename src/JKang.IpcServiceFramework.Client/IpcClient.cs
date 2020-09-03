@@ -129,12 +129,12 @@ namespace JKang.IpcServiceFramework.Client
             };
         }
 
-        protected abstract Task<Stream> ConnectToServerAsync(CancellationToken cancellationToken);
+        protected abstract Task<IpcStreamWrapper> ConnectToServerAsync(CancellationToken cancellationToken);
 
         private async Task<IpcResponse> GetResponseAsync(IpcRequest request, CancellationToken cancellationToken)
         {
-            using (Stream client = await ConnectToServerAsync(cancellationToken).ConfigureAwait(false))
-            using (Stream client2 = _options.StreamTranslator == null ? client : _options.StreamTranslator(client))
+            using (IpcStreamWrapper client = await ConnectToServerAsync(cancellationToken).ConfigureAwait(false))
+            using (Stream client2 = _options.StreamTranslator == null ? client.Stream : _options.StreamTranslator(client.Stream))
             using (var writer = new IpcWriter(client2, _options.Serializer, leaveOpen: true))
             using (var reader = new IpcReader(client2, _options.Serializer, leaveOpen: true))
             {
