@@ -100,7 +100,7 @@ namespace JKang.IpcServiceFramework.Client
             }
         }
 
-        private static IpcRequest GetRequest(Expression exp, TInterface proxy)
+        private IpcRequest GetRequest(Expression exp, TInterface proxy)
         {
             if (!(exp is LambdaExpression lambdaExp))
             {
@@ -115,18 +115,60 @@ namespace JKang.IpcServiceFramework.Client
             Delegate @delegate = lambdaExp.Compile();
             @delegate.DynamicInvoke(proxy);
 
-            return new IpcRequest
+            if (_options.UseSimpleTypeNameAssemblyFormatHandling)
             {
-                MethodName = (proxy as IpcProxy).LastInvocation.Method.Name,
-                Parameters = (proxy as IpcProxy).LastInvocation.Arguments,
+                IpcRequestParameterType[] paramByName = null;
+                IpcRequestParameterType[] genericByName = null;
 
-                ParameterTypes = (proxy as IpcProxy).LastInvocation.Method.GetParameters()
-                              .Select(p => p.ParameterType)
-                              .ToArray(),
+                var parameterTypes = (proxy as IpcProxy).LastInvocation.Method.GetParameters().Select(p => p.ParameterType);
+
+                if (parameterTypes.Any())
+                {
+                    paramByName = new IpcRequestParameterType[parameterTypes.Count()];
+                    int i = 0;
+                    foreach (var type in parameterTypes)
+                    {
+                        paramByName[i++] = new IpcRequestParameterType(type);
+                    }
+                }
+
+                var genericTypes = (proxy as IpcProxy).LastInvocation.Method.GetGenericArguments();
+
+                if (genericTypes.Length > 0)
+                {
+                    genericByName = new IpcRequestParameterType[genericTypes.Count()];
+                    int i = 0;
+                    foreach (var type in genericTypes)
+                    {
+                        genericByName[i++] = new IpcRequestParameterType(type);
+                    }
+                }
 
 
-                GenericArguments = (proxy as IpcProxy).LastInvocation.Method.GetGenericArguments(),
-            };
+                return new IpcRequest
+                {
+                    MethodName = (proxy as IpcProxy).LastInvocation.Method.Name,
+                    Parameters = (proxy as IpcProxy).LastInvocation.Arguments,
+
+                    ParameterTypesByName = paramByName,
+                    GenericArgumentsByName = genericByName
+                };
+            }
+            else
+            {
+                return new IpcRequest
+                {
+                    MethodName = (proxy as IpcProxy).LastInvocation.Method.Name,
+                    Parameters = (proxy as IpcProxy).LastInvocation.Arguments,
+
+                    ParameterTypes = (proxy as IpcProxy).LastInvocation.Method.GetParameters()
+                                  .Select(p => p.ParameterType)
+                                  .ToArray(),
+
+
+                    GenericArguments = (proxy as IpcProxy).LastInvocation.Method.GetGenericArguments(),
+                };
+            }
         }
 
         protected abstract Task<Stream> ConnectToServerAsync(CancellationToken cancellationToken);
