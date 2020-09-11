@@ -177,7 +177,29 @@ namespace JKang.IpcServiceFramework.Hosting
             }
 
             Type[] genericArguments = method.GetGenericArguments();
-            Type[] requestGenericArguments = request.GenericArguments?.ToArray() ?? Array.Empty<Type>();
+            Type[] requestGenericArguments;
+
+            if (request.GenericArguments != null)
+            {
+                // Generic arguments passed by Type
+                requestGenericArguments = request.GenericArguments.ToArray();
+            }
+            else if (request.GenericArgumentsByName != null)
+            {
+                // Generic arguments passed by name
+                requestGenericArguments = new Type[request.GenericArgumentsByName.Count()];
+                int i = 0;
+                foreach (var pair in request.GenericArgumentsByName)
+                {
+                    var a = Assembly.Load(pair.AssemblyName);
+                    requestGenericArguments[i++] = a.GetType(pair.ParameterType);
+                }
+            }
+            else
+            {
+                requestGenericArguments = Array.Empty<Type>();
+            }
+
             if (genericArguments.Length != requestGenericArguments.Length)
             {
                 throw new IpcFaultException(IpcStatus.BadRequest,
@@ -245,9 +267,61 @@ namespace JKang.IpcServiceFramework.Hosting
 
             var serviceMethods = allMethods.Where(t => t.Name == request.MethodName).ToList();
 
+            // Check if we were passed Type objects or IpcRequestParameterType objects
+            if ((request.ParameterTypes != null) && (request.ParameterTypesByName != null))
+            {
+                throw new IpcFaultException(IpcStatus.BadRequest, "Only one of ParameterTypes and ParameterTypesByName should be set!");
+            }
+            if ((request.GenericArguments != null) && (request.GenericArgumentsByName != null))
+            {
+                throw new IpcFaultException(IpcStatus.BadRequest, "Only one of GenericArguments and GenericArgumentsByName should be set!");
+            }
+
             object[] requestParameters = request.Parameters?.ToArray() ?? Array.Empty<object>();
-            Type[] requestGenericArguments = request.GenericArguments?.ToArray() ?? Array.Empty<Type>();
-            Type[] requestParameterTypes = request.ParameterTypes?.ToArray() ?? Array.Empty<Type>();
+
+            Type[] requestGenericArguments;
+            if (request.GenericArguments != null)
+            {
+                // Generic arguments passed by Type
+                requestGenericArguments = request.GenericArguments.ToArray();
+            }
+            else if (request.GenericArgumentsByName != null)
+            {
+                // Generic arguments passed by name
+                requestGenericArguments = new Type[request.GenericArgumentsByName.Count()];
+                int i = 0;
+                foreach (var pair in request.GenericArgumentsByName)
+                {
+                    var a = Assembly.Load(pair.AssemblyName);
+                    requestGenericArguments[i++] = a.GetType(pair.ParameterType);
+                }
+            }
+            else
+            {
+                requestGenericArguments = Array.Empty<Type>();
+            }
+
+            Type[] requestParameterTypes;
+            if (request.ParameterTypes != null)
+            {
+                // Parameter types passed by Type
+                requestParameterTypes = request.ParameterTypes.ToArray();
+            }
+            else if (request.ParameterTypesByName != null)
+            {
+                // Parameter types passed by name
+                requestParameterTypes = new Type[request.ParameterTypesByName.Count()];
+                int i = 0;
+                foreach (var pair in request.ParameterTypesByName)
+                {
+                    var a = Assembly.Load(pair.AssemblyName);
+                    requestParameterTypes[i++] = a.GetType(pair.ParameterType);
+                }
+            }
+            else
+            {
+                requestParameterTypes = Array.Empty<Type>();
+            }
 
             foreach (MethodInfo serviceMethod in serviceMethods)
             {

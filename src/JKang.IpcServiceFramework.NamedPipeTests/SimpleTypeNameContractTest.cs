@@ -18,26 +18,35 @@ namespace JKang.IpcServiceFramework.NamedPipeTests
     /// <summary>
     /// Validates the IPC pipeline is working end-to-end for a variety of method types.
     /// Tests both dynamically generated IpcRequests (via DispatchProxy) and statically generated ones.
-    /// Tests using full parameter types (UseSimpleTypeNameAssemblyFormatHandling == false).
+    /// Tests using simple parameter types (IpcClentOptions.UseSimpleTypeNameAssemblyFormatHandling == true).
     /// </summary>
     /// <seealso cref="Xunit.IClassFixture{JKang.IpcServiceFramework.Testing.IpcApplicationFactory{JKang.IpcServiceFramework.NamedPipeTests.Fixtures.ITestService}}" />
-    public class ContractTest : IClassFixture<IpcApplicationFactory<ITestService>>
+    public class SimpleTypeNameContractTest : IClassFixture<IpcApplicationFactory<ITestService>>
     {
         private readonly Mock<ITestService> _serviceMock = new Mock<ITestService>();
         private readonly IIpcClient<ITestService> _client;
 
-        public ContractTest(IpcApplicationFactory<ITestService> factory)
+        public SimpleTypeNameContractTest(IpcApplicationFactory<ITestService> factory)
         {
             string pipeName = Guid.NewGuid().ToString();
             _client = factory
                 .WithServiceImplementation(_ => _serviceMock.Object)
                 .WithIpcHostConfiguration(hostBuilder =>
                 {
-                    hostBuilder.AddNamedPipeEndpoint<ITestService>(pipeName);
+                    hostBuilder.AddNamedPipeEndpoint<ITestService>(options =>
+                    {
+                        options.PipeName = pipeName;
+                        options.IncludeFailureDetailsInResponse = true;
+                    });
                 })
                 .CreateClient((name, services) =>
                 {
-                    services.AddNamedPipeIpcClient<ITestService>(name, pipeName);
+                    services.AddNamedPipeIpcClient<ITestService>(name, (_, options) =>
+                    {
+                        options.UseSimpleTypeNameAssemblyFormatHandling = true;
+                        options.PipeName = pipeName;
+                    }
+                    );
                 });
         }
 
@@ -156,19 +165,6 @@ namespace JKang.IpcServiceFramework.NamedPipeTests
 
             decimal actual = await _client
                 .InvokeAsync(x => x.GenericMethod<decimal>(input));
-
-            Assert.Equal(expected, actual);
-        }
-
-        [Theory, AutoData]
-        public async Task AsyncMethod(int expected)
-        {
-            _serviceMock
-                .Setup(x => x.AsyncMethod())
-                .ReturnsAsync(expected);
-
-            int actual = await _client
-                .InvokeAsync(x => x.AsyncMethod());
 
             Assert.Equal(expected, actual);
         }
