@@ -132,7 +132,7 @@ namespace JKang.IpcServiceFramework.Client
         }
 
 #if !DISABLE_DYNAMIC_CODE_GENERATION
-        private static IpcRequest GetRequest(Expression exp, TInterface proxy)
+        private IpcRequest GetRequest(Expression exp, TInterface proxy)
         {
             if (!(exp is LambdaExpression lambdaExp))
             {
