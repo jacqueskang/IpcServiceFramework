@@ -22,10 +22,10 @@ namespace JKang.IpcServiceFramework
             => new IpcResponse(IpcStatus.InternalServerError, null, null, null);
 
         public static IpcResponse InternalServerError(string errorDetails)
-            => new IpcResponse(IpcStatus.BadRequest, null, errorDetails, null);
+            => new IpcResponse(IpcStatus.InternalServerError, null, errorDetails, null);
 
         public static IpcResponse InternalServerError(string errorDetails, Exception innerException)
-            => new IpcResponse(IpcStatus.BadRequest, null, errorDetails, innerException);
+            => new IpcResponse(IpcStatus.InternalServerError, null, errorDetails, innerException);
 
         public IpcResponse(
             IpcStatus status,

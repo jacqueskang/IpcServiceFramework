@@ -1,4 +1,4 @@
-﻿using AutoFixture.Xunit2;
+using AutoFixture.Xunit2;
 using JKang.IpcServiceFramework.Client;
 using JKang.IpcServiceFramework.Hosting;
 using JKang.IpcServiceFramework.TcpTests.Fixtures;
@@ -36,6 +36,8 @@ namespace JKang.IpcServiceFramework.TcpTests
         [Theory, AutoData]
         public async Task HappyPath(string input, string expected)
         {
+#if !DISABLE_DYNAMIC_CODE_GENERATION
+
             _serviceMock
                 .Setup(x => x.StringType(input))
                 .Returns(expected);
@@ -44,6 +46,25 @@ namespace JKang.IpcServiceFramework.TcpTests
                 .InvokeAsync(x => x.StringType(input));
 
             Assert.Equal(expected, actual);
+#endif
+        }
+
+        [Theory, AutoData]
+        public async Task HappyPath2(string input, string expected)
+        {
+            _serviceMock
+                .Setup(x => x.StringType(input))
+                .Returns(expected);
+
+            var request = TestHelpers.CreateIpcRequest(typeof(ITestService), "StringType", new object[] { input });
+            string actual = await _client
+                .InvokeAsync<string>(request);
+
+            Assert.Equal(expected, actual);
+
+            // Execute the method again to validate the socket isn't improperly disposed
+            actual = await _client
+                .InvokeAsync(x => x.StringType(input));
         }
     }
 }

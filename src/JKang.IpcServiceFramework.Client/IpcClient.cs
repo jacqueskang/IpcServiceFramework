@@ -24,14 +24,15 @@ namespace JKang.IpcServiceFramework.Client
 
         public string Name { get; }
 
+#if !DISABLE_DYNAMIC_CODE_GENERATION
         /// <exception cref="IpcSerializationException">If unable to serialize request</exception>
         /// <exception cref="IpcCommunicationException">If communication is broken</exception>
         /// <exception cref="IpcFaultException">If error occurred in server</exception>
         public async Task InvokeAsync(Expression<Action<TInterface>> exp,
             CancellationToken cancellationToken = default)
         {
-            IpcRequest request = GetRequest(exp, DispatchProxy.Create<TInterface, IpcProxy>());
-            IpcResponse response = await GetResponseAsync(request, cancellationToken).ConfigureAwait(false);
+            var request = GetRequest(exp, DispatchProxy.Create<TInterface, IpcProxy>());
+            var response = await GetResponseAsync(request, cancellationToken).ConfigureAwait(false);
 
             if (!response.Succeed())
             {
@@ -45,8 +46,8 @@ namespace JKang.IpcServiceFramework.Client
         public async Task<TResult> InvokeAsync<TResult>(Expression<Func<TInterface, TResult>> exp,
             CancellationToken cancellationToken = default)
         {
-            IpcRequest request = GetRequest(exp, DispatchProxy.Create<TInterface, IpcProxy<TResult>>());
-            IpcResponse response = await GetResponseAsync(request, cancellationToken).ConfigureAwait(false);
+            var request = GetRequest(exp, DispatchProxy.Create<TInterface, IpcProxy<TResult>>());
+            var response = await GetResponseAsync(request, cancellationToken).ConfigureAwait(false);
 
             if (!response.Succeed())
             {
@@ -67,8 +68,8 @@ namespace JKang.IpcServiceFramework.Client
         public async Task InvokeAsync(Expression<Func<TInterface, Task>> exp,
             CancellationToken cancellationToken = default)
         {
-            IpcRequest request = GetRequest(exp, DispatchProxy.Create<TInterface, IpcProxy<Task>>());
-            IpcResponse response = await GetResponseAsync(request, cancellationToken).ConfigureAwait(false);
+            var request = GetRequest(exp, DispatchProxy.Create<TInterface, IpcProxy<Task>>());
+            var response = await GetResponseAsync(request, cancellationToken).ConfigureAwait(false);
 
             if (!response.Succeed())
             {
@@ -82,8 +83,28 @@ namespace JKang.IpcServiceFramework.Client
         public async Task<TResult> InvokeAsync<TResult>(Expression<Func<TInterface, Task<TResult>>> exp,
             CancellationToken cancellationToken = default)
         {
-            IpcRequest request = GetRequest(exp, DispatchProxy.Create<TInterface, IpcProxy<Task<TResult>>>());
-            IpcResponse response = await GetResponseAsync(request, cancellationToken).ConfigureAwait(false);
+            var request = GetRequest(exp, DispatchProxy.Create<TInterface, IpcProxy<Task<TResult>>>());
+            var response = await GetResponseAsync(request, cancellationToken).ConfigureAwait(false);
+
+            if (!response.Succeed())
+            {
+                throw response.CreateFaultException();
+            }
+
+            if (_options.ValueConverter.TryConvert(response.Data, typeof(TResult), out object @return))
+            {
+                return (TResult)@return;
+            }
+            else
+            {
+                throw new IpcSerializationException($"Unable to convert returned value to '{typeof(TResult).Name}'.");
+            }
+        }
+#endif
+
+        public async Task<TResult> InvokeAsync<TResult>(IpcRequest request, CancellationToken cancellationToken = default)
+        {
+            var response = await GetResponseAsync(request, cancellationToken).ConfigureAwait(false);
 
             if (!response.Succeed())
             {
@@ -100,7 +121,18 @@ namespace JKang.IpcServiceFramework.Client
             }
         }
 
-        private static IpcRequest GetRequest(Expression exp, TInterface proxy)
+        public async Task InvokeAsync(IpcRequest request, CancellationToken cancellationToken = default)
+        {
+            var response = await GetResponseAsync(request, cancellationToken).ConfigureAwait(false);
+
+            if (!response.Succeed())
+            {
+                throw response.CreateFaultException();
+            }
+        }
+
+#if !DISABLE_DYNAMIC_CODE_GENERATION
+        private IpcRequest GetRequest(Expression exp, TInterface proxy)
         {
             if (!(exp is LambdaExpression lambdaExp))
             {
@@ -115,26 +147,69 @@ namespace JKang.IpcServiceFramework.Client
             Delegate @delegate = lambdaExp.Compile();
             @delegate.DynamicInvoke(proxy);
 
-            return new IpcRequest
+            if (_options.UseSimpleTypeNameAssemblyFormatHandling)
             {
-                MethodName = (proxy as IpcProxy).LastInvocation.Method.Name,
-                Parameters = (proxy as IpcProxy).LastInvocation.Arguments,
+                IpcRequestParameterType[] paramByName = null;
+                IpcRequestParameterType[] genericByName = null;
 
-                ParameterTypes = (proxy as IpcProxy).LastInvocation.Method.GetParameters()
-                              .Select(p => p.ParameterType)
-                              .ToArray(),
+                var parameterTypes = (proxy as IpcProxy).LastInvocation.Method.GetParameters().Select(p => p.ParameterType);
+
+                if (parameterTypes.Any())
+                {
+                    paramByName = new IpcRequestParameterType[parameterTypes.Count()];
+                    int i = 0;
+                    foreach (var type in parameterTypes)
+                    {
+                        paramByName[i++] = new IpcRequestParameterType(type);
+                    }
+                }
+
+                var genericTypes = (proxy as IpcProxy).LastInvocation.Method.GetGenericArguments();
+
+                if (genericTypes.Length > 0)
+                {
+                    genericByName = new IpcRequestParameterType[genericTypes.Count()];
+                    int i = 0;
+                    foreach (var type in genericTypes)
+                    {
+                        genericByName[i++] = new IpcRequestParameterType(type);
+                    }
+                }
 
 
-                GenericArguments = (proxy as IpcProxy).LastInvocation.Method.GetGenericArguments(),
-            };
+                return new IpcRequest
+                {
+                    MethodName = (proxy as IpcProxy).LastInvocation.Method.Name,
+                    Parameters = (proxy as IpcProxy).LastInvocation.Arguments,
+
+                    ParameterTypesByName = paramByName,
+                    GenericArgumentsByName = genericByName
+                };
+            }
+            else
+            {
+                return new IpcRequest
+                {
+                    MethodName = (proxy as IpcProxy).LastInvocation.Method.Name,
+                    Parameters = (proxy as IpcProxy).LastInvocation.Arguments,
+
+                    ParameterTypes = (proxy as IpcProxy).LastInvocation.Method.GetParameters()
+                                  .Select(p => p.ParameterType)
+                                  .ToArray(),
+
+
+                    GenericArguments = (proxy as IpcProxy).LastInvocation.Method.GetGenericArguments(),
+                };
+            }
         }
+#endif
 
-        protected abstract Task<Stream> ConnectToServerAsync(CancellationToken cancellationToken);
+        protected abstract Task<IpcStreamWrapper> ConnectToServerAsync(CancellationToken cancellationToken);
 
         private async Task<IpcResponse> GetResponseAsync(IpcRequest request, CancellationToken cancellationToken)
         {
-            using (Stream client = await ConnectToServerAsync(cancellationToken).ConfigureAwait(false))
-            using (Stream client2 = _options.StreamTranslator == null ? client : _options.StreamTranslator(client))
+            using (IpcStreamWrapper client = await ConnectToServerAsync(cancellationToken).ConfigureAwait(false))
+            using (Stream client2 = _options.StreamTranslator == null ? client.Stream : _options.StreamTranslator(client.Stream))
             using (var writer = new IpcWriter(client2, _options.Serializer, leaveOpen: true))
             using (var reader = new IpcReader(client2, _options.Serializer, leaveOpen: true))
             {
@@ -146,6 +221,7 @@ namespace JKang.IpcServiceFramework.Client
             }
         }
 
+#if !DISABLE_DYNAMIC_CODE_GENERATION
         public class IpcProxy : DispatchProxy
         {
             public Invocation LastInvocation { get; protected set; }
@@ -177,5 +253,6 @@ namespace JKang.IpcServiceFramework.Client
                 return default(TResult);
             }
         }
+#endif
     }
 }

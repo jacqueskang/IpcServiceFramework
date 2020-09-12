@@ -7,11 +7,10 @@ using System.Threading.Tasks;
 
 namespace JKang.IpcServiceFramework.Client.Tcp
 {
-    internal class TcpIpcClient<TInterface> : IpcClient<TInterface>, IDisposable
+    internal class TcpIpcClient<TInterface> : IpcClient<TInterface>
         where TInterface : class
     {
         private readonly TcpIpcClientOptions _options;
-        private readonly TcpClient _client = new TcpClient();
         private bool _isDisposed;
 
         public TcpIpcClient(string name, TcpIpcClientOptions options)
@@ -20,19 +19,22 @@ namespace JKang.IpcServiceFramework.Client.Tcp
             _options = options ?? throw new ArgumentNullException(nameof(options));
         }
 
-        protected override Task<Stream> ConnectToServerAsync(CancellationToken cancellationToken)
+        protected override Task<IpcStreamWrapper> ConnectToServerAsync(CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
+#pragma warning disable CA2000 // Dispose objects before losing scope. Disposed by IpcStreamWrapper
+            TcpClient client = new TcpClient();
+#pragma warning restore CA2000 // Dispose objects before losing scope
 
-            if (!_client.ConnectAsync(_options.ServerIp, _options.ServerPort)
+            if (!client.ConnectAsync(_options.ServerIp, _options.ServerPort)
                 .Wait(_options.ConnectionTimeout, cancellationToken))
             {
-                _client.Close();
+                client.Close();
                 cancellationToken.ThrowIfCancellationRequested();
                 throw new TimeoutException();
             }
 
-            Stream stream = _client.GetStream();
+            Stream stream = client.GetStream();
 
             // if SSL is enabled, wrap the stream in an SslStream in client mode
             if (_options.EnableSsl)
@@ -55,24 +57,7 @@ namespace JKang.IpcServiceFramework.Client.Tcp
                 stream = ssl;
             }
 
-            return Task.FromResult(stream);
-        }
-
-        public void Dispose() => Dispose(true);
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (_isDisposed)
-            {
-                return;
-            }
-
-            if (disposing)
-            {
-                _client.Dispose();
-            }
-
-            _isDisposed = true;
+            return Task.FromResult(new IpcStreamWrapper(stream, client));
         }
     }
 }

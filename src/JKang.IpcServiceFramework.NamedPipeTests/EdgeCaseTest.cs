@@ -34,6 +34,7 @@ namespace JKang.IpcServiceFramework.NamedPipeTests
                     });
                 });
 
+#if !DISABLE_DYNAMIC_CODE_GENERATION
             var sw = Stopwatch.StartNew();
             await Assert.ThrowsAsync<TimeoutException>(async () =>
             {
@@ -41,6 +42,16 @@ namespace JKang.IpcServiceFramework.NamedPipeTests
             });
 
             Assert.True(sw.ElapsedMilliseconds < timeout * 2); // makesure timeout works with marge
+#endif
+
+            var sw2 = Stopwatch.StartNew();
+            await Assert.ThrowsAsync<TimeoutException>(async () =>
+            {
+                var request = TestHelpers.CreateIpcRequest(typeof(ITestService), "StringType", new object[] { "abc" });
+                string output = await client.InvokeAsync<string>(request);
+            });
+
+            Assert.True(sw2.ElapsedMilliseconds < timeout * 2); // makesure timeout works with marge
         }
 
         [Fact]
@@ -56,17 +67,33 @@ namespace JKang.IpcServiceFramework.NamedPipeTests
                     });
                 });
 
-            using var cts = new CancellationTokenSource();
-
-            Task.WaitAll(
-                Task.Run(async () =>
-                {
-                    await Assert.ThrowsAsync<OperationCanceledException>(async () =>
+#if !DISABLE_DYNAMIC_CODE_GENERATION
+            using (var cts = new CancellationTokenSource())
+            {
+                Task.WaitAll(
+                    Task.Run(async () =>
                     {
-                        await client.InvokeAsync(x => x.ReturnVoid(), cts.Token);
-                    });
-                }),
-                Task.Run(() => cts.CancelAfter(1000)));
+                        await Assert.ThrowsAsync<OperationCanceledException>(async () =>
+                        {
+                            await client.InvokeAsync(x => x.ReturnVoid(), cts.Token);
+                        });
+                    }),
+                    Task.Run(() => cts.CancelAfter(1000)));
+            }
+#endif
+            using (var cts = new CancellationTokenSource())
+            {
+                Task.WaitAll(
+                    Task.Run(async () =>
+                    {
+                        await Assert.ThrowsAsync<OperationCanceledException>(async () =>
+                        {
+                            var request = TestHelpers.CreateIpcRequest("ReturnVoid");
+                            await client.InvokeAsync(request, cts.Token);
+                        });
+                    }),
+                    Task.Run(() => cts.CancelAfter(1000)));
+            }
         }
     }
 }
