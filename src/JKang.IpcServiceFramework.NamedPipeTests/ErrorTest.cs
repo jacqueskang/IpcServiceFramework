@@ -47,12 +47,22 @@ namespace JKang.IpcServiceFramework.NamedPipeTests
                     });
                 });
 
+#if !DISABLE_DYNAMIC_CODE_GENERATION
             IpcFaultException actual = await Assert.ThrowsAsync<IpcFaultException>(async () =>
             {
                 await client.InvokeAsync(x => x.ThrowException());
             });
 
             Assert.Null(actual.InnerException);
+#endif
+
+            IpcFaultException actual2 = await Assert.ThrowsAsync<IpcFaultException>(async () =>
+            {
+                var request = TestHelpers.CreateIpcRequest("ThrowException");
+                await client.InvokeAsync(request);
+            });
+
+            Assert.Null(actual2.InnerException);
         }
 
         [Theory, AutoData]
@@ -78,6 +88,7 @@ namespace JKang.IpcServiceFramework.NamedPipeTests
                     });
                 });
 
+#if !DISABLE_DYNAMIC_CODE_GENERATION
             IpcFaultException actual = await Assert.ThrowsAsync<IpcFaultException>(async () =>
             {
                 await client.InvokeAsync(x => x.ThrowException());
@@ -86,6 +97,17 @@ namespace JKang.IpcServiceFramework.NamedPipeTests
             Assert.NotNull(actual.InnerException);
             Assert.NotNull(actual.InnerException.InnerException);
             Assert.Equal(details, actual.InnerException.InnerException.Message);
+#endif
+
+            IpcFaultException actual2 = await Assert.ThrowsAsync<IpcFaultException>(async () =>
+            {
+                var request = TestHelpers.CreateIpcRequest("ThrowException");
+                await client.InvokeAsync(request);
+            });
+
+            Assert.NotNull(actual2.InnerException);
+            Assert.NotNull(actual2.InnerException.InnerException);
+            Assert.Equal(details, actual2.InnerException.InnerException.Message);
         }
 
         [Theory, AutoData]
@@ -101,9 +123,17 @@ namespace JKang.IpcServiceFramework.NamedPipeTests
                     services.AddNamedPipeIpcClient<ITestService>(name, pipeName);
                 });
 
+#if !DISABLE_DYNAMIC_CODE_GENERATION
             await Assert.ThrowsAnyAsync<IpcSerializationException>(async () =>
             {
                 await client.InvokeAsync(x => x.UnserializableInput(UnserializableObject.Create()));
+            });
+#endif
+
+            await Assert.ThrowsAnyAsync<IpcSerializationException>(async () =>
+            {
+                var request = TestHelpers.CreateIpcRequest(typeof(ITestService), "UnserializableInput", UnserializableObject.Create());
+                await client.InvokeAsync(request);
             });
         }
 
@@ -124,12 +154,22 @@ namespace JKang.IpcServiceFramework.NamedPipeTests
                     services.AddNamedPipeIpcClient<ITestService>(name, pipeName);
                 });
 
+#if !DISABLE_DYNAMIC_CODE_GENERATION
             IpcFaultException exception = await Assert.ThrowsAnyAsync<IpcFaultException>(async () =>
             {
                 await client.InvokeAsync(x => x.UnserializableOutput());
             });
 
             Assert.Equal(IpcStatus.InternalServerError, exception.Status);
+#endif
+
+            IpcFaultException exception2 = await Assert.ThrowsAnyAsync<IpcFaultException>(async () =>
+            {
+                var request = TestHelpers.CreateIpcRequest("UnserializableOutput");
+                await client.InvokeAsync(request);
+            });
+
+            Assert.Equal(IpcStatus.InternalServerError, exception2.Status);
         }
     }
 }

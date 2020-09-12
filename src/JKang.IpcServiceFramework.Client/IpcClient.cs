@@ -24,14 +24,15 @@ namespace JKang.IpcServiceFramework.Client
 
         public string Name { get; }
 
+#if !DISABLE_DYNAMIC_CODE_GENERATION
         /// <exception cref="IpcSerializationException">If unable to serialize request</exception>
         /// <exception cref="IpcCommunicationException">If communication is broken</exception>
         /// <exception cref="IpcFaultException">If error occurred in server</exception>
         public async Task InvokeAsync(Expression<Action<TInterface>> exp,
             CancellationToken cancellationToken = default)
         {
-            IpcRequest request = GetRequest(exp, DispatchProxy.Create<TInterface, IpcProxy>());
-            IpcResponse response = await GetResponseAsync(request, cancellationToken).ConfigureAwait(false);
+            var request = GetRequest(exp, DispatchProxy.Create<TInterface, IpcProxy>());
+            var response = await GetResponseAsync(request, cancellationToken).ConfigureAwait(false);
 
             if (!response.Succeed())
             {
@@ -45,8 +46,8 @@ namespace JKang.IpcServiceFramework.Client
         public async Task<TResult> InvokeAsync<TResult>(Expression<Func<TInterface, TResult>> exp,
             CancellationToken cancellationToken = default)
         {
-            IpcRequest request = GetRequest(exp, DispatchProxy.Create<TInterface, IpcProxy<TResult>>());
-            IpcResponse response = await GetResponseAsync(request, cancellationToken).ConfigureAwait(false);
+            var request = GetRequest(exp, DispatchProxy.Create<TInterface, IpcProxy<TResult>>());
+            var response = await GetResponseAsync(request, cancellationToken).ConfigureAwait(false);
 
             if (!response.Succeed())
             {
@@ -67,8 +68,8 @@ namespace JKang.IpcServiceFramework.Client
         public async Task InvokeAsync(Expression<Func<TInterface, Task>> exp,
             CancellationToken cancellationToken = default)
         {
-            IpcRequest request = GetRequest(exp, DispatchProxy.Create<TInterface, IpcProxy<Task>>());
-            IpcResponse response = await GetResponseAsync(request, cancellationToken).ConfigureAwait(false);
+            var request = GetRequest(exp, DispatchProxy.Create<TInterface, IpcProxy<Task>>());
+            var response = await GetResponseAsync(request, cancellationToken).ConfigureAwait(false);
 
             if (!response.Succeed())
             {
@@ -82,8 +83,28 @@ namespace JKang.IpcServiceFramework.Client
         public async Task<TResult> InvokeAsync<TResult>(Expression<Func<TInterface, Task<TResult>>> exp,
             CancellationToken cancellationToken = default)
         {
-            IpcRequest request = GetRequest(exp, DispatchProxy.Create<TInterface, IpcProxy<Task<TResult>>>());
-            IpcResponse response = await GetResponseAsync(request, cancellationToken).ConfigureAwait(false);
+            var request = GetRequest(exp, DispatchProxy.Create<TInterface, IpcProxy<Task<TResult>>>());
+            var response = await GetResponseAsync(request, cancellationToken).ConfigureAwait(false);
+
+            if (!response.Succeed())
+            {
+                throw response.CreateFaultException();
+            }
+
+            if (_options.ValueConverter.TryConvert(response.Data, typeof(TResult), out object @return))
+            {
+                return (TResult)@return;
+            }
+            else
+            {
+                throw new IpcSerializationException($"Unable to convert returned value to '{typeof(TResult).Name}'.");
+            }
+        }
+#endif
+
+        public async Task<TResult> InvokeAsync<TResult>(IpcRequest request, CancellationToken cancellationToken = default)
+        {
+            var response = await GetResponseAsync(request, cancellationToken).ConfigureAwait(false);
 
             if (!response.Succeed())
             {
@@ -100,6 +121,17 @@ namespace JKang.IpcServiceFramework.Client
             }
         }
 
+        public async Task InvokeAsync(IpcRequest request, CancellationToken cancellationToken = default)
+        {
+            var response = await GetResponseAsync(request, cancellationToken).ConfigureAwait(false);
+
+            if (!response.Succeed())
+            {
+                throw response.CreateFaultException();
+            }
+        }
+
+#if !DISABLE_DYNAMIC_CODE_GENERATION
         private IpcRequest GetRequest(Expression exp, TInterface proxy)
         {
             if (!(exp is LambdaExpression lambdaExp))
@@ -170,6 +202,7 @@ namespace JKang.IpcServiceFramework.Client
                 };
             }
         }
+#endif
 
         protected abstract Task<IpcStreamWrapper> ConnectToServerAsync(CancellationToken cancellationToken);
 
@@ -188,6 +221,7 @@ namespace JKang.IpcServiceFramework.Client
             }
         }
 
+#if !DISABLE_DYNAMIC_CODE_GENERATION
         public class IpcProxy : DispatchProxy
         {
             public Invocation LastInvocation { get; protected set; }
@@ -219,5 +253,6 @@ namespace JKang.IpcServiceFramework.Client
                 return default(TResult);
             }
         }
+#endif
     }
 }

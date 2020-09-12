@@ -33,7 +33,11 @@ namespace JKang.IpcServiceFramework.NamedPipeTests
                 .WithServiceImplementation(_ => _serviceMock.Object)
                 .WithIpcHostConfiguration(hostBuilder =>
                 {
-                    hostBuilder.AddNamedPipeEndpoint<ITestService>(pipeName);
+                    hostBuilder.AddNamedPipeEndpoint<ITestService>(options =>
+                    {
+                        options.PipeName = pipeName;
+                        options.IncludeFailureDetailsInResponse = true;
+                    });
                 })
                 .CreateClient((name, services) =>
                 {
@@ -49,10 +53,17 @@ namespace JKang.IpcServiceFramework.NamedPipeTests
                 .Setup(x => x.PrimitiveTypes(a, b, c, d, e, f, g, h, i, j, k, l, m))
                 .Returns(expected);
 
+#if !DISABLE_DYNAMIC_CODE_GENERATION
             int actual = await _client
                 .InvokeAsync(x => x.PrimitiveTypes(a, b, c, d, e, f, g, h, i, j, k, l, m));
 
             Assert.Equal(expected, actual);
+#endif
+
+            var request = TestHelpers.CreateIpcRequest(typeof(ITestService), "PrimitiveTypes", a, b, c, d, e, f, g, h, i, j, k, l, m);
+            int actual2 = await _client.InvokeAsync<int>(request);
+
+            Assert.Equal(expected, actual2);
         }
 
         [Theory, AutoData]
@@ -62,10 +73,17 @@ namespace JKang.IpcServiceFramework.NamedPipeTests
                 .Setup(x => x.StringType(input))
                 .Returns(expected);
 
+#if !DISABLE_DYNAMIC_CODE_GENERATION
             string actual = await _client
                 .InvokeAsync(x => x.StringType(input));
 
             Assert.Equal(expected, actual);
+#endif
+
+            var request = TestHelpers.CreateIpcRequest(typeof(ITestService), "StringType", input);
+            string actual2 = await _client.InvokeAsync<string>(request);
+
+            Assert.Equal(expected, actual2);
         }
 
         [Theory, AutoData]
@@ -73,10 +91,18 @@ namespace JKang.IpcServiceFramework.NamedPipeTests
         {
             _serviceMock.Setup(x => x.ComplexType(input)).Returns(expected);
 
+#if !DISABLE_DYNAMIC_CODE_GENERATION
             Complex actual = await _client
                 .InvokeAsync(x => x.ComplexType(input));
 
             Assert.Equal(expected, actual);
+#endif
+
+            var request = TestHelpers.CreateIpcRequest(typeof(ITestService), "ComplexType", input);
+            var actual2 = await _client.InvokeAsync<Complex>(request);
+
+            Assert.Equal(expected, actual2);
+
         }
 
         [Theory, AutoData]
@@ -86,10 +112,17 @@ namespace JKang.IpcServiceFramework.NamedPipeTests
                 .Setup(x => x.ComplexTypeArray(input))
                 .Returns(expected);
 
+#if !DISABLE_DYNAMIC_CODE_GENERATION
             IEnumerable<Complex> actual = await _client
                 .InvokeAsync(x => x.ComplexTypeArray(input));
 
             Assert.Equal(expected, actual);
+#endif
+
+            var request = TestHelpers.CreateIpcRequest(typeof(ITestService), "ComplexTypeArray", input);
+            var actual2 = await _client.InvokeAsync<IEnumerable<Complex>>(request);
+
+            Assert.Equal(expected, actual2);
         }
 
         [Theory, AutoData]
@@ -102,16 +135,27 @@ namespace JKang.IpcServiceFramework.NamedPipeTests
                 .Setup(x => x.ComplexTypeArray(largeInput))
                 .Returns(largeExpected);
 
+#if !DISABLE_DYNAMIC_CODE_GENERATION
             IEnumerable<Complex> actual = await _client
                 .InvokeAsync(x => x.ComplexTypeArray(largeInput));
 
             Assert.Equal(largeExpected, actual);
+#endif
+
+            var request = TestHelpers.CreateIpcRequest(typeof(ITestService), "ComplexTypeArray", largeInput);
+            var actual2 = await _client.InvokeAsync<IEnumerable<Complex>>(request);
+
+            Assert.Equal(largeExpected, actual2);
         }
 
         [Fact]
         public async Task ReturnVoid()
         {
+#if !DISABLE_DYNAMIC_CODE_GENERATION
             await _client.InvokeAsync(x => x.ReturnVoid());
+#endif
+
+            await _client.InvokeAsync(TestHelpers.CreateIpcRequest("ReturnVoid"));
         }
 
         [Theory, AutoData]
@@ -119,10 +163,17 @@ namespace JKang.IpcServiceFramework.NamedPipeTests
         {
             _serviceMock.Setup(x => x.DateTime(input)).Returns(expected);
 
+#if !DISABLE_DYNAMIC_CODE_GENERATION
             DateTime actual = await _client
                 .InvokeAsync(x => x.DateTime(input));
 
             Assert.Equal(expected, actual);
+#endif
+
+            var request = TestHelpers.CreateIpcRequest(typeof(ITestService), "DateTime", input);
+            DateTime actual2 = await _client.InvokeAsync<DateTime>(request);
+
+            Assert.Equal(expected, actual2);
         }
 
         [Theory, AutoData]
@@ -130,10 +181,17 @@ namespace JKang.IpcServiceFramework.NamedPipeTests
         {
             _serviceMock.Setup(x => x.EnumType(input)).Returns(expected);
 
+#if !DISABLE_DYNAMIC_CODE_GENERATION
             DateTimeStyles actual = await _client
                 .InvokeAsync(x => x.EnumType(input));
 
             Assert.Equal(expected, actual);
+#endif
+
+            var request = TestHelpers.CreateIpcRequest(typeof(ITestService), "EnumType", input);
+            DateTimeStyles actual2 = await _client.InvokeAsync<DateTimeStyles>(request);
+
+            Assert.Equal(expected, actual2);
         }
 
         [Theory, AutoData]
@@ -141,10 +199,17 @@ namespace JKang.IpcServiceFramework.NamedPipeTests
         {
             _serviceMock.Setup(x => x.ByteArray(input)).Returns(expected);
 
+#if !DISABLE_DYNAMIC_CODE_GENERATION
             byte[] actual = await _client
                 .InvokeAsync(x => x.ByteArray(input));
 
             Assert.Equal(expected, actual);
+#endif
+
+            var request = TestHelpers.CreateIpcRequest(typeof(ITestService), "ByteArray", input);
+            byte[] actual2 = await _client.InvokeAsync<byte[]>(request);
+
+            Assert.Equal(expected, actual2);
         }
 
         [Theory, AutoData]
@@ -154,10 +219,12 @@ namespace JKang.IpcServiceFramework.NamedPipeTests
                 .Setup(x => x.GenericMethod<decimal>(input))
                 .Returns(expected);
 
+#if !DISABLE_DYNAMIC_CODE_GENERATION
             decimal actual = await _client
                 .InvokeAsync(x => x.GenericMethod<decimal>(input));
 
             Assert.Equal(expected, actual);
+#endif
         }
 
         [Theory, AutoData]
@@ -167,10 +234,17 @@ namespace JKang.IpcServiceFramework.NamedPipeTests
                 .Setup(x => x.AsyncMethod())
                 .ReturnsAsync(expected);
 
+#if !DISABLE_DYNAMIC_CODE_GENERATION
             int actual = await _client
                 .InvokeAsync(x => x.AsyncMethod());
 
             Assert.Equal(expected, actual);
+#endif
+
+            var request = TestHelpers.CreateIpcRequest("AsyncMethod");
+            int actual2 = await _client.InvokeAsync<int>(request);
+
+            Assert.Equal(expected, actual2);
         }
 
         [Theory, AutoData]
@@ -180,9 +254,16 @@ namespace JKang.IpcServiceFramework.NamedPipeTests
                 .Setup(x => x.Abstraction(It.Is<TestDto>(o => o.Value == input.Value)))
                 .Returns(expected);
 
+#if !DISABLE_DYNAMIC_CODE_GENERATION
             ITestDto actual = await _client.InvokeAsync(x => x.Abstraction(input));
 
             Assert.Equal(expected.Value, actual.Value);
+#endif
+
+            var request = TestHelpers.CreateIpcRequest(typeof(ITestService), "Abstraction", input);
+            ITestDto actual2 = await _client.InvokeAsync<ITestDto>(request);
+
+            Assert.Equal(expected.Value, actual2.Value);
         }
     }
 }

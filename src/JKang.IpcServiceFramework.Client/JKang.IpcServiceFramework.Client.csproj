@@ -5,7 +5,7 @@
     <PackageTags>ipc,interprocess,communication,wcf,client</PackageTags>
   </PropertyGroup>
 
-  <ItemGroup>
+  <ItemGroup Condition="'$(DisableDynamicCodeGeneration)' != 'true'">
     <PackageReference Include="System.Reflection.DispatchProxy" Version="4.7.1" />
   </ItemGroup>
 
