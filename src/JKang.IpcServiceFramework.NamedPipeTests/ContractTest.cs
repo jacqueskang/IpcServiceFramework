@@ -15,6 +15,12 @@ using Xunit;
 
 namespace JKang.IpcServiceFramework.NamedPipeTests
 {
+    /// <summary>
+    /// Validates the IPC pipeline is working end-to-end for a variety of method types.
+    /// Tests both dynamically generated IpcRequests (via DispatchProxy) and statically generated ones.
+    /// Tests using full parameter types (UseSimpleTypeNameAssemblyFormatHandling == false).
+    /// </summary>
+    /// <seealso cref="Xunit.IClassFixture{JKang.IpcServiceFramework.Testing.IpcApplicationFactory{JKang.IpcServiceFramework.NamedPipeTests.Fixtures.ITestService}}" />
     public class ContractTest : IClassFixture<IpcApplicationFactory<ITestService>>
     {
         private readonly Mock<ITestService> _serviceMock = new Mock<ITestService>();
