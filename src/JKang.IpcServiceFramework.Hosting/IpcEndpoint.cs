@@ -92,7 +92,7 @@ namespace JKang.IpcServiceFramework.Hosting
                         _logger.LogDebug($"Request received, invoking '{request.MethodName}'...");
                         using (IServiceScope scope = _serviceProvider.CreateScope())
                         {
-                            response = await GetReponseAsync(request, scope).ConfigureAwait(false);
+                            response = await GetResponseAsync(request, scope).ConfigureAwait(false);
                         }
                     }
                     catch (Exception ex) when (!(ex is IpcException))
@@ -151,7 +151,7 @@ namespace JKang.IpcServiceFramework.Hosting
             }
         }
 
-        private async Task<IpcResponse> GetReponseAsync(IpcRequest request, IServiceScope scope)
+        private async Task<IpcResponse> GetResponseAsync(IpcRequest request, IServiceScope scope)
         {
             object service = scope.ServiceProvider.GetService<TContract>();
             if (service == null)
