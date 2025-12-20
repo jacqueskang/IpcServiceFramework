@@ -152,23 +152,19 @@ namespace JKang.IpcServiceFramework.Client
                 IpcRequestParameterType[] paramByName = null;
                 IpcRequestParameterType[] genericByName = null;
 
-                var parameterTypes = (proxy as IpcProxy).LastInvocation.Method.GetParameters().Select(p => p.ParameterType);
+                var parameterTypes = (proxy as IpcProxy).LastInvocation.Method.GetParameters()
+                    .Select(p => new IpcRequestParameterType(p.ParameterType)).ToArray();
 
-                if (parameterTypes.Any())
+                if (parameterTypes.Length > 0)
                 {
-                    paramByName = new IpcRequestParameterType[parameterTypes.Count()];
-                    int i = 0;
-                    foreach (var type in parameterTypes)
-                    {
-                        paramByName[i++] = new IpcRequestParameterType(type);
-                    }
+                    paramByName = parameterTypes;
                 }
 
                 var genericTypes = (proxy as IpcProxy).LastInvocation.Method.GetGenericArguments();
 
                 if (genericTypes.Length > 0)
                 {
-                    genericByName = new IpcRequestParameterType[genericTypes.Count()];
+                    genericByName = new IpcRequestParameterType[genericTypes.Length];
                     int i = 0;
                     foreach (var type in genericTypes)
                     {
