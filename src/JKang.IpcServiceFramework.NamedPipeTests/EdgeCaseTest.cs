@@ -55,7 +55,7 @@ namespace JKang.IpcServiceFramework.NamedPipeTests
         }
 
         [Fact]
-        public void ConnectionCancelled_Throw()
+        public async Task ConnectionCancelled_Throw()
         {
             IIpcClient<ITestService> client = _factory
                 .CreateClient((name, services) =>
@@ -70,29 +70,21 @@ namespace JKang.IpcServiceFramework.NamedPipeTests
 #if !DISABLE_DYNAMIC_CODE_GENERATION
             using (var cts = new CancellationTokenSource())
             {
-                Task.WaitAll(
-                    Task.Run(async () =>
-                    {
-                        await Assert.ThrowsAsync<OperationCanceledException>(async () =>
-                        {
-                            await client.InvokeAsync(x => x.ReturnVoid(), cts.Token);
-                        });
-                    }),
-                    Task.Run(() => cts.CancelAfter(1000)));
+                cts.CancelAfter(1000);
+                await Assert.ThrowsAsync<OperationCanceledException>(async () =>
+                {
+                    await client.InvokeAsync(x => x.ReturnVoid(), cts.Token);
+                });
             }
 #endif
             using (var cts = new CancellationTokenSource())
             {
-                Task.WaitAll(
-                    Task.Run(async () =>
-                    {
-                        await Assert.ThrowsAsync<OperationCanceledException>(async () =>
-                        {
-                            var request = TestHelpers.CreateIpcRequest("ReturnVoid");
-                            await client.InvokeAsync(request, cts.Token);
-                        });
-                    }),
-                    Task.Run(() => cts.CancelAfter(1000)));
+                cts.CancelAfter(1000);
+                await Assert.ThrowsAsync<OperationCanceledException>(async () =>
+                {
+                    var request = TestHelpers.CreateIpcRequest("ReturnVoid");
+                    await client.InvokeAsync(request, cts.Token);
+                });
             }
         }
     }

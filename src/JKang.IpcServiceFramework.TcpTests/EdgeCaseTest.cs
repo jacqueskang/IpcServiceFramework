@@ -46,7 +46,7 @@ namespace JKang.IpcServiceFramework.TcpTests
         }
 
         [Fact]
-        public void ConnectionCancelled_Throw()
+        public async Task ConnectionCancelled_Throw()
         {
             IIpcClient<ITestService> client = _factory
                 .CreateClient((name, services) =>
@@ -60,16 +60,12 @@ namespace JKang.IpcServiceFramework.TcpTests
 
             using (var cts = new CancellationTokenSource())
             {
-                Task.WaitAll(
-                    Task.Run(async () =>
-                    {
-                        await Assert.ThrowsAsync<OperationCanceledException>(async () =>
-                        {
-                            var request = TestHelpers.CreateIpcRequest(typeof(ITestService), "StringType", new object[] { string.Empty });
-                            await client.InvokeAsync(request, cts.Token);
-                        });
-                    }),
-                    Task.Run(() => cts.CancelAfter(1000)));
+                cts.CancelAfter(1000);
+                await Assert.ThrowsAsync<OperationCanceledException>(async () =>
+                {
+                    var request = TestHelpers.CreateIpcRequest(typeof(ITestService), "StringType", new object[] { string.Empty });
+                    await client.InvokeAsync(request, cts.Token);
+                });
             }
         }
     }
