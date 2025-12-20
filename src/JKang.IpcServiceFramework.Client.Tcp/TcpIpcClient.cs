@@ -11,7 +11,6 @@ namespace JKang.IpcServiceFramework.Client.Tcp
         where TInterface : class
     {
         private readonly TcpIpcClientOptions _options;
-        private bool _isDisposed;
 
         public TcpIpcClient(string name, TcpIpcClientOptions options)
             : base(name, options)
