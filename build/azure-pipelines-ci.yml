@@ -11,7 +11,7 @@ trigger:
 pr: none
 
 pool:
-  vmImage: 'ubuntu-16.04'
+  vmImage: 'ubuntu-latest'
 
 steps:
 - template: templates/build-test.yml
